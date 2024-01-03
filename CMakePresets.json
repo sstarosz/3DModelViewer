@@ -1,0 +1,147 @@
+{
+  "version": 5,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "Base-Configure",
+      "description": "Sets generator, build and install directory",
+      "hidden": true,
+      "generator": "Ninja",
+      "toolchainFile": "${sourceDir}/../vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}"
+    },
+    {
+      "name": "Windows-Base",
+      "displayName": "Windows Base",
+      "description": "Base configuration presets for windows targets, setting default values for all build presets",
+      "inherits": "Base-Configure",
+      "hidden": true,
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_PREFIX_PATH": "C:/Qt/6.4.2/msvc2019_64/;${sourceDir}/CMake;"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [
+            "Windows"
+          ],
+          "intelliSenseMode": "windows-msvc-x64",
+          "disableExternalAnalysis": true,
+          "enableMicrosoftCodeAnalysis": true,
+          "codeAnalysisRuleset": "AllRules"
+        }
+      }
+    },
+    {
+      "name": "Windowx-MSVC-x64-Debug",
+      "displayName": "Windows x64 MSVC Debug",
+      "description": "Sets Ninja generator, build and install directory",
+      "inherits": "Windows-Base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "Windowx-MSVC-x64-Release",
+      "displayName": "Windows x64 MSVC Release",
+      "description": "Sets Ninja generator, build and install directory",
+      "inherits": "Windows-Base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "Linux-Base",
+      "displayName": "Linux x64 Debug",
+      "description": "Linux Gcc Makefiles",
+      "inherits": [
+        "Base-Configure"
+      ],
+      "generator": "Unix Makefiles",
+      "cacheVariables": {
+        "REMOTE_DEVELOPMENT": true,
+        "BUILD_UNITTESTS": true,
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": "Linux",
+          "intelliSenseMode": "linux-gcc-x64"
+        },
+        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+          "copyAdditionalIncludeDirectoriesList": [
+            "$env{HOME}/.conan/data",
+            "$env{HOME}/.generatedProto/ptcontrol"
+          ],
+          "copySourcesOptions": { "exclusionList": [ ".vs", ".git", "out", ".svn", ".vscode", "build" ] },
+          "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+        }
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "Base-Build",
+      "description": "Base build presets, setting default values for all build presets",
+      "hidden": true,
+      "verbose": true,
+      "jobs": 8
+    },
+    {
+      "name": "MSVC-2022-x64-Debug-Build",
+      "description": "Windows x64 Debug Build",
+      "configurePreset": "Windowx-MSVC-x64-Debug",
+      "configuration": "Debug",
+      "inherits": "Base-Build"
+    },
+    {
+      "name": "MSVC-2022-x64-Release-Build",
+      "description": "Windows x64 Release Build",
+      "configurePreset": "Windowx-MSVC-x64-Release",
+      "configuration": "Release",
+      "inherits": "Base-Build"
+    },
+    {
+      "name": "Linux-Build",
+      "displayName": "Linux x64 Verbose Debug Build ",
+      "description": "Linux x64 Debug Build with Unix Makefile generator",
+      "configurePreset": "Linux-Base",
+      "inherits": "Base-Build"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "Core-Test",
+      "description": "Enable output on failure",
+      "hidden": true,
+      "output": {
+        "outputOnFailure": true,
+        "verbosity": "verbose"
+      }
+    },
+    {
+      "name": "Windows-Unittests",
+      "displayName": "Windows Unit Tests",
+      "configurePreset": "Windowx-MSVC-x64-Debug",
+      "inherits": "Core-Test"
+    },
+    {
+      "name": "Linux-Unittest",
+      "displayName": "Linux Unittest",
+      "configurePreset": "Linux-Base",
+      "inherits": "Core-Test"
+    }
+  ]
+}
