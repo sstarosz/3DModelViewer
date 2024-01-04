@@ -42,7 +42,7 @@ find_package(Stb REQUIRED)
 #---------------------------------------------------------------------------------------#
 #----------------------------------Project Structure------------------------------------#
 #---------------------------------------------------------------------------------------#
-add_subdirectory(Library)
+add_subdirectory(Libraries)
 add_subdirectory(Application)
 #add_subdirectory(Assets)
 
