@@ -13,10 +13,14 @@ set(CMAKE_AUTOUIC ON)
 
 
 set(Sources
-    "Source/MainWindow.cpp")
+    "Source/MainWindow.cpp"
+    "Source/Viewport.cpp"
+    )
 
 set(Public_Headers
-    "Include/Ui/MainWindow.hpp")
+    "Include/Ui/MainWindow.hpp"
+    "Include/Ui/Viewport.hpp"
+    )
 
 set(Private_Headers)
 
