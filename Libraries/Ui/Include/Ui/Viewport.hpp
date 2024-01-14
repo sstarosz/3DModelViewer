@@ -12,7 +12,10 @@ class Viewport : public QWidget
 
     public:
         explicit Viewport(QWidget *parent = nullptr, Qt::WindowFlags flags = {});
-    
+
+    private:
+        class PrivateWindow;
+        PrivateWindow* m_window;
 };
 
 }//namespace st::ui

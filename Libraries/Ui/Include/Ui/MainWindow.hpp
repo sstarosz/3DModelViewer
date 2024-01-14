@@ -14,7 +14,6 @@ class MainWindow : public QMainWindow
 
     public:
         explicit MainWindow(QWidget *parent = nullptr, Qt::WindowFlags flags = {}); 
-    
 };
 
 

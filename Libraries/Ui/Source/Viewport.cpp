@@ -1,31 +1,93 @@
 #include "Viewport.hpp"
 #include <QVulkanInstance>
-#include <QVulkanWindow>
+#include <QWindow>
 #include <QHBoxLayout>
 #include <QDebug>
+#include <QTimer>
+
+#include <Renderer/Renderer.hpp>
 
 namespace st::ui
 {
-    Viewport::Viewport(QWidget *parent, Qt::WindowFlags flags) : QWidget(parent, flags)
+    /*---------------------*/
+    /*-------Private-------*/
+    /*---------------------*/
+    class Viewport::PrivateWindow : public QWindow
     {
-        QVulkanInstance *vulkanInstance = new QVulkanInstance();
-        vulkanInstance->setLayers(QByteArrayList() << "VK_LAYER_LUNARG_standard_validation");
-        vulkanInstance->setExtensions(QByteArrayList() << "VK_KHR_surface" << "VK_KHR_win32_surface");
-
-        if (!vulkanInstance->create())
+    public:
+        PrivateWindow()
         {
-            qDebug() << "Failed to create Vulkan instance:" << vulkanInstance->errorCode();
+            setSurfaceType(QSurface::VulkanSurface);
         }
-        
 
 
-        QVulkanWindow *vulkanWindow = new QVulkanWindow();
-        vulkanWindow->setVulkanInstance(vulkanInstance);
+        void showEvent(QShowEvent *event) override
+        {
+            QWindow::showEvent(event);
 
-        QWidget *vulkaWidget = QWidget::createWindowContainer(vulkanWindow, this);
+            if (!m_initialized)
+            {
+                vk::Instance instance = m_renderer.createInstance();
+
+                QVulkanInstance vulkanInstance;
+                vulkanInstance.setVkInstance(instance);
+
+                if(!vulkanInstance.create())
+                {
+                    qDebug() << "Failed to create vulkan instance";
+                    return;
+                }
+                setVulkanInstance(&vulkanInstance);
+
+
+                m_renderer.setSurface(vulkanInstance.surfaceForWindow(this));
+                m_renderer.init();
+
+
+                connect(&m_timer, &QTimer::timeout, this, &PrivateWindow::update);
+                m_timer.start(16);    //60fps
+
+                m_initialized = true;
+            }
+        }
+
+
+private:
+        //Main loop
+        void update()
+        {
+            m_renderer.render();
+            requestUpdate();
+        }
+
+
+
+
+        bool m_initialized = false;
+        QTimer m_timer;
+        renderer::Renderer m_renderer;
+    };
+
+
+
+
+
+
+
+
+    /*---------------------*/
+    /*-------Public--------*/
+    /*---------------------*/
+    Viewport::Viewport(QWidget *parent, Qt::WindowFlags flags) : 
+        QWidget(parent, flags),
+        m_window(new PrivateWindow)
+    {
+        QWidget *vulkaWidget = QWidget::createWindowContainer(m_window, this);
 
         QHBoxLayout *layout = new QHBoxLayout(this);
         layout->addWidget(vulkaWidget);
     }
+
+
 
 }//namespace st::ui
