@@ -1,8 +1,11 @@
 #include "Renderer.hpp"
+#include "VulkanContext.hpp"
+#include "PhysicalDevice.hpp"
 
 #include <vulkan/vulkan.hpp>
 #include <vector>
 #include <iostream>
+
 
 PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT;
 PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
@@ -25,9 +28,6 @@ PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
 
 namespace st::renderer
 {
-
-
-
 	VkBool32 debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 						   VkDebugUtilsMessageTypeFlagsEXT messageType,
 						   const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -91,13 +91,12 @@ namespace st::renderer
 		return false;
 	}
 
-
-
-
 class Renderer::PrivateRenderer
 {
 public:
-    PrivateRenderer()
+    PrivateRenderer() :
+    m_vulkanContext(),
+    m_physicalDevice(m_vulkanContext)
     {
 
     }
@@ -138,8 +137,8 @@ public:
             extensions
         };
 
-        m_instance = vk::createInstance(createInfo);
-        return m_instance;
+        m_vulkanContext.m_instance = vk::createInstance(createInfo);
+        return m_vulkanContext.m_instance;
     }
 
 
@@ -159,7 +158,7 @@ public:
 //Implementation
     void createDebugMessageUtils()
     {
-        pfnVkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(m_instance.getProcAddr("vkCreateDebugUtilsMessengerEXT"));
+        pfnVkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(m_vulkanContext.m_instance.getProcAddr("vkCreateDebugUtilsMessengerEXT"));
 		if (!pfnVkCreateDebugUtilsMessengerEXT)
 		{
 			//TODO - Change it to something independent of iostream
@@ -169,7 +168,7 @@ public:
 			exit(1);
 		}
 
-		pfnVkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(m_instance.getProcAddr("vkDestroyDebugUtilsMessengerEXT"));
+		pfnVkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(m_vulkanContext.m_instance.getProcAddr("vkDestroyDebugUtilsMessengerEXT"));
 		if (!pfnVkDestroyDebugUtilsMessengerEXT)
 		{
 			//TODO - Change it to something independent of iostream
@@ -200,12 +199,12 @@ public:
             &debugCallback };
 
 
-        m_debugMessenger = m_instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);  
+        m_vulkanContext.m_debugMessenger = m_vulkanContext.m_instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);  
     }
 
     void pickPhysicalDevice()
     {
-        std::vector<vk::PhysicalDevice> physicalDevices = m_instance.enumeratePhysicalDevices();
+        std::vector<vk::PhysicalDevice> physicalDevices = m_vulkanContext.m_instance.enumeratePhysicalDevices();
         if(physicalDevices.empty())
         {
             throw std::runtime_error("Failed to find GPU's with Vulkan support!");
@@ -219,11 +218,9 @@ public:
     }
 
 public:
-    vk::Instance m_instance;
-    vk::SurfaceKHR m_surface;
-    vk::DebugUtilsMessengerEXT m_debugMessenger;
+    VulkanContext m_vulkanContext;
+    PhysicalDevice m_physicalDevice;
 
-    vk::PhysicalDevice m_physicalDevice;
 };
 
 
@@ -256,7 +253,7 @@ void Renderer::render()
 
 void Renderer::setSurface(vk::SurfaceKHR surface)
 {
-    m_privateRenderer->m_surface = surface;
+    m_privateRenderer->m_vulkanContext.m_surface = surface;
 }
 
 vk::Instance Renderer::createInstance() const

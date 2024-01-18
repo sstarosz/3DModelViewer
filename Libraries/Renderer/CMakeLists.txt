@@ -10,13 +10,19 @@ project(Renderer
 
 set(Sources
     "Source/Renderer.cpp"
+    "Source/PhysicalDevice.cpp"
+    "Source/QueueFamily.cpp"
     )
 
 set(Public_Headers
     "Include/Renderer/Renderer.hpp"
+    "Include/Renderer/VulkanContext.hpp"
     )
 
-set(Private_Headers)
+set(Private_Headers
+    "Source/PhysicalDevice.hpp"
+    "Source/QueueFamily.hpp"
+    )
 
 add_library(${PROJECT_NAME} ${Sources} ${Public_Headers} ${Private_Headers})
 
