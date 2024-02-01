@@ -56,8 +56,11 @@ private:
         //Main loop
         void update()
         {
-            m_renderer.render();
-            requestUpdate();
+            if(m_initialized)
+            {
+                m_renderer.render();
+                requestUpdate();
+            }
         }
 
 

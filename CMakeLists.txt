@@ -44,7 +44,7 @@ find_package(Stb REQUIRED)
 #---------------------------------------------------------------------------------------#
 add_subdirectory(Libraries)
 add_subdirectory(Application)
-#add_subdirectory(Assets)
+add_subdirectory(Assets)
 
 if(Build_Docs)
     add_subdirectory(Docs)

@@ -6,7 +6,7 @@ project(Renderer
 		LANGUAGES CXX)
 
         
-
+find_package(Eigen3 CONFIG REQUIRED)
 
 set(Sources
     "Source/Renderer.cpp"
@@ -37,10 +37,11 @@ target_compile_options(${PROJECT_NAME} PRIVATE ${Compiler_Flags})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
                         Vulkan::Vulkan
+                        Eigen3::Eigen
                      )
 
 if(WIN32)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_WIN32_KHR)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_WIN32_KHR NOMINMAX WIN32_LEAN_AND_MEAN)
 elseif(UNIX)
     target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_XCB_KHR)
 elseif(APPLE)

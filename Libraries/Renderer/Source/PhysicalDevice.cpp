@@ -18,7 +18,7 @@ const vk::PhysicalDevice PhysicalDevice::getPhysicalDevice() const
 }
 
 
-void PhysicalDevice::pickPhysicalDevice()
+void PhysicalDevice::initialize()
 {
     std::vector<vk::PhysicalDevice> devices = m_vulkanContext.m_instance.enumeratePhysicalDevices();
 

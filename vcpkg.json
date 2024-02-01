@@ -5,6 +5,7 @@
   "dependencies": [
     "stb",
     "gtest",
-    "benchmark"
+    "benchmark",
+    "eigen3"
   ]
 }

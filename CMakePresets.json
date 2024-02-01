@@ -26,7 +26,6 @@
         "strategy": "external"
       },
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "cl.exe",
         "CMAKE_CXX_COMPILER": "cl.exe",
         "CMAKE_PREFIX_PATH": "C:/Qt/6.4.2/msvc2019_64/;${sourceDir}/CMake;"
       },
@@ -72,7 +71,6 @@
         "REMOTE_DEVELOPMENT": true,
         "BUILD_UNITTESTS": true,
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++"
       },
       "vendor": {
