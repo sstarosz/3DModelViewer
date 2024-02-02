@@ -22,6 +22,8 @@ public:
     vk::Instance createInstance() const;
     void setSurface(vk::SurfaceKHR surface);
 
+    void changeSwapchainExtent(uint32_t width, uint32_t height);
+
 private:
     class PrivateRenderer;
     std::unique_ptr<PrivateRenderer> m_privateRenderer;

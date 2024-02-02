@@ -51,6 +51,15 @@ namespace st::ui
             }
         }
 
+    void resizeEvent(QResizeEvent *event) override
+    {
+        if(!m_initialized)
+            return;
+
+        QWindow::resizeEvent(event);
+        m_renderer.changeSwapchainExtent(width(), height());
+    }
+
 
 private:
         //Main loop

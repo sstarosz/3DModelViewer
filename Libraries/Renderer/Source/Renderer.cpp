@@ -287,20 +287,19 @@ public:
 		catch (std::exception const& exc)
 		{
 			std::cerr << exc.what();
+            recreateSwapChain();
+		}
+
+		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || framebufferResized)
+		{
+			framebufferResized = false;
 			//TODO - Fix
 			//recreateSwapChain();
 		}
-
-		//if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || m_framebufferResized)
-		//{
-		//	m_framebufferResized = false;
-		//	//TODO - Fix
-		//	//recreateSwapChain();
-		//}
-		//else if (result != vk::Result::eSuccess)
-		//{
-		//	throw std::runtime_error("failed to present swap chain image!");
-		//}
+		else if (result != vk::Result::eSuccess)
+		{
+			throw std::runtime_error("failed to present swap chain image!");
+		}
 
 		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
@@ -512,7 +511,7 @@ public:
         }
         else
         {
-            vk::Extent2D actualExtent = { 800, 600 };
+            vk::Extent2D actualExtent = { m_width, m_height };
 
             actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
             actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
@@ -540,7 +539,6 @@ public:
 			 m_vulkanContext.m_swapchainImageViews.emplace_back( m_vulkanContext.m_device.createImageView(createInfo));
 		}
     }
-
 
     void createRenderPass()
     {
@@ -862,7 +860,6 @@ public:
 		throw std::runtime_error("failed to find suitable memory type!");
 	}
 
-
     void createCommandPool()
     {
         QueueFamily queueFamily = QueueFamily::findQueueFamilies(m_vulkanContext.m_physicalDevice, m_vulkanContext.m_surface);
@@ -953,7 +950,6 @@ public:
 		return m_vulkanContext.m_device.createImageView(viewInfo);
 	}
 
-
     void createCommandBuffers()
     {
         vk::CommandBufferAllocateInfo allocInfo { m_vulkanContext.m_commandPool,
@@ -962,7 +958,6 @@ public:
 
 		m_vulkanContext.m_commandBuffers = m_vulkanContext.m_device.allocateCommandBuffers(allocInfo);
     }
-
 
     void createSyncObjects()
     {
@@ -978,6 +973,38 @@ public:
 		}
     }
 
+    void recreateSwapChain()
+    {
+        clearSwapChain();
+
+        createSwapChain();
+        createFrameBuffer();
+    }
+
+
+    void clearSwapChain()
+    {
+        //Framebuffers
+        m_vulkanContext.m_device.waitIdle();
+        m_vulkanContext.m_device.destroyImageView(m_vulkanContext.m_depthImageView);
+        m_vulkanContext.m_device.destroyImage(m_vulkanContext.m_depthImage);
+        m_vulkanContext.m_device.freeMemory(m_vulkanContext.m_depthImageMemory);
+
+        for (auto& framebuffer : m_vulkanContext.m_swapchainFramebuffers)
+        {
+            m_vulkanContext.m_device.destroyFramebuffer(framebuffer);
+        }
+        m_vulkanContext.m_swapchainFramebuffers.clear();
+
+        //Swapchain
+        for(auto& imageView : m_vulkanContext.m_swapchainImageViews)
+        {
+            m_vulkanContext.m_device.destroyImageView(imageView);
+        }
+        m_vulkanContext.m_swapchainImageViews.clear();
+
+        m_vulkanContext.m_device.destroySwapchainKHR(m_vulkanContext.m_swapchain);
+    }
 
 public:
     VulkanContext m_vulkanContext;
@@ -986,7 +1013,10 @@ public:
 
     const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
     uint32_t currentFrame = 0;
+    uint32_t framebufferResized = 0;
 
+    uint32_t m_width = 800;
+    uint32_t m_height = 600;
 };
 
 
@@ -1027,6 +1057,13 @@ vk::Instance Renderer::createInstance() const
     return m_privateRenderer->createInstance();
 }
 
+void Renderer::changeSwapchainExtent(uint32_t width, uint32_t height)
+{
+    m_privateRenderer->m_width = width;
+    m_privateRenderer->m_height = height;
+
+    m_privateRenderer->recreateSwapChain();
+}
 
 
 } // namespace st::renderer
