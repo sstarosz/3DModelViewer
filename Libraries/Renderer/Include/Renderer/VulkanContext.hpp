@@ -32,10 +32,8 @@ struct VulkanContext
     vk::CommandPool m_commandPool;
     std::vector<vk::CommandBuffer> m_commandBuffers;
 
-    //
+    //Framebuffers
     std::vector<vk::Framebuffer> m_swapchainFramebuffers;
-
-    //DepthBuffer
     vk::Image m_depthImage;
     vk::DeviceMemory m_depthImageMemory;
     vk::ImageView m_depthImageView;
@@ -51,9 +49,6 @@ struct GraphicsPipeline
     vk::Pipeline m_graphicsPipeline;
     vk::PipelineLayout m_pipelineLayout;
     vk::PipelineCache m_pipelineCache;
-
-    std::vector<vk::DynamicState> m_dynamicStateEnables;
-    vk::PipelineDynamicStateCreateInfo m_pipelineDynamicStateCreateInfo;
 
     vk::DescriptorPool m_descriptorPool;
     vk::DescriptorSetLayout m_descriptorSetLayout;

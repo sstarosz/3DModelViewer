@@ -230,8 +230,6 @@ public:
         return m_vulkanContext.m_instance;
     }
 
-
-
     void init()
     {
         createDebugMessageUtils();
@@ -247,27 +245,90 @@ public:
 
     }
 
+    void waitForPreviousFrame()
+    {
+        auto resultFence = m_vulkanContext.m_device.waitForFences(m_vulkanContext.m_inFlightFences.at(currentFrame), 
+                                                                  VK_TRUE, 
+                                                                  UINT64_MAX);
+        if (resultFence != vk::Result::eSuccess)
+        {
+            throw std::runtime_error("Failed to wait for fences!");
+        }
+
+        //TODO - Check for other results:
+        //vk::Result::eTimeout
+        //vk::Result::eErrorDeviceLost
+        //vk::Result::eErrorOutOfDeviceMemory
+    }
+
+    uint32_t acquireSwapChainImage()
+    {
+        auto [result, imageIndex] = m_vulkanContext.m_device.acquireNextImageKHR(m_vulkanContext.m_swapchain, 
+                                                                                 UINT64_MAX, 
+                                                                                 m_vulkanContext.m_imageAvailableSemaphores[currentFrame], 
+                                                                                 VK_NULL_HANDLE);
+        if (result == vk::Result::eErrorOutOfDateKHR) 
+        {
+            recreateSwapChain();
+            return acquireSwapChainImage();
+        } else if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) 
+        {
+            throw std::runtime_error("Failed to acquire swap chain image!");
+        }
+
+        //TODO - Check for other results:
+        //vk::Result::eTimeout
+        //vk::Result::eNotReady
+        //vk::Result::eSuboptimalKHR
+
+        //vk::Result::eErrorOutOfHostMemory
+        //vk::Result::eErrorOutOfDeviceMemory
+        //vk::Result::eErrorDeviceLost
+        //vk::Result::eErrorOutOfDateKHR
+        //vk::Result::eErrorSurfaceLostKHR
+        //vk::Result::eErrorFullScreenExclusiveModeLostEXT
+
+        return imageIndex;
+    }
+
+    void resetCommandBuffer(uint32_t currentFrame)
+    {
+        m_vulkanContext.m_commandBuffers[currentFrame].reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+    }
+
     void render()
     {
+		//Wait for previous frame to finish
+        waitForPreviousFrame();
 
-		auto resultFence = m_vulkanContext.m_device.waitForFences(m_vulkanContext.m_inFlightFences.at(currentFrame), VK_TRUE, UINT64_MAX);
-		if (resultFence != vk::Result::eSuccess)
-		{
-			//std::cout << "syf" << std::endl;
-		}
+        //Reset the fence for the current frame
+        m_vulkanContext.m_device.resetFences(m_vulkanContext.m_inFlightFences.at(currentFrame));
 
-		auto [result, imageIndex] = m_vulkanContext.m_device.acquireNextImageKHR(m_vulkanContext.m_swapchain, 
-                                                                                 UINT64_MAX, 
-                                                                                 m_vulkanContext.m_imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE);
+        //Acquire swap chain image
+        uint32_t imageIndex = acquireSwapChainImage();
 
 
-		m_vulkanContext.m_device.resetFences(m_vulkanContext.m_inFlightFences.at(currentFrame));
+        //Reset the command buffer for the current frame
+        resetCommandBuffer(currentFrame);
 
-		m_vulkanContext.m_commandBuffers[currentFrame].reset(vk::CommandBufferResetFlags {});
-		recordCommandBuffer(m_vulkanContext.m_commandBuffers[currentFrame], imageIndex);
+        // Record command for the current frame
+        recordCommandBuffer(m_vulkanContext.m_commandBuffers[currentFrame], imageIndex);
 
+        
 
-		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+        //Submit command buffer
+        submitCommandBuffer(currentFrame);
+
+        //Present image
+        presentImage(imageIndex);
+
+        //Advance to next frame
+		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    }
+
+    void submitCommandBuffer(uint32_t currentFrame)
+    {
+        vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 
 		vk::SubmitInfo submitInfo(m_vulkanContext.m_imageAvailableSemaphores[currentFrame],
 								  waitDestinationStageMask,
@@ -276,34 +337,46 @@ public:
 
 
 		m_vulkanContext.m_graphicsQueue.submit(submitInfo, m_vulkanContext.m_inFlightFences[currentFrame]);
-
-
-		vk::PresentInfoKHR presentInfo(m_vulkanContext.m_renderFinishedSemaphores[currentFrame], m_vulkanContext.m_swapchain, imageIndex);
-
-		try
-		{
-			result = m_vulkanContext.m_presentQueue.presentKHR(presentInfo);
-		}
-		catch (std::exception const& exc)
-		{
-			std::cerr << exc.what();
-            recreateSwapChain();
-		}
-
-		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || framebufferResized)
-		{
-			framebufferResized = false;
-			//TODO - Fix
-			//recreateSwapChain();
-		}
-		else if (result != vk::Result::eSuccess)
-		{
-			throw std::runtime_error("failed to present swap chain image!");
-		}
-
-		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
     
+    void presentImage(uint32_t imageIndex)
+    {
+        vk::PresentInfoKHR presentInfo {
+            m_vulkanContext.m_renderFinishedSemaphores[currentFrame],
+            m_vulkanContext.m_swapchain,
+            imageIndex
+        };
+
+
+        vk::Result result;
+        try
+        {
+            result = m_vulkanContext.m_presentQueue.presentKHR(presentInfo);
+            if (result != vk::Result::eSuccess)
+            {
+                throw std::runtime_error("Failed to present swap chain image!");
+            }
+        }
+        catch (std::exception const& exc)
+        {
+            std::cerr << exc.what();
+            recreateSwapChain();
+        }
+
+        if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || framebufferResized)
+        {
+            framebufferResized = false;
+            recreateSwapChain();
+        }
+        else if (result != vk::Result::eSuccess)
+        {
+            throw std::runtime_error("failed to present swap chain image!");
+        }
+
+    }
+
+
+
     void recordCommandBuffer(vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
     {
         commandBuffer.begin(vk::CommandBufferBeginInfo {});
@@ -665,9 +738,9 @@ public:
 
 		vk::PipelineDepthStencilStateCreateInfo depthStencil { {}, true, true, vk::CompareOp::eLess, false, false };
 
-		m_graphicsPipeline.m_dynamicStateEnables = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+	    std::vector<vk::DynamicState> m_dynamicStateEnables { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
 
-		m_graphicsPipeline.m_pipelineDynamicStateCreateInfo = vk::PipelineDynamicStateCreateInfo { {}, m_graphicsPipeline.m_dynamicStateEnables };
+		vk::PipelineDynamicStateCreateInfo m_pipelineDynamicStateCreateInfo { {}, m_dynamicStateEnables };
 
 		vk::PipelineColorBlendAttachmentState colorBlendAttachment { VK_FALSE,
 																	 vk::BlendFactor::eZero,
@@ -703,7 +776,7 @@ public:
 													  &multisampling,
 													  &depthStencil,
 													  &colorBlending,
-													  &m_graphicsPipeline.m_pipelineDynamicStateCreateInfo,
+													  &m_pipelineDynamicStateCreateInfo,
 													  m_graphicsPipeline.m_pipelineLayout,
 													  m_vulkanContext.m_renderPass };
 
@@ -980,7 +1053,6 @@ public:
         createSwapChain();
         createFrameBuffer();
     }
-
 
     void clearSwapChain()
     {
