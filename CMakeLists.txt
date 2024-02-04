@@ -12,7 +12,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #----------------------------------Project option---------------------------------------#
 #---------------------------------------------------------------------------------------#
 option(Build_Docs           "Determine if build documentation" OFF)
-option(Build_Tests          "Determine if build unit tests" OFF)
+option(Build_Tests          "Determine if build unit tests" ON)
 option(Build_Benchmarks     "Determine if build benchmarks" OFF)
 
 

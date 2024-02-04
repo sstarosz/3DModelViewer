@@ -5,6 +5,8 @@
 #include <shaderc/shaderc.hpp>
 
 #include <string>
+#include <vector>
+#include <iostream>
 
 namespace st::renderer
 {
@@ -74,7 +76,7 @@ namespace st::renderer
             //std::vector<vk::DeviceMemory> uniformBuffersMemory;
             //
             //vk::Sampler textureSampler;
-        }
+        };
 
 
 
@@ -90,13 +92,13 @@ namespace st::renderer
             if(vertexResult.GetCompilationStatus() != shaderc_compilation_status_success)
             {
                 throw std::runtime_error("Failed to compile vertex shader!");
-                return
+                return;
             }
 
             if(fragmentResult.GetCompilationStatus() != shaderc_compilation_status_success)
             {
                 throw std::runtime_error("Failed to compile fragment shader!");
-                return
+                return;
             }
 
             std::vector<uint32_t> vertexShaderCode(vertexResult.cbegin(), vertexResult.cend());
@@ -116,10 +118,144 @@ namespace st::renderer
         }
 
 
+        void createDescriptorSetLayout()
+        {
+            std::vector<vk::DescriptorSetLayoutBinding> bindings;
+            
+            {// Things to do to add a new uniform buffer to the descriptor set layout
+                vk::DescriptorSetLayoutBinding uboLayoutBinding {
+                    0,
+                    vk::DescriptorType::eUniformBuffer,
+                    1,
+                    vk::ShaderStageFlagBits::eVertex,
+                };
+            
+                bindings.push_back(uboLayoutBinding);
+            }
+
+
+            vk::DescriptorSetLayoutCreateInfo layoutInfo{{}, bindings};
+
+
+            vk::DescriptorSetLayout descriptorSetLayout = vulkanContext.m_device.createDescriptorSetLayout(layoutInfo);
+        }
+
 
 
     private:
-        vk::Pipeline createGraphicsPipeline(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const VkPipelineLayout& pipelineLayout, const VkRenderPass& renderPass);
+        vk::Pipeline createGraphicsPipeline(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const VkPipelineLayout& pipelineLayout, const VkRenderPass& renderPass)
+        {
+            /*
+            //createUniformBuffers();
+            //createDescriptorPool();
+            //createDescriptorSetLayout(); // must stay in pipline creation
+//
+            //auto vertShaderCode = Shader::readFile("../Assets/Shaders/vert.spv");
+            //auto fragShaderCode = Shader::readFile("../Assets/Shaders/frag.spv");
+//
+//
+            //vk::ShaderModule vertShaderModule = Shader::createShaderModule(m_device, vertShaderCode);
+            //vk::ShaderModule fragShaderModule = Shader::createShaderModule(m_device, fragShaderCode);
+
+
+            vk::PipelineShaderStageCreateInfo vertShaderStageInfo { {}, vk::ShaderStageFlagBits::eVertex, vertShaderModule, "main" };
+
+            vk::PipelineShaderStageCreateInfo fragShaderStageInfo { {}, vk::ShaderStageFlagBits::eFragment, fragShaderModule, "main" };
+
+            std::vector<vk::PipelineShaderStageCreateInfo> shaderStages { vertShaderStageInfo, fragShaderStageInfo };
+            //Customization point
+
+
+            ////Create Texture Sampler if needed
+            //if(false)
+            //{
+            //    createTextureSampler();
+            //}
+
+            
+
+            
+            auto bindingDescription = geometry::Vertex::getBindingDescription();
+            auto attributeDescriptions = geometry::Vertex::getAttributeDescriptions();
+
+            vk::PipelineVertexInputStateCreateInfo vertexInputInfo { {}, bindingDescription, attributeDescriptions };
+
+            vk::PipelineInputAssemblyStateCreateInfo inputAssembly { vk::PipelineInputAssemblyStateCreateFlags {}, vk::PrimitiveTopology::eTriangleList, VK_FALSE };
+
+
+            vk::PipelineViewportStateCreateInfo viewportState { vk::PipelineViewportStateCreateFlags {}, 1, {}, 1, {} };
+
+            vk::PipelineRasterizationStateCreateInfo rasterizer { vk::PipelineRasterizationStateCreateFlags {},
+                                                                VK_FALSE,
+                                                                VK_FALSE,
+                                                                vk::PolygonMode::eFill,
+                                                                vk::CullModeFlagBits::eBack,
+                                                                vk::FrontFace::eCounterClockwise,
+                                                                VK_FALSE,
+                                                                0.0f,
+                                                                0.0f,
+                                                                0.0f,
+                                                                1.0F };
+
+            vk::PipelineMultisampleStateCreateInfo multisampling { vk::PipelineMultisampleStateCreateFlags {}, vk::SampleCountFlagBits::e1, VK_FALSE };
+
+            vk::PipelineDepthStencilStateCreateInfo depthStencil { {}, true, true, vk::CompareOp::eLess, false, false };
+
+            m_dynamicStateEnables = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+
+            m_pipelineDynamicStateCreateInfo = vk::PipelineDynamicStateCreateInfo { {}, m_dynamicStateEnables };
+
+            vk::PipelineColorBlendAttachmentState colorBlendAttachment { VK_FALSE,
+                                                                        vk::BlendFactor::eZero,
+                                                                        vk::BlendFactor::eZero,
+                                                                        vk::BlendOp::eAdd,
+                                                                        vk::BlendFactor::eZero,
+                                                                        vk::BlendFactor::eZero,
+                                                                        vk::BlendOp::eAdd,
+                                                                        vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
+                                                                            vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA };
+
+
+            vk::PipelineColorBlendStateCreateInfo colorBlending {
+                vk::PipelineColorBlendStateCreateFlags {},
+                VK_FALSE,
+                vk::LogicOp::eCopy,
+                colorBlendAttachment,
+                { 0.0f, 0.0f, 0.0f, 0.0f }
+            };
+
+
+            vk::PipelineLayoutCreateInfo pipelineLayoutInfo { vk::PipelineLayoutCreateFlags {}, m_descriptorSetLayout };
+
+            m_pipelineLayout = m_device.createPipelineLayout(pipelineLayoutInfo);
+
+            vk::GraphicsPipelineCreateInfo pipelineInfo { vk::PipelineCreateFlags {},
+                                                        shaderStages,
+                                                        &vertexInputInfo,
+                                                        &inputAssembly,
+                                                        {},
+                                                        &viewportState,
+                                                        &rasterizer,
+                                                        &multisampling,
+                                                        &depthStencil,
+                                                        &colorBlending,
+                                                        &m_pipelineDynamicStateCreateInfo,
+                                                        m_pipelineLayout,
+                                                        m_renderPass };
+
+
+            m_pipelineCache = m_device.createPipelineCache(vk::PipelineCacheCreateInfo());
+            vk::Pipeline m_graphicsPipeline = m_device.createGraphicsPipeline(m_pipelineCache, pipelineInfo).value;
+
+
+
+            //Note VkShaderModule is passed into pipline and are not longer available trought object they are used to create
+            //If ther are used later, then they must not be destroyed
+            m_device.destroy(fragShaderModule);
+            m_device.destroy(vertShaderModule);
+
+            */
+        }
 
 
         VulkanContext& vulkanContext;
@@ -130,7 +266,197 @@ namespace st::renderer
     };
 
 
+    struct UniformDefinition
+    {
+        std::string name;
+        vk::DescriptorType type;
+        size_t size;
+        uint32_t binding;
+        uint32_t count;
+        vk::ShaderStageFlagBits stage;
+    };
 
+
+
+    class PipelineBuilder
+    {
+        public:
+
+        virtual void buildShader() = 0;
+        virtual void buildVertexInput() = 0;
+        virtual void buildRasterization() = 0;
+
+        virtual vk::Pipeline getPipeline() = 0;
+
+
+        //Utility functions
+        std::vector<vk::PipelineShaderStageCreateInfo> compileShader(const std::string& vertexShader, const std::string& fragmentShader)
+        {   
+            using namespace shaderc;
+
+            //Compiler shader
+            Compiler compiler;
+            CompileOptions options;
+
+            SpvCompilationResult vertexResult = compiler.CompileGlslToSpv(vertexShader, 
+                                                                          shaderc_shader_kind::shaderc_glsl_vertex_shader, 
+                                                                          "vertexShader", 
+                                                                          options);   
+
+            SpvCompilationResult fragmentResult = compiler.CompileGlslToSpv(fragmentShader, 
+                                                                            shaderc_shader_kind::shaderc_glsl_fragment_shader, 
+                                                                            "fragmentShader", 
+                                                                            options);
+
+            if(vertexResult.GetCompilationStatus() != shaderc_compilation_status_success)   
+            {
+                std::string errorMessage =  vertexResult.GetErrorMessage();
+                
+                std::cout <<"Vertex Shader Compilation Error:\n" << errorMessage << std::endl;
+
+                //TODO handle error
+                throw std::runtime_error("Failed to compile vertex shader!");
+                return {};
+            }
+
+            if(fragmentResult.GetCompilationStatus() != shaderc_compilation_status_success)   
+            {
+                std::string errorMessage =  fragmentResult.GetErrorMessage();
+
+                std::cout <<"Fragment Shader Compilation Error:\n" << errorMessage << std::endl;
+
+                throw std::runtime_error("Failed to compile fragment shader!");
+                return {};
+            }
+
+
+            //Create shader module
+            std::vector<uint32_t> vertexShaderCode(vertexResult.cbegin(), vertexResult.cend());
+            std::vector<uint32_t> fragmentShaderCode(fragmentResult.cbegin(), fragmentResult.cend());
+
+            vk::ShaderModule vertexShaderModule = vulkanContext.m_device.createShaderModule({{}, vertexShaderCode});
+            vk::ShaderModule fragmentShaderModule = vulkanContext.m_device.createShaderModule({{},fragmentShaderCode});
+
+            vk::PipelineShaderStageCreateInfo vertShaderStageInfo { {}, vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main" };
+		    vk::PipelineShaderStageCreateInfo fragShaderStageInfo { {}, vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main" };
+
+            std::vector<vk::PipelineShaderStageCreateInfo> shaderStages { vertShaderStageInfo, fragShaderStageInfo };
+
+        }
+
+        void registerUniformBuffer(std::string name, 
+                                   vk::DescriptorType type,
+                                   size_t size,
+                                   uint32_t binding, 
+                                   uint32_t count, 
+                                   vk::ShaderStageFlagBits stage)
+        {
+            //TODO add check for duplicate binding
+
+            uniformDefinitions.push_back({name, type, size, binding, count, stage});
+        }
+
+        void createDescriptorSetLayout()
+        {
+            std::vector<vk::DescriptorSetLayoutBinding> bindings;
+            
+            for(const auto& uniform : uniformDefinitions)
+            {
+                vk::DescriptorSetLayoutBinding uboLayoutBinding {
+                    uniform.binding,
+                    vk::DescriptorType::eUniformBuffer,
+                    uniform.count,
+                    uniform.stage,
+                };
+            
+                bindings.push_back(uboLayoutBinding);
+            }
+
+            vk::DescriptorSetLayoutCreateInfo layoutInfo{{}, bindings};
+            descriptorSetLayout = vulkanContext.m_device.createDescriptorSetLayout(layoutInfo);
+
+        }
+
+        void initializeUniformBuffers()
+        {
+            for(const auto& uniform : uniformDefinitions)
+            {
+                switch (uniform.type)
+                {
+                case vk::DescriptorType::eUniformBuffer:
+                    createUniformBuffer(uniform);
+                    break;
+                case vk::DescriptorType::eCombinedImageSampler:
+                    createTextureSampler(uniform);
+                    break;
+                }
+            }
+        }
+
+        void createUniformBuffer(const UniformDefinition& uniform)
+        {
+            for(int i = 0; i < vulkanContext.m_swapchainImages.size(); i++)
+            {
+                //TODO replace with a common function for buffer creation
+                vk::Buffer buffer;
+                vk::DeviceMemory bufferMemory;
+
+                vk::BufferCreateInfo bufferInfo{{}, uniform.size, vk::BufferUsageFlagBits::eUniformBuffer, vk::SharingMode::eExclusive};
+                buffer = vulkanContext.m_device.createBuffer(bufferInfo);
+
+                vk::MemoryRequirements memRequirements = vulkanContext.m_device.getBufferMemoryRequirements(buffer);
+
+                vk::MemoryAllocateInfo allocInfo{memRequirements.size, vulkanContext.findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)};
+                bufferMemory = vulkanContext.m_device.allocateMemory(allocInfo);
+
+                vulkanContext.m_device.bindBufferMemory(buffer, bufferMemory, 0);
+
+                uniformBuffers.push_back(buffer);
+                uniformBuffersMemory.push_back(bufferMemory);
+            }
+        }
+
+        void createTextureSampler(const UniformDefinition& uniform)
+        {
+            //TODO add option to customize sampler
+            vk::SamplerCreateInfo samplerInfo{{}, 
+                                              vk::Filter::eLinear, 
+                                              vk::Filter::eLinear, 
+                                              vk::SamplerMipmapMode::eLinear, 
+                                              vk::SamplerAddressMode::eRepeat, 
+                                              vk::SamplerAddressMode::eRepeat, 
+                                              vk::SamplerAddressMode::eRepeat, 
+                                              0.0f, 
+                                              VK_TRUE, 
+                                              16, 
+                                              VK_FALSE, 
+                                              vk::CompareOp::eAlways, 
+                                              0.0f, 
+                                              0.0f, 
+                                              vk::BorderColor::eIntOpaqueBlack, 
+                                              VK_FALSE};
+
+            vk::Sampler textureSampler = vulkanContext.m_device.createSampler(samplerInfo);
+            textureSamplers.push_back(textureSampler);
+        }
+
+
+        private:
+        VulkanContext& vulkanContext;
+
+
+        std::vector<UniformDefinition> uniformDefinitions;
+        std::vector<vk::Buffer> uniformBuffers;
+        std::vector<vk::DeviceMemory> uniformBuffersMemory;
+        std::vector<vk::Sampler> textureSamplers;
+
+        protected:
+        //Pipeline Subproducts
+        std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
+        vk::DescriptorSetLayout descriptorSetLayout;
+        vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
+        vk::PipelineInputAssemblyStateCreateInfo inputAssembly;
+    };
     
 }   // namespace st::renderer
 

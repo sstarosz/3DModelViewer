@@ -323,7 +323,7 @@ public:
         presentImage(imageIndex);
 
         //Advance to next frame
-		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+		currentFrame = (currentFrame + 1) % m_vulkanContext.MAX_FRAMES_IN_FLIGHT;
     }
 
     void submitCommandBuffer(uint32_t currentFrame)
@@ -374,8 +374,6 @@ public:
         }
 
     }
-
-
 
     void recordCommandBuffer(vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
     {
@@ -821,10 +819,10 @@ public:
     {
         const VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
-		m_graphicsPipeline.m_uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-		m_graphicsPipeline.m_uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
+		m_graphicsPipeline.m_uniformBuffers.resize(m_vulkanContext.MAX_FRAMES_IN_FLIGHT);
+		m_graphicsPipeline.m_uniformBuffersMemory.resize(m_vulkanContext.MAX_FRAMES_IN_FLIGHT);
 
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		for (size_t i = 0; i < m_vulkanContext.MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			createBuffer(bufferSize,
                          vk::BufferUsageFlagBits::eUniformBuffer,
@@ -837,11 +835,11 @@ public:
     void createDescriptorPool()
     {
 		std::array<vk::DescriptorPoolSize, 2> poolsSize {
-			vk::DescriptorPoolSize { vk::DescriptorType::eUniformBuffer,        MAX_FRAMES_IN_FLIGHT * 2},
-			vk::DescriptorPoolSize { vk::DescriptorType::eCombinedImageSampler, MAX_FRAMES_IN_FLIGHT * 2}
+			vk::DescriptorPoolSize { vk::DescriptorType::eUniformBuffer,        m_vulkanContext.MAX_FRAMES_IN_FLIGHT * 2},
+			vk::DescriptorPoolSize { vk::DescriptorType::eCombinedImageSampler, m_vulkanContext.MAX_FRAMES_IN_FLIGHT * 2}
 		};
 
-		const vk::DescriptorPoolCreateInfo poolInfo { {}, MAX_FRAMES_IN_FLIGHT * 2, poolsSize };
+		const vk::DescriptorPoolCreateInfo poolInfo { {}, m_vulkanContext.MAX_FRAMES_IN_FLIGHT * 2, poolsSize };
 		m_graphicsPipeline.m_descriptorPool = m_vulkanContext.m_device.createDescriptorPool(poolInfo);
     }
 
@@ -1034,11 +1032,11 @@ public:
 
     void createSyncObjects()
     {
-        m_vulkanContext.m_imageAvailableSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
-		m_vulkanContext.m_renderFinishedSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
-		m_vulkanContext.m_inFlightFences.reserve(MAX_FRAMES_IN_FLIGHT);
+        m_vulkanContext.m_imageAvailableSemaphores.reserve(m_vulkanContext.MAX_FRAMES_IN_FLIGHT);
+		m_vulkanContext.m_renderFinishedSemaphores.reserve(m_vulkanContext.MAX_FRAMES_IN_FLIGHT);
+		m_vulkanContext.m_inFlightFences.reserve(m_vulkanContext.MAX_FRAMES_IN_FLIGHT);
 
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		for (size_t i = 0; i < m_vulkanContext.MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			m_vulkanContext.m_imageAvailableSemaphores.emplace_back(m_vulkanContext.m_device.createSemaphore(vk::SemaphoreCreateInfo {}));
 			m_vulkanContext.m_renderFinishedSemaphores.emplace_back(m_vulkanContext.m_device.createSemaphore(vk::SemaphoreCreateInfo {}));
@@ -1083,7 +1081,6 @@ public:
     GraphicsPipeline m_graphicsPipeline;
     PhysicalDevice m_physicalDevice;
 
-    const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
     uint32_t currentFrame = 0;
     uint32_t framebufferResized = 0;
 
