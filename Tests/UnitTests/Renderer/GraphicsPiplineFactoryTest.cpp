@@ -84,23 +84,10 @@ class TestPipeline : public PipelineBuilder
                                                                vertexInputBinding, 
                                                                vertexInputAttributes};
 
-        inputAssembly = vk::PipelineInputAssemblyStateCreateInfo{{}, 
-                                                                vk::PrimitiveTopology::eTriangleList, 
-                                                                VK_FALSE};
     };
 
 
-    void buildViewport() override
-    {
-        //TODO
-        viewport = vk::Viewport(0.0f, 0.0f, 800.0f, 600.0f, 0.0f, 1.0f);
-        scissor = vk::Rect2D({0, 0}, {800, 600});
-        viewportState = vk::PipelineViewportStateCreateInfo{{}, 1, &viewport, 1, &scissor};
-    };
-
-
-
-
+ 
 };
 
 

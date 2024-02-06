@@ -284,9 +284,116 @@ namespace st::renderer
 
         virtual void buildShader() = 0;
         virtual void buildVertexInput() = 0;
-        virtual void buildRasterization() = 0;
+        virtual void buildDynamicState() = 0;
+
+
+        vk::PipelineInputAssemblyStateCreateInfo createInputAssembly()
+        {
+            return vk::PipelineInputAssemblyStateCreateInfo{{}, 
+                                                             vk::PrimitiveTopology::eTriangleList, 
+                                                             VK_FALSE};
+        }
+
+        vk::PipelineViewportStateCreateInfo createViportState()
+        {
+            return vk::PipelineViewportStateCreateInfo { vk::PipelineViewportStateCreateFlags {}, 
+                                                         1, 
+                                                         {}, 
+                                                         1, 
+                                                         {} };
+        }
+
+        vk::PipelineRasterizationStateCreateInfo createRasterizationState()
+        {
+            return vk::PipelineRasterizationStateCreateInfo { vk::PipelineRasterizationStateCreateFlags {},
+                                                             VK_FALSE,
+                                                             VK_FALSE,
+                                                             vk::PolygonMode::eFill,
+                                                             vk::CullModeFlagBits::eBack,
+                                                             vk::FrontFace::eCounterClockwise,
+                                                             VK_FALSE,
+                                                             0.0f,
+                                                             0.0f,
+                                                             0.0f,
+                                                             1.0F 
+                                                             };
+        }
+
+        vk::PipelineMultisampleStateCreateInfo createMultisampleState()
+        {
+            return vk::PipelineMultisampleStateCreateInfo { vk::PipelineMultisampleStateCreateFlags {}, 
+                                                            vk::SampleCountFlagBits::e1, 
+                                                            VK_FALSE 
+                                                            };
+        }
+
+        vk::PipelineDepthStencilStateCreateInfo createDepthStencilState()
+        {
+            return vk::PipelineDepthStencilStateCreateInfo { {}, 
+                                                             true, 
+                                                             true, 
+                                                             vk::CompareOp::eLess, 
+                                                             false,      
+                                                             false   
+                                                             };
+        }
+
+        vk::PipelineColorBlendAttachmentState createColorBlendAttachment()
+        {
+            return vk::PipelineColorBlendAttachmentState { VK_FALSE,
+                                                          vk::BlendFactor::eZero,
+                                                          vk::BlendFactor::eZero,
+                                                          vk::BlendOp::eAdd,
+                                                          vk::BlendFactor::eZero,
+                                                          vk::BlendFactor::eZero,
+                                                          vk::BlendOp::eAdd,
+                                                          vk::ColorComponentFlagBits::eR | 
+                                                            vk::ColorComponentFlagBits::eG |
+                                                            vk::ColorComponentFlagBits::eB | 
+                                                            vk::ColorComponentFlagBits::eA 
+                                                        };
+        }
+
+
+        vk::PipelineColorBlendStateCreateInfo createColorBlending()
+        {
+            return vk::PipelineColorBlendStateCreateInfo { vk::PipelineColorBlendStateCreateFlags {},
+                                                           VK_FALSE,
+                                                           vk::LogicOp::eCopy,
+                                                           colorBlendAttachment,
+                                                           { 0.0f, 0.0f, 0.0f, 0.0f }
+                                                         };
+        }
+
+
+        vk::Pipeline createPipeline()
+        {
+            vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo{ vk::PipelineCreateFlags {},
+                                                                       shaderStages,
+                                                                       &vertexInputInfo,
+                                                                       &inputAssembly,
+                                                                       {},
+                                                                       &viewportState,
+                                                                       &rasterizer,
+                                                                       &multisampling,
+                                                                       &depthStencil,
+                                                                       &colorBlending,
+                                                                       &m_pipelineDynamicStateCreateInfo,
+                                                                       pipelineLayout,
+                                                                       renderPass
+                                                                    };
+
+            vk::PipelineCache pipelineCache = vulkanContext.m_device.createPipelineCache(vk::PipelineCacheCreateInfo());
+            vk::Pipeline graphicsPipeline = vulkanContext.m_device.createGraphicsPipeline(pipelineCache, graphicsPipelineCreateInfo).value;
+                    
+        }
+
+
 
         virtual vk::Pipeline getPipeline() = 0;
+
+
+
 
 
         //Utility functions
@@ -375,6 +482,8 @@ namespace st::renderer
             vk::DescriptorSetLayoutCreateInfo layoutInfo{{}, bindings};
             descriptorSetLayout = vulkanContext.m_device.createDescriptorSetLayout(layoutInfo);
 
+            vk::PipelineLayoutCreateInfo pipelineLayoutInfo { vk::PipelineLayoutCreateFlags {}, descriptorSetLayout };
+            pipelineLayout = vulkanContext.m_device.createPipelineLayout(pipelineLayoutInfo);
         }
 
         void initializeUniformBuffers()
@@ -444,6 +553,10 @@ namespace st::renderer
         private:
         VulkanContext& vulkanContext;
 
+        //Parent Render Pass
+		const vk::RenderPass& renderPass;
+
+
 
         std::vector<UniformDefinition> uniformDefinitions;
         std::vector<vk::Buffer> uniformBuffers;
@@ -456,7 +569,55 @@ namespace st::renderer
         vk::DescriptorSetLayout descriptorSetLayout;
         vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
         vk::PipelineInputAssemblyStateCreateInfo inputAssembly;
+        vk::PipelineViewportStateCreateInfo viewportState;
+        vk::PipelineRasterizationStateCreateInfo rasterizer;
+        vk::PipelineMultisampleStateCreateInfo multisampling;
+        vk::PipelineDepthStencilStateCreateInfo depthStencil;
+        vk::PipelineColorBlendAttachmentState colorBlendAttachment;
+        vk::PipelineColorBlendStateCreateInfo colorBlending;
+        vk::PipelineLayout pipelineLayout;
+		vk::PipelineDynamicStateCreateInfo m_pipelineDynamicStateCreateInfo;
+
+        vk::GraphicsPipelineCreateInfo pipelineInfo;
+
     };
+
+
+    class PipelineDirector
+    {
+        public:
+        void setBuilder(PipelineBuilder* builder)
+        {
+            m_builder = builder;
+        }
+
+        void constructPipeline()
+        {
+            /*User defined*/
+            m_builder->buildShader();
+            m_builder->buildVertexInput();
+            m_builder->buildDynamicState();
+
+            /*Common functionality, override for custom behavior*/
+            m_builder->createInputAssembly();
+            m_builder->createViportState();
+            m_builder->createRasterizationState();
+            m_builder->createMultisampleState();
+            m_builder->createDepthStencilState();
+            m_builder->createColorBlending();
+            m_builder->createPipeline();
+        }
+
+        vk::Pipeline getPipeline()
+        {
+            return m_builder->getPipeline();
+        }
+
+        private:
+        PipelineBuilder* m_builder;
+    };
+
+
     
 }   // namespace st::renderer
 
