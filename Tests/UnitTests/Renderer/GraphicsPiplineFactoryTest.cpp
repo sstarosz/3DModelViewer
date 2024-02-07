@@ -5,15 +5,65 @@
 #include <gmock/gmock.h>
 
 #include <string>
+#include <array>
 #include <Eigen/Core>
+#include <fstream>
 
 namespace st::renderer::test
 {
 
 
+class TestableVulkanContext : public VulkanContext
+{
+    public:
+    TestableVulkanContext()
+    {
+        m_instance = vk::Instance{};
+        m_physicalDevice = vk::PhysicalDevice{};
+        m_device = vk::Device{};
+    }
+
+    void initialize()
+    {
+        vk::ApplicationInfo appInfo("Test Instance", VK_MAKE_VERSION(1, 0, 0), "No Engine", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_2);
+
+        vk::InstanceCreateInfo createInfo({}, &appInfo);
+
+        m_instance = vk::createInstance(createInfo);
+
+        //Chose physical device
+        std::vector<vk::PhysicalDevice> devices = m_instance.enumeratePhysicalDevices();
+        m_physicalDevice = devices.front();
+
+        // Specify queue families
+        float queuePriority = 1.0f;
+        vk::DeviceQueueCreateInfo queueCreateInfo({}, 0, 1, &queuePriority);
+
+        //Specify device features
+        vk::PhysicalDeviceFeatures deviceFeatures;
+
+        //Create logical device
+        vk::DeviceCreateInfo logicalDeviceCreateInfo({}, 1, &queueCreateInfo, 0, nullptr, 0, nullptr, &deviceFeatures);
+        m_device = m_physicalDevice.createDevice(logicalDeviceCreateInfo);
+
+    }
+
+
+};
+
+
+
+
+
+
 class TestPipeline : public PipelineBuilder
 {
     public:
+    TestPipeline(const VulkanContext& context, const vk::RenderPass& renderPass) :
+     PipelineBuilder(context, renderPass)
+    {
+       
+    }
 
     void buildShader() override
     {
@@ -54,53 +104,49 @@ class TestPipeline : public PipelineBuilder
         )";
 
         //Compile shaders
-        shaderStages = compileShader(vertexShader, fragmentShader);
-        
-        registerUniformBuffer("MVP",
-                               vk::DescriptorType::eUniformBuffer,
-                               sizeof(Eigen::Matrix4f) * 3,
-                               0,
-                               0,
-                               vk::ShaderStageFlagBits::eVertex);
-
-        createDescriptorSetLayout();
-        initializeUniformBuffers();
-
+        pipeline.shaderStages = compileShader(vertexShader, fragmentShader);
     };
 
-    void buildVertexInput() override
+    void buildDynamicState() override
     {
-        //TODO
-        vk::VertexInputBindingDescription vertexInputBinding = vk::VertexInputBindingDescription(0, sizeof(float) * 6, vk::VertexInputRate::eVertex);
-
-        std::array<vk::VertexInputAttributeDescription, 4> vertexInputAttributes
-        {
-            vk::VertexInputAttributeDescription{0, 0, vk::Format::eR32G32B32Sfloat, 0},
-            vk::VertexInputAttributeDescription{1, 0, vk::Format::eR32G32B32Sfloat, sizeof(float) * 3}
-        };
-
-
-        vertexInputInfo = vk::PipelineVertexInputStateCreateInfo{{}, 
-                                                               vertexInputBinding, 
-                                                               vertexInputAttributes};
-
+        //TOD
+        std::array dynamicStates{vk::DynamicState::eViewport, vk::DynamicState::eScissor};
+        pipeline.dynamicStateInfo = vk::PipelineDynamicStateCreateInfo(vk::PipelineDynamicStateCreateFlags{}, 
+                                                                       dynamicStates);
     };
 
+    vk::Pipeline getPipeline()
+    {
+        return pipeline.pipeline;
+    }
 
- 
+
 };
-
-
 
 
 
 TEST(GraphicsPiplineFactoryTest, CreateGraphicsPipeline)
 {
+    TestableVulkanContext context;
+    context.initialize();
+    vk::RenderPass renderPass;
+
+    TestPipeline pipeline{context, renderPass};
+
+    PipelineDirector director;
+    director.setBuilder(&pipeline);
+
+    director.constructPipeline();
+
+    vk::Pipeline graphicsPipeline = director.getPipeline();
+
     //TODO
     //st::renderer::GraphicsPiplineFactory factory;
     //st::renderer::GraphicsPipeline pipeline = factory.createGraphicsPipeline();
     //EXPECT_TRUE(pipeline.isValid());
 }
+
+
 
 
 

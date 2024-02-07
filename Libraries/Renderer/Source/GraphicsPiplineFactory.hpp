@@ -3,277 +3,48 @@
 
 #include "VulkanContext.hpp"
 #include <shaderc/shaderc.hpp>
+#include <spirv_cross.hpp>
+#include <spirv_glsl.hpp>
 
 #include <string>
 #include <vector>
 #include <iostream>
+#include <fstream>
+
 
 namespace st::renderer
 {
 
-    std::string_view vertexShader= R"(
-        #version 450
-
-        layout(location = 0) in vec3 inPosition;
-        layout(location = 1) in vec3 inColor;
-
-        layout(location = 0) out vec3 outColor;
-
-        layout(set = 0, binding = 0) uniform MVP {
-            mat4 model;
-            mat4 view;
-            mat4 proj;
-        } mvp;
-
-
-        void main() 
-        {
-            gl_Position = mvp.proj * mvp.view * mvp.model * vec4(inPosition, 1.0);
-            outColor = inColor;
-        } 
-    )";
-
-    std::string_view fragmentShader = R"(
-        #version 450
-
-        layout(location = 0) in vec3 inColor;
-
-        layout(location = 0) out vec4 outColor;
-
-        void main() 
-        {
-            outColor = vec4(inColor, 1.0);
-        } 
-    )";
-
-
-    //Compiler shader
-    //Register Uniform / Uniform Buffer Object
-
-    //Register Descriptor Set (Define the layout of input data to the shader)
-    //Register Descriptor Set Layout
-    //Register Descriptor Pool
-
-
-    class GraphicsPipelineFactory
+    struct PipelineResources
     {
-    public:
-        GraphicsPipelineFactory(VulkanContext& vulkanContext) : vulkanContext(vulkanContext)
-        {
-
-        }
-
-        struct GraphicsPipeline
-        {
-            vk::Pipeline pipeline;
-            vk::PipelineLayout pipelineLayout;
-            vk::PipelineCache pipelineCache;
-
-            vk::DescriptorPool descriptorPool;
-            vk::DescriptorSetLayout descriptorSetLayout;
-
-            //std::vector<vk::Buffer> uniformBuffers;
-            //std::vector<vk::DeviceMemory> uniformBuffersMemory;
-            //
-            //vk::Sampler textureSampler;
-        };
-
-
-
-        //vk::Pipeline createGraphicsPipeline(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
-
-
-        void createShaders()
-        {
-            shaderc::SpvCompilationResult vertexResult = compiler.CompileGlslToSpv(vertexShader.data(), shaderc_shader_kind::shaderc_glsl_vertex_shader, "vertexShader", options);    
-            shaderc::SpvCompilationResult fragmentResult = compiler.CompileGlslToSpv(fragmentShader.data(), shaderc_shader_kind::shaderc_glsl_fragment_shader, "fragmentShader", options);     
-
-
-            if(vertexResult.GetCompilationStatus() != shaderc_compilation_status_success)
-            {
-                throw std::runtime_error("Failed to compile vertex shader!");
-                return;
-            }
-
-            if(fragmentResult.GetCompilationStatus() != shaderc_compilation_status_success)
-            {
-                throw std::runtime_error("Failed to compile fragment shader!");
-                return;
-            }
-
-            std::vector<uint32_t> vertexShaderCode(vertexResult.cbegin(), vertexResult.cend());
-            std::vector<uint32_t> fragmentShaderCode(fragmentResult.cbegin(), fragmentResult.cend());
-
-            vk::ShaderModule vertexShaderModule = createShaderModule(vertexShaderCode);
-            vk::ShaderModule fragmentShaderModule = createShaderModule(fragmentShaderCode);
-
-        }
-
-        vk::ShaderModule createShaderModule(const std::vector<uint32_t>& code)
-        {
-            vk::ShaderModuleCreateInfo createInfo{{}, code};
-
-            vk::ShaderModule shaderModule = vulkanContext.m_device.createShaderModule(createInfo);
-            return shaderModule;
-        }
-
-
-        void createDescriptorSetLayout()
-        {
-            std::vector<vk::DescriptorSetLayoutBinding> bindings;
-            
-            {// Things to do to add a new uniform buffer to the descriptor set layout
-                vk::DescriptorSetLayoutBinding uboLayoutBinding {
-                    0,
-                    vk::DescriptorType::eUniformBuffer,
-                    1,
-                    vk::ShaderStageFlagBits::eVertex,
-                };
-            
-                bindings.push_back(uboLayoutBinding);
-            }
-
-
-            vk::DescriptorSetLayoutCreateInfo layoutInfo{{}, bindings};
-
-
-            vk::DescriptorSetLayout descriptorSetLayout = vulkanContext.m_device.createDescriptorSetLayout(layoutInfo);
-        }
-
-
-
-    private:
-        vk::Pipeline createGraphicsPipeline(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const VkPipelineLayout& pipelineLayout, const VkRenderPass& renderPass)
-        {
-            /*
-            //createUniformBuffers();
-            //createDescriptorPool();
-            //createDescriptorSetLayout(); // must stay in pipline creation
-//
-            //auto vertShaderCode = Shader::readFile("../Assets/Shaders/vert.spv");
-            //auto fragShaderCode = Shader::readFile("../Assets/Shaders/frag.spv");
-//
-//
-            //vk::ShaderModule vertShaderModule = Shader::createShaderModule(m_device, vertShaderCode);
-            //vk::ShaderModule fragShaderModule = Shader::createShaderModule(m_device, fragShaderCode);
-
-
-            vk::PipelineShaderStageCreateInfo vertShaderStageInfo { {}, vk::ShaderStageFlagBits::eVertex, vertShaderModule, "main" };
-
-            vk::PipelineShaderStageCreateInfo fragShaderStageInfo { {}, vk::ShaderStageFlagBits::eFragment, fragShaderModule, "main" };
-
-            std::vector<vk::PipelineShaderStageCreateInfo> shaderStages { vertShaderStageInfo, fragShaderStageInfo };
-            //Customization point
-
-
-            ////Create Texture Sampler if needed
-            //if(false)
-            //{
-            //    createTextureSampler();
-            //}
-
-            
-
-            
-            auto bindingDescription = geometry::Vertex::getBindingDescription();
-            auto attributeDescriptions = geometry::Vertex::getAttributeDescriptions();
-
-            vk::PipelineVertexInputStateCreateInfo vertexInputInfo { {}, bindingDescription, attributeDescriptions };
-
-            vk::PipelineInputAssemblyStateCreateInfo inputAssembly { vk::PipelineInputAssemblyStateCreateFlags {}, vk::PrimitiveTopology::eTriangleList, VK_FALSE };
-
-
-            vk::PipelineViewportStateCreateInfo viewportState { vk::PipelineViewportStateCreateFlags {}, 1, {}, 1, {} };
-
-            vk::PipelineRasterizationStateCreateInfo rasterizer { vk::PipelineRasterizationStateCreateFlags {},
-                                                                VK_FALSE,
-                                                                VK_FALSE,
-                                                                vk::PolygonMode::eFill,
-                                                                vk::CullModeFlagBits::eBack,
-                                                                vk::FrontFace::eCounterClockwise,
-                                                                VK_FALSE,
-                                                                0.0f,
-                                                                0.0f,
-                                                                0.0f,
-                                                                1.0F };
-
-            vk::PipelineMultisampleStateCreateInfo multisampling { vk::PipelineMultisampleStateCreateFlags {}, vk::SampleCountFlagBits::e1, VK_FALSE };
-
-            vk::PipelineDepthStencilStateCreateInfo depthStencil { {}, true, true, vk::CompareOp::eLess, false, false };
-
-            m_dynamicStateEnables = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
-
-            m_pipelineDynamicStateCreateInfo = vk::PipelineDynamicStateCreateInfo { {}, m_dynamicStateEnables };
-
-            vk::PipelineColorBlendAttachmentState colorBlendAttachment { VK_FALSE,
-                                                                        vk::BlendFactor::eZero,
-                                                                        vk::BlendFactor::eZero,
-                                                                        vk::BlendOp::eAdd,
-                                                                        vk::BlendFactor::eZero,
-                                                                        vk::BlendFactor::eZero,
-                                                                        vk::BlendOp::eAdd,
-                                                                        vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
-                                                                            vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA };
-
-
-            vk::PipelineColorBlendStateCreateInfo colorBlending {
-                vk::PipelineColorBlendStateCreateFlags {},
-                VK_FALSE,
-                vk::LogicOp::eCopy,
-                colorBlendAttachment,
-                { 0.0f, 0.0f, 0.0f, 0.0f }
-            };
-
-
-            vk::PipelineLayoutCreateInfo pipelineLayoutInfo { vk::PipelineLayoutCreateFlags {}, m_descriptorSetLayout };
-
-            m_pipelineLayout = m_device.createPipelineLayout(pipelineLayoutInfo);
-
-            vk::GraphicsPipelineCreateInfo pipelineInfo { vk::PipelineCreateFlags {},
-                                                        shaderStages,
-                                                        &vertexInputInfo,
-                                                        &inputAssembly,
-                                                        {},
-                                                        &viewportState,
-                                                        &rasterizer,
-                                                        &multisampling,
-                                                        &depthStencil,
-                                                        &colorBlending,
-                                                        &m_pipelineDynamicStateCreateInfo,
-                                                        m_pipelineLayout,
-                                                        m_renderPass };
-
-
-            m_pipelineCache = m_device.createPipelineCache(vk::PipelineCacheCreateInfo());
-            vk::Pipeline m_graphicsPipeline = m_device.createGraphicsPipeline(m_pipelineCache, pipelineInfo).value;
-
-
-
-            //Note VkShaderModule is passed into pipline and are not longer available trought object they are used to create
-            //If ther are used later, then they must not be destroyed
-            m_device.destroy(fragShaderModule);
-            m_device.destroy(vertShaderModule);
-
-            */
-        }
-
-
-        VulkanContext& vulkanContext;
-        shaderc::Compiler compiler;
-        shaderc::CompileOptions options;
-
-
+        std::vector<vk::Buffer> uniformBuffers;
+        std::vector<vk::DeviceMemory> uniformBuffersMemory;
+        std::vector<vk::Sampler> textureSamplers;
     };
 
-
-    struct UniformDefinition
+    class Pipeline
     {
-        std::string name;
-        vk::DescriptorType type;
-        size_t size;
-        uint32_t binding;
-        uint32_t count;
-        vk::ShaderStageFlagBits stage;
+        public:
+        //Pipeline subparts
+        std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
+        vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
+        vk::PipelineInputAssemblyStateCreateInfo inputAssembly;
+        //TODO add support for tessellation and geometry shaders
+        vk::PipelineViewportStateCreateInfo viewportState;
+        vk::PipelineRasterizationStateCreateInfo rasterizer;
+        vk::PipelineMultisampleStateCreateInfo multisampling;
+        vk::PipelineDepthStencilStateCreateInfo depthStencil;
+        vk::PipelineColorBlendStateCreateInfo colorBlending;
+        vk::PipelineDynamicStateCreateInfo dynamicStateInfo;
+        vk::PipelineLayout pipelineLayout;
+
+
+        //Descriptor and resources
+        vk::DescriptorSetLayout descriptorSetLayout;
+        vk::DescriptorPool descriptorPool;
+        PipelineResources resources;
+
+        vk::Pipeline pipeline;
     };
 
 
@@ -281,251 +52,284 @@ namespace st::renderer
     class PipelineBuilder
     {
         public:
+        PipelineBuilder(const VulkanContext& vulkanContext, const vk::RenderPass& renderPass): 
+            vulkanContext(vulkanContext), 
+            renderPass(renderPass)
+        {
+        }
 
+        virtual ~PipelineBuilder() = default;
+        
         virtual void buildShader() = 0;
-        virtual void buildVertexInput() = 0;
         virtual void buildDynamicState() = 0;
-
-
-        vk::PipelineInputAssemblyStateCreateInfo createInputAssembly()
-        {
-            return vk::PipelineInputAssemblyStateCreateInfo{{}, 
-                                                             vk::PrimitiveTopology::eTriangleList, 
-                                                             VK_FALSE};
-        }
-
-        vk::PipelineViewportStateCreateInfo createViportState()
-        {
-            return vk::PipelineViewportStateCreateInfo { vk::PipelineViewportStateCreateFlags {}, 
-                                                         1, 
-                                                         {}, 
-                                                         1, 
-                                                         {} };
-        }
-
-        vk::PipelineRasterizationStateCreateInfo createRasterizationState()
-        {
-            return vk::PipelineRasterizationStateCreateInfo { vk::PipelineRasterizationStateCreateFlags {},
-                                                             VK_FALSE,
-                                                             VK_FALSE,
-                                                             vk::PolygonMode::eFill,
-                                                             vk::CullModeFlagBits::eBack,
-                                                             vk::FrontFace::eCounterClockwise,
-                                                             VK_FALSE,
-                                                             0.0f,
-                                                             0.0f,
-                                                             0.0f,
-                                                             1.0F 
-                                                             };
-        }
-
-        vk::PipelineMultisampleStateCreateInfo createMultisampleState()
-        {
-            return vk::PipelineMultisampleStateCreateInfo { vk::PipelineMultisampleStateCreateFlags {}, 
-                                                            vk::SampleCountFlagBits::e1, 
-                                                            VK_FALSE 
-                                                            };
-        }
-
-        vk::PipelineDepthStencilStateCreateInfo createDepthStencilState()
-        {
-            return vk::PipelineDepthStencilStateCreateInfo { {}, 
-                                                             true, 
-                                                             true, 
-                                                             vk::CompareOp::eLess, 
-                                                             false,      
-                                                             false   
-                                                             };
-        }
-
-        vk::PipelineColorBlendAttachmentState createColorBlendAttachment()
-        {
-            return vk::PipelineColorBlendAttachmentState { VK_FALSE,
-                                                          vk::BlendFactor::eZero,
-                                                          vk::BlendFactor::eZero,
-                                                          vk::BlendOp::eAdd,
-                                                          vk::BlendFactor::eZero,
-                                                          vk::BlendFactor::eZero,
-                                                          vk::BlendOp::eAdd,
-                                                          vk::ColorComponentFlagBits::eR | 
-                                                            vk::ColorComponentFlagBits::eG |
-                                                            vk::ColorComponentFlagBits::eB | 
-                                                            vk::ColorComponentFlagBits::eA 
-                                                        };
-        }
-
-
-        vk::PipelineColorBlendStateCreateInfo createColorBlending()
-        {
-            return vk::PipelineColorBlendStateCreateInfo { vk::PipelineColorBlendStateCreateFlags {},
-                                                           VK_FALSE,
-                                                           vk::LogicOp::eCopy,
-                                                           colorBlendAttachment,
-                                                           { 0.0f, 0.0f, 0.0f, 0.0f }
-                                                         };
-        }
-
-
-        vk::Pipeline createPipeline()
-        {
-            vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo{ vk::PipelineCreateFlags {},
-                                                                       shaderStages,
-                                                                       &vertexInputInfo,
-                                                                       &inputAssembly,
-                                                                       {},
-                                                                       &viewportState,
-                                                                       &rasterizer,
-                                                                       &multisampling,
-                                                                       &depthStencil,
-                                                                       &colorBlending,
-                                                                       &m_pipelineDynamicStateCreateInfo,
-                                                                       pipelineLayout,
-                                                                       renderPass
-                                                                    };
-
-            vk::PipelineCache pipelineCache = vulkanContext.m_device.createPipelineCache(vk::PipelineCacheCreateInfo());
-            vk::Pipeline graphicsPipeline = vulkanContext.m_device.createGraphicsPipeline(pipelineCache, graphicsPipelineCreateInfo).value;
-                    
-        }
-
-
 
         virtual vk::Pipeline getPipeline() = 0;
 
 
+        void createInputAssembly()
+        {
+            pipeline.inputAssembly = vk::PipelineInputAssemblyStateCreateInfo{vk::PipelineInputAssemblyStateCreateFlags{}, 
+                                                                              vk::PrimitiveTopology::eTriangleList, 
+                                                                              VK_FALSE
+                                                                             };
+        }
 
+        void createViewportState()
+        {
+            pipeline.viewportState = vk::PipelineViewportStateCreateInfo { vk::PipelineViewportStateCreateFlags{}, 
+                                                                           1, 
+                                                                           {}, 
+                                                                           1, 
+                                                                           {} 
+                                                                         };
+        } 
 
+        void createRasterizationState()
+        {
+            pipeline.rasterizer = vk::PipelineRasterizationStateCreateInfo { vk::PipelineRasterizationStateCreateFlags{},
+                                                                             VK_FALSE,
+                                                                             VK_FALSE,
+                                                                             vk::PolygonMode::eFill,
+                                                                             vk::CullModeFlagBits::eBack,
+                                                                             vk::FrontFace::eCounterClockwise,
+                                                                             VK_FALSE,
+                                                                             0.0f,
+                                                                             0.0f,
+                                                                             0.0f,
+                                                                             1.0F 
+                                                                            };
+        }
+
+        void createMultisampleState()
+        {
+            pipeline.multisampling = vk::PipelineMultisampleStateCreateInfo { vk::PipelineMultisampleStateCreateFlags{}, 
+                                                                              vk::SampleCountFlagBits::e1, 
+                                                                              VK_FALSE 
+                                                                            };
+        }
+
+        void createDepthStencilState()
+        {
+            pipeline.depthStencil = vk::PipelineDepthStencilStateCreateInfo { {}, 
+                                                                              true, 
+                                                                              true, 
+                                                                              vk::CompareOp::eLess, 
+                                                                              false,      
+                                                                              false   
+                                                                            };
+        }
+
+        void createColorBlending()
+        {
+            vk::PipelineColorBlendAttachmentState colorBlendAttachment { VK_FALSE,
+                                                                         vk::BlendFactor::eZero,
+                                                                         vk::BlendFactor::eZero,
+                                                                         vk::BlendOp::eAdd,
+                                                                         vk::BlendFactor::eZero,
+                                                                         vk::BlendFactor::eZero,
+                                                                         vk::BlendOp::eAdd,
+                                                                         vk::ColorComponentFlagBits::eR | 
+                                                                             vk::ColorComponentFlagBits::eG |
+                                                                             vk::ColorComponentFlagBits::eB | 
+                                                                             vk::ColorComponentFlagBits::eA 
+                                                                       };
+
+            pipeline.colorBlending = vk::PipelineColorBlendStateCreateInfo { vk::PipelineColorBlendStateCreateFlags {},
+                                                                             VK_FALSE,
+                                                                             vk::LogicOp::eCopy,
+                                                                             colorBlendAttachment,
+                                                                             { 0.0f, 0.0f, 0.0f, 0.0f }
+                                                                           };
+        }
+
+        void createPipeline()
+        {
+            vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo{ vk::PipelineCreateFlags{},
+                                                                       pipeline.shaderStages,
+                                                                       &pipeline.vertexInputInfo,
+                                                                       &pipeline.inputAssembly,
+                                                                       {},
+                                                                       &pipeline.viewportState,
+                                                                       &pipeline.rasterizer,
+                                                                       &pipeline.multisampling,
+                                                                       &pipeline.depthStencil,
+                                                                       &pipeline.colorBlending ,
+                                                                       &pipeline.dynamicStateInfo,
+                                                                       pipeline.pipelineLayout,
+                                                                       renderPass
+                                                                    };
+
+            vk::PipelineCache pipelineCache = vulkanContext.m_device.createPipelineCache(vk::PipelineCacheCreateInfo());
+            pipeline.pipeline = vulkanContext.m_device.createGraphicsPipeline(pipelineCache, graphicsPipelineCreateInfo).value; 
+        }
 
         //Utility functions
         std::vector<vk::PipelineShaderStageCreateInfo> compileShader(const std::string& vertexShader, const std::string& fragmentShader)
         {   
-            using namespace shaderc;
 
-            //Compiler shader
-            Compiler compiler;
-            CompileOptions options;
+            //Compile shaders
+            std::vector<uint32_t> vertexShaderSpvCode = compileShader(vertexShader, shaderc_shader_kind::shaderc_glsl_vertex_shader);
+            std::vector<uint32_t> fragmentShaderSpvCode = compileShader(fragmentShader, shaderc_shader_kind::shaderc_glsl_fragment_shader);
 
-            SpvCompilationResult vertexResult = compiler.CompileGlslToSpv(vertexShader, 
-                                                                          shaderc_shader_kind::shaderc_glsl_vertex_shader, 
-                                                                          "vertexShader", 
-                                                                          options);   
-
-            SpvCompilationResult fragmentResult = compiler.CompileGlslToSpv(fragmentShader, 
-                                                                            shaderc_shader_kind::shaderc_glsl_fragment_shader, 
-                                                                            "fragmentShader", 
-                                                                            options);
-
-            if(vertexResult.GetCompilationStatus() != shaderc_compilation_status_success)   
-            {
-                std::string errorMessage =  vertexResult.GetErrorMessage();
-                
-                std::cout <<"Vertex Shader Compilation Error:\n" << errorMessage << std::endl;
-
-                //TODO handle error
-                throw std::runtime_error("Failed to compile vertex shader!");
-                return {};
-            }
-
-            if(fragmentResult.GetCompilationStatus() != shaderc_compilation_status_success)   
-            {
-                std::string errorMessage =  fragmentResult.GetErrorMessage();
-
-                std::cout <<"Fragment Shader Compilation Error:\n" << errorMessage << std::endl;
-
-                throw std::runtime_error("Failed to compile fragment shader!");
-                return {};
-            }
-
-
-            //Create shader module
-            std::vector<uint32_t> vertexShaderCode(vertexResult.cbegin(), vertexResult.cend());
-            std::vector<uint32_t> fragmentShaderCode(fragmentResult.cbegin(), fragmentResult.cend());
-
-            vk::ShaderModule vertexShaderModule = vulkanContext.m_device.createShaderModule({{}, vertexShaderCode});
-            vk::ShaderModule fragmentShaderModule = vulkanContext.m_device.createShaderModule({{},fragmentShaderCode});
+            vk::ShaderModule vertexShaderModule = vulkanContext.m_device.createShaderModule({{}, vertexShaderSpvCode});
+            vk::ShaderModule fragmentShaderModule = vulkanContext.m_device.createShaderModule({{},vertexShaderSpvCode});
 
             vk::PipelineShaderStageCreateInfo vertShaderStageInfo { {}, vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main" };
 		    vk::PipelineShaderStageCreateInfo fragShaderStageInfo { {}, vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main" };
 
             std::vector<vk::PipelineShaderStageCreateInfo> shaderStages { vertShaderStageInfo, fragShaderStageInfo };
 
-        }
 
-        void registerUniformBuffer(std::string name, 
-                                   vk::DescriptorType type,
-                                   size_t size,
-                                   uint32_t binding, 
-                                   uint32_t count, 
-                                   vk::ShaderStageFlagBits stage)
-        {
-            //TODO add check for duplicate binding
-
-            uniformDefinitions.push_back({name, type, size, binding, count, stage});
-        }
-
-        void createDescriptorSetLayout()
-        {
+            //Define the descriptor set layout
             std::vector<vk::DescriptorSetLayoutBinding> bindings;
-            
-            for(const auto& uniform : uniformDefinitions)
+            addShaderToDescriptorSetLayout(bindings, vk::ShaderStageFlagBits::eVertex, vertexShaderSpvCode);
+            addShaderToDescriptorSetLayout( bindings, vk::ShaderStageFlagBits::eFragment, fragmentShaderSpvCode);
+
+            vk::DescriptorSetLayoutCreateInfo layoutInfo{vk::DescriptorSetLayoutCreateFlags{}, bindings};
+            pipeline.descriptorSetLayout = vulkanContext.m_device.createDescriptorSetLayout(layoutInfo);
+
+            vk::PipelineLayoutCreateInfo pipelineLayoutInfo { vk::PipelineLayoutCreateFlags {}, pipeline.descriptorSetLayout };
+            pipeline.pipelineLayout = vulkanContext.m_device.createPipelineLayout(pipelineLayoutInfo);
+
+
+            //Create Resources (Uniform Buffers / Texture Samplers)
+            initializeResourcesForShader(vertexShaderSpvCode);
+
+            //Create Vertex Input
+            buildVertexInput(vertexShaderSpvCode);
+
+
+            return shaderStages;
+        }
+
+        std::vector<uint32_t> compileShader(const std::string& shaderCode, shaderc_shader_kind shaderType)
+        {
+            shaderc::Compiler compiler;
+            shaderc::CompileOptions options;
+
+            shaderc::SpvCompilationResult compiledSpv = compiler.CompileGlslToSpv(shaderCode,
+                                                                             shaderType,
+                                                                             "shader",
+                                                                             options);    
+
+            if(compiledSpv.GetCompilationStatus() != shaderc_compilation_status_success)   
             {
+                std::string errorMessage =  compiledSpv.GetErrorMessage();
+                
+                std::cout <<"Shader Compilation Error:\n" << errorMessage << std::endl;
+
+                //TODO handle error
+                throw std::runtime_error("Failed to compile shader!");
+            }
+
+            return {compiledSpv.cbegin(), compiledSpv.cend()};
+        }
+
+        void addShaderToDescriptorSetLayout(std::vector<vk::DescriptorSetLayoutBinding>& bindings, 
+                                            vk::ShaderStageFlagBits stage,
+                                            std::vector<uint32_t>& shaderSpvCode)
+        {
+            //TODO add check for other shader languages
+            spirv_cross::CompilerGLSL crossCompiler(shaderSpvCode);
+            spirv_cross::ShaderResources shaderResources = crossCompiler.get_shader_resources();
+
+            for(const auto& resource : shaderResources.uniform_buffers)
+            {      
+                const spirv_cross::SPIRType& type = crossCompiler.get_type(resource.base_type_id);
+                
+                const uint32_t set = crossCompiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+                const uint32_t binding = crossCompiler.get_decoration(resource.id, spv::DecorationBinding);
+
+                uint32_t count = 1;
+                if(!type.array.empty())
+                {
+                    count = type.array[0];
+                }
+
                 vk::DescriptorSetLayoutBinding uboLayoutBinding {
-                    uniform.binding,
+                    binding,
                     vk::DescriptorType::eUniformBuffer,
-                    uniform.count,
-                    uniform.stage,
+                    count,
+                    stage,
                 };
             
                 bindings.push_back(uboLayoutBinding);
             }
 
-            vk::DescriptorSetLayoutCreateInfo layoutInfo{{}, bindings};
-            descriptorSetLayout = vulkanContext.m_device.createDescriptorSetLayout(layoutInfo);
+            for(const auto& resource : shaderResources.sampled_images)
+            {
+                const spirv_cross::SPIRType& type = crossCompiler.get_type(resource.base_type_id);
+                const uint32_t set = crossCompiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+                const uint32_t binding = crossCompiler.get_decoration(resource.id, spv::DecorationBinding);
 
-            vk::PipelineLayoutCreateInfo pipelineLayoutInfo { vk::PipelineLayoutCreateFlags {}, descriptorSetLayout };
-            pipelineLayout = vulkanContext.m_device.createPipelineLayout(pipelineLayoutInfo);
+                uint32_t count = 1;
+                if(!type.array.empty())
+                {
+                    count = type.array[0];
+                }
+
+                vk::DescriptorSetLayoutBinding samplerLayoutBinding {
+                    binding,
+                    vk::DescriptorType::eCombinedImageSampler,
+                    count,
+                    stage,
+                };
+            
+                bindings.push_back(samplerLayoutBinding);
+            }
+
         }
 
-        void initializeUniformBuffers()
+        void initializeResourcesForShader(std::vector<uint32_t>& shaderSpvCode)
         {
-            for(const auto& uniform : uniformDefinitions)
+            spirv_cross::CompilerGLSL crossCompiler(shaderSpvCode);
+            spirv_cross::ShaderResources shaderResources = crossCompiler.get_shader_resources();
+
+            for(const auto& resource : shaderResources.uniform_buffers)
             {
-                switch (uniform.type)
-                {
-                case vk::DescriptorType::eUniformBuffer:
-                    createUniformBuffer(uniform);
-                    break;
-                case vk::DescriptorType::eCombinedImageSampler:
-                    createTextureSampler(uniform);
-                    break;
-                }
+                const spirv_cross::SPIRType& type = crossCompiler.get_type(resource.base_type_id);
+                size_t uniformSize = crossCompiler.get_declared_struct_size(type);
+                createUniformBuffer(uniformSize);
+            }
+
+            for(const auto& resource : shaderResources.sampled_images)
+            {
+                createTextureSampler();
             }
         }
 
-        void createUniformBuffer(const UniformDefinition& uniform)
+        void createUniformBuffer(const size_t& uniformSize)
         {
-            for(int i = 0; i < vulkanContext.m_swapchainImages.size(); i++)
+            for(int i = 0; i < vulkanContext.MAX_FRAMES_IN_FLIGHT; i++)
             {
                 //TODO replace with a common function for buffer creation
                 vk::Buffer buffer;
                 vk::DeviceMemory bufferMemory;
 
-                vk::BufferCreateInfo bufferInfo{{}, uniform.size, vk::BufferUsageFlagBits::eUniformBuffer, vk::SharingMode::eExclusive};
+                vk::BufferCreateInfo bufferInfo{vk::BufferCreateFlags{},
+                                                uniformSize,
+                                                vk::BufferUsageFlagBits::eUniformBuffer, 
+                                                vk::SharingMode::eExclusive};
+
                 buffer = vulkanContext.m_device.createBuffer(bufferInfo);
 
                 vk::MemoryRequirements memRequirements = vulkanContext.m_device.getBufferMemoryRequirements(buffer);
 
-                vk::MemoryAllocateInfo allocInfo{memRequirements.size, vulkanContext.findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)};
+                vk::MemoryAllocateInfo allocInfo { memRequirements.size, 
+                                                   vulkanContext.findMemoryType(memRequirements.memoryTypeBits, 
+                                                   vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)
+                                                 };
+
                 bufferMemory = vulkanContext.m_device.allocateMemory(allocInfo);
 
                 vulkanContext.m_device.bindBufferMemory(buffer, bufferMemory, 0);
 
-                uniformBuffers.push_back(buffer);
-                uniformBuffersMemory.push_back(bufferMemory);
+                pipeline.resources.uniformBuffers.push_back(buffer);
+                pipeline.resources.uniformBuffersMemory.push_back(bufferMemory);
             }
         }
 
-        void createTextureSampler(const UniformDefinition& uniform)
+        void createTextureSampler()
         {
             //TODO add option to customize sampler
             vk::SamplerCreateInfo samplerInfo{{}, 
@@ -543,78 +347,115 @@ namespace st::renderer
                                               0.0f, 
                                               0.0f, 
                                               vk::BorderColor::eIntOpaqueBlack, 
-                                              VK_FALSE};
+                                              VK_FALSE
+                                             };
 
             vk::Sampler textureSampler = vulkanContext.m_device.createSampler(samplerInfo);
-            textureSamplers.push_back(textureSampler);
+            pipeline.resources.textureSamplers.push_back(textureSampler);
         }
 
+        void buildVertexInput(std::vector<uint32_t>& shaderSpvCode)
+        {
+            spirv_cross::CompilerGLSL crossCompiler(shaderSpvCode);
+            spirv_cross::ShaderResources shaderResources = crossCompiler.get_shader_resources();
 
-        private:
-        VulkanContext& vulkanContext;
+            size_t totalSize = 0;
+            std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
+            for(const auto& resource : shaderResources.stage_inputs)
+            {
+                const spirv_cross::SPIRType& type = crossCompiler.get_type(resource.base_type_id);
 
-        //Parent Render Pass
-		const vk::RenderPass& renderPass;
+                uint32_t location   = crossCompiler.get_decoration(resource.id, spv::DecorationLocation);
+                uint32_t binding    = crossCompiler.get_decoration(resource.id, spv::DecorationBinding);
+                vk::Format format   = spirvTypeToVkFormat(type);
+                uint32_t offset     = crossCompiler.get_decoration(resource.id, spv::DecorationOffset);
+                totalSize          += getTypeSize(type);
+
+                vk::VertexInputAttributeDescription attributeDescription { location, binding, format, offset };
+                attributeDescriptions.push_back(attributeDescription);
+
+            }
+
+            vk::VertexInputBindingDescription vertexBindingDescription { 0, static_cast<uint32_t>(totalSize), vk::VertexInputRate::eVertex };
 
 
+		    pipeline.vertexInputInfo = vk::PipelineVertexInputStateCreateInfo { vk::PipelineVertexInputStateCreateFlags{},
+                                                                                vertexBindingDescription,
+                                                                                attributeDescriptions
+                                                                              };
 
-        std::vector<UniformDefinition> uniformDefinitions;
-        std::vector<vk::Buffer> uniformBuffers;
-        std::vector<vk::DeviceMemory> uniformBuffersMemory;
-        std::vector<vk::Sampler> textureSamplers;
+        }
+
+        vk::Format spirvTypeToVkFormat(const spirv_cross::SPIRType& type) 
+        {
+            if (type.basetype == spirv_cross::SPIRType::Float) 
+            {
+                if (type.vecsize == 1 && type.columns == 1) return vk::Format::eR32Sfloat;
+                if (type.vecsize == 2 && type.columns == 1) return vk::Format::eR32G32Sfloat;
+                if (type.vecsize == 3 && type.columns == 1) return vk::Format::eR32G32B32Sfloat;
+                if (type.vecsize == 4 && type.columns == 1) return vk::Format::eR32G32B32A32Sfloat;
+
+            }
+            // Add more cases for other types...
+
+            throw std::runtime_error("Unsupported SPIR-V type");
+        }
+
+        uint32_t getTypeSize(const spirv_cross::SPIRType& type) 
+        {
+            uint32_t elementSize = 0;
+            switch (type.basetype) 
+            {
+                case spirv_cross::SPIRType::Float: elementSize = 4; break; // float is 4 bytes
+                case spirv_cross::SPIRType::Int: elementSize = 4; break; // int is 4 bytes
+                case spirv_cross::SPIRType::UInt: elementSize = 4; break; // uint is 4 bytes
+                case spirv_cross::SPIRType::Double: elementSize = 8; break; // double is 8 bytes
+                case spirv_cross::SPIRType::Boolean: elementSize = 1; break; // bool is 1 byte
+                //TODO Add more cases for other base types...
+                default: throw std::runtime_error("Unsupported base type");
+            }
+
+            return elementSize * type.vecsize; // vec3 has 3 elements
+        }
 
         protected:
-        //Pipeline Subproducts
-        std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
-        vk::DescriptorSetLayout descriptorSetLayout;
-        vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
-        vk::PipelineInputAssemblyStateCreateInfo inputAssembly;
-        vk::PipelineViewportStateCreateInfo viewportState;
-        vk::PipelineRasterizationStateCreateInfo rasterizer;
-        vk::PipelineMultisampleStateCreateInfo multisampling;
-        vk::PipelineDepthStencilStateCreateInfo depthStencil;
-        vk::PipelineColorBlendAttachmentState colorBlendAttachment;
-        vk::PipelineColorBlendStateCreateInfo colorBlending;
-        vk::PipelineLayout pipelineLayout;
-		vk::PipelineDynamicStateCreateInfo m_pipelineDynamicStateCreateInfo;
+		const vk::RenderPass& renderPass;
+        const VulkanContext& vulkanContext;
 
-        vk::GraphicsPipelineCreateInfo pipelineInfo;
-
+        //Pipeline to be built
+        Pipeline pipeline;
     };
-
 
     class PipelineDirector
     {
         public:
         void setBuilder(PipelineBuilder* builder)
         {
-            m_builder = builder;
+            this->builder = builder;
         }
 
         void constructPipeline()
         {
             /*User defined*/
-            m_builder->buildShader();
-            m_builder->buildVertexInput();
-            m_builder->buildDynamicState();
+            builder->buildShader();
+            builder->buildDynamicState();
 
             /*Common functionality, override for custom behavior*/
-            m_builder->createInputAssembly();
-            m_builder->createViportState();
-            m_builder->createRasterizationState();
-            m_builder->createMultisampleState();
-            m_builder->createDepthStencilState();
-            m_builder->createColorBlending();
-            m_builder->createPipeline();
+            builder->createInputAssembly();
+            builder->createViewportState();
+            builder->createRasterizationState();
+            builder->createMultisampleState();
+            builder->createDepthStencilState();
+            builder->createColorBlending();
         }
 
         vk::Pipeline getPipeline()
         {
-            return m_builder->getPipeline();
+            return builder->getPipeline();
         }
 
         private:
-        PipelineBuilder* m_builder;
+        PipelineBuilder* builder;
     };
 
 

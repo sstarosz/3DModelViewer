@@ -48,19 +48,19 @@ struct VulkanContext
     const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
     //TODO refactor
-    uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties)
+    uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) const
     {
-		vk::PhysicalDeviceMemoryProperties memProperties = m_physicalDevice.getMemoryProperties();
+      vk::PhysicalDeviceMemoryProperties memProperties = m_physicalDevice.getMemoryProperties();
 
-		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
-		{
-			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
-			{
-				return i;
-			}
-		}
+      for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+      {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+        {
+          return i;
+        }
+      }
 
-		throw std::runtime_error("failed to find suitable memory type!");
+      throw std::runtime_error("failed to find suitable memory type!");
     }
     
 };
