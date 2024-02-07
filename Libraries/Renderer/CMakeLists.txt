@@ -6,7 +6,6 @@ project(Renderer
 		LANGUAGES CXX)
 
         
-find_package(Eigen3 CONFIG REQUIRED)
 
 set(Sources
     "Source/Renderer.cpp"
@@ -38,8 +37,10 @@ target_compile_options(${PROJECT_NAME} PRIVATE ${Compiler_Flags})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC 
                         Vulkan::Vulkan
+                        Vulkan::shaderc_combined
                         Eigen3::Eigen
-                        spirv-cross-core spirv-cross-glsl
+                        spirv-cross-core 
+                        spirv-cross-glsl
                      )
 
 

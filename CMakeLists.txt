@@ -28,16 +28,23 @@ include(CMake/Deploy.cmake)
 #---------------------------------------------------------------------------------------#
 #----------------------------------Project dependicies----------------------------------#
 #---------------------------------------------------------------------------------------#
-find_package(Qt6 CONFIG REQUIRED
+find_package(Qt6               CONFIG REQUIRED
              COMPONENTS Core
                         Gui
                         Widgets
                         CoreTools
             )
 
-find_package(Stb REQUIRED)
+find_package(Vulkan            REQUIRED
+                COMPONENTS
+                glslc 
+                shaderc_combined
+            )
+
+find_package(Stb                      REQUIRED)
 find_package(spirv_cross_core  CONFIG REQUIRED)
 find_package(spirv_cross_glsl  CONFIG REQUIRED)
+find_package(Eigen3            CONFIG REQUIRED)
 
 
 
