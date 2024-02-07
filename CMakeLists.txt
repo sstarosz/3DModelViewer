@@ -36,7 +36,7 @@ find_package(Qt6 CONFIG REQUIRED
             )
 
 find_package(Stb REQUIRED)
-
+find_package(spirv_cross CONFIG REQUIRED)
 
 
 #---------------------------------------------------------------------------------------#

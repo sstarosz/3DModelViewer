@@ -39,6 +39,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE ${Compiler_Flags})
 target_link_libraries(${PROJECT_NAME} PUBLIC 
                         Vulkan::Vulkan
                         Eigen3::Eigen
+                        spirv_cross::spirv_cross_c spirv_cross::spirv_cross_core spirv_cross::spirv_cross_glsl
                      )
 
 
