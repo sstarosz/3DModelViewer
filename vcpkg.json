@@ -7,6 +7,6 @@
     "gtest",
     "benchmark",
     "eigen3",
-    "SPIRV-Cross"
+    "spirv-cross"
   ]
 }
