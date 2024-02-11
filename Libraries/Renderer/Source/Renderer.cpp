@@ -2,6 +2,7 @@
 #include "VulkanContext.hpp"
 #include "PhysicalDevice.hpp"
 #include "QueueFamily.hpp"
+#include "VisualAidsPipline.hpp"
 #include <vector>
 
 #include <vulkan/vulkan.hpp>
@@ -402,8 +403,12 @@ public:
 			{0, 0},
 			m_vulkanContext.m_swapchainExtent
 		};
+        
 		commandBuffer.setViewport(0, 1, &viewport);
 		commandBuffer.setScissor(0, 1, &scissor);
+
+
+        commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.pipeline);
 
 
 
@@ -690,209 +695,11 @@ public:
 
     void createGraphicsPipeline()
     {
-        createTextureSampler();
-		createUniformBuffers();
-		createDescriptorPool();
-		createDescriptorSetLayout(); // must stay in pipline creation
-
-		auto vertShaderCode = readFile("../Assets/Shaders/vert.spv");
-		auto fragShaderCode = readFile("../Assets/Shaders/frag.spv");
-
-
-		vk::ShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-		vk::ShaderModule fragShaderModule = createShaderModule(fragShaderCode);
-
-
-		vk::PipelineShaderStageCreateInfo vertShaderStageInfo { {}, vk::ShaderStageFlagBits::eVertex, vertShaderModule, "main" };
-
-		vk::PipelineShaderStageCreateInfo fragShaderStageInfo { {}, vk::ShaderStageFlagBits::eFragment, fragShaderModule, "main" };
-
-		std::vector<vk::PipelineShaderStageCreateInfo> shaderStages { vertShaderStageInfo, fragShaderStageInfo };
-
-
-		auto bindingDescription = Vertex::getBindingDescription();
-		auto attributeDescriptions = Vertex::getAttributeDescriptions();
-
-		vk::PipelineVertexInputStateCreateInfo vertexInputInfo { {}, bindingDescription, attributeDescriptions };
-
-		vk::PipelineInputAssemblyStateCreateInfo inputAssembly { vk::PipelineInputAssemblyStateCreateFlags {}, vk::PrimitiveTopology::eTriangleList, VK_FALSE };
-
-
-		vk::PipelineViewportStateCreateInfo viewportState { vk::PipelineViewportStateCreateFlags {}, 1, {}, 1, {} };
-
-		vk::PipelineRasterizationStateCreateInfo rasterizer { vk::PipelineRasterizationStateCreateFlags {},
-															  VK_FALSE,
-															  VK_FALSE,
-															  vk::PolygonMode::eFill,
-															  vk::CullModeFlagBits::eBack,
-															  vk::FrontFace::eCounterClockwise,
-															  VK_FALSE,
-															  0.0f,
-															  0.0f,
-															  0.0f,
-															  1.0F };
-
-		vk::PipelineMultisampleStateCreateInfo multisampling { vk::PipelineMultisampleStateCreateFlags {}, vk::SampleCountFlagBits::e1, VK_FALSE };
-
-		vk::PipelineDepthStencilStateCreateInfo depthStencil { {}, true, true, vk::CompareOp::eLess, false, false };
-
-	    std::vector<vk::DynamicState> m_dynamicStateEnables { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
-
-		vk::PipelineDynamicStateCreateInfo m_pipelineDynamicStateCreateInfo { {}, m_dynamicStateEnables };
-
-		vk::PipelineColorBlendAttachmentState colorBlendAttachment { VK_FALSE,
-																	 vk::BlendFactor::eZero,
-																	 vk::BlendFactor::eZero,
-																	 vk::BlendOp::eAdd,
-																	 vk::BlendFactor::eZero,
-																	 vk::BlendFactor::eZero,
-																	 vk::BlendOp::eAdd,
-																	 vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
-																		 vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA };
-
-
-		vk::PipelineColorBlendStateCreateInfo colorBlending {
-			vk::PipelineColorBlendStateCreateFlags {},
-			VK_FALSE,
-			vk::LogicOp::eCopy,
-			colorBlendAttachment,
-			{ 0.0f, 0.0f, 0.0f, 0.0f }
-		};
-
-
-		vk::PipelineLayoutCreateInfo pipelineLayoutInfo { vk::PipelineLayoutCreateFlags {}, m_graphicsPipeline.m_descriptorSetLayout };
-
-		m_graphicsPipeline.m_pipelineLayout = m_vulkanContext.m_device.createPipelineLayout(pipelineLayoutInfo);
-
-		vk::GraphicsPipelineCreateInfo pipelineInfo { vk::PipelineCreateFlags {},
-													  shaderStages,
-													  &vertexInputInfo,
-													  &inputAssembly,
-													  {},
-													  &viewportState,
-													  &rasterizer,
-													  &multisampling,
-													  &depthStencil,
-													  &colorBlending,
-													  &m_pipelineDynamicStateCreateInfo,
-													  m_graphicsPipeline.m_pipelineLayout,
-													  m_vulkanContext.m_renderPass };
-
-
-		m_graphicsPipeline.m_pipelineCache = m_vulkanContext.m_device.createPipelineCache(vk::PipelineCacheCreateInfo());
-		m_graphicsPipeline.m_graphicsPipeline = m_vulkanContext.m_device.createGraphicsPipeline(m_graphicsPipeline.m_pipelineCache, pipelineInfo).value;
-
-
-		//Note VkShaderModule is passed into pipline and are not longer available trought object they are used to create
-		//If ther are used later, then they must not be destroyed
-		m_vulkanContext.m_device.destroy(fragShaderModule);
-		m_vulkanContext.m_device.destroy(vertShaderModule);
-    }
-
-    void createTextureSampler()
-    {
-        vk::PhysicalDeviceProperties properties = m_vulkanContext.m_physicalDevice.getProperties();
-
-		vk::SamplerCreateInfo sampleInfo {
-			{},
-			vk::Filter::eLinear,
-			vk::Filter::eLinear,
-			vk::SamplerMipmapMode::eLinear,
-			vk::SamplerAddressMode::eRepeat,
-			vk::SamplerAddressMode::eRepeat,
-			vk::SamplerAddressMode::eRepeat,
-			0.0f,
-			false,
-			properties.limits.maxSamplerAnisotropy,
-			false,
-			vk::CompareOp::eAlways,
-			0.0f,
-			0.0f,
-			vk::BorderColor::eIntOpaqueBlack,
-			false,
-		};
-
-		m_graphicsPipeline.m_textureSampler = m_vulkanContext.m_device.createSampler(sampleInfo);
-    }
-
-    void createUniformBuffers()
-    {
-        const VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-
-		m_graphicsPipeline.m_uniformBuffers.resize(m_vulkanContext.MAX_FRAMES_IN_FLIGHT);
-		m_graphicsPipeline.m_uniformBuffersMemory.resize(m_vulkanContext.MAX_FRAMES_IN_FLIGHT);
-
-		for (size_t i = 0; i < m_vulkanContext.MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			createBuffer(bufferSize,
-                         vk::BufferUsageFlagBits::eUniformBuffer,
-                         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-                         m_graphicsPipeline.m_uniformBuffers[i],
-                         m_graphicsPipeline.m_uniformBuffersMemory[i]);
-		}
-    }
-
-    void createDescriptorPool()
-    {
-		std::array<vk::DescriptorPoolSize, 2> poolsSize {
-			vk::DescriptorPoolSize { vk::DescriptorType::eUniformBuffer,        m_vulkanContext.MAX_FRAMES_IN_FLIGHT * 2},
-			vk::DescriptorPoolSize { vk::DescriptorType::eCombinedImageSampler, m_vulkanContext.MAX_FRAMES_IN_FLIGHT * 2}
-		};
-
-		const vk::DescriptorPoolCreateInfo poolInfo { {}, m_vulkanContext.MAX_FRAMES_IN_FLIGHT * 2, poolsSize };
-		m_graphicsPipeline.m_descriptorPool = m_vulkanContext.m_device.createDescriptorPool(poolInfo);
-    }
-
-    void createDescriptorSetLayout()
-    {
-		vk::DescriptorSetLayoutBinding uboLayoutBinding { 0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex };
-
-		vk::DescriptorSetLayoutBinding samplerLayoutBinding { 1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment };
-
-		std::array<vk::DescriptorSetLayoutBinding, 2> bindings { uboLayoutBinding, samplerLayoutBinding };
-		vk::DescriptorSetLayoutCreateInfo layoutInfo { {}, bindings };
-
-		m_graphicsPipeline.m_descriptorSetLayout = m_vulkanContext.m_device.createDescriptorSetLayout(layoutInfo);
-    }
-
-    std::vector<char> readFile(const std::string& filename)
-    {
-        std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-        if (!file.is_open())
-        {
-            throw std::runtime_error("failed to open file!");
-        }
-
-        size_t fileSize = (size_t)file.tellg();
-        std::vector<char> buffer(fileSize);
-
-        file.seekg(0);
-        file.read(buffer.data(), fileSize);
-
-        file.close();
-
-        return buffer;
-    }
-
-    vk::ShaderModule createShaderModule(const std::vector<char>& code)
-    {
-        vk::ShaderModuleCreateInfo createInfo { vk::ShaderModuleCreateFlags {}, code.size(), reinterpret_cast<const uint32_t*>(code.data()) };
-
-        vk::ShaderModule shaderModule = m_vulkanContext.m_device.createShaderModule(createInfo);
-
-        return shaderModule;
-    }
-
-    vk::VertexInputBindingDescription getBindingDescription()
-    {
-        vk::VertexInputBindingDescription bindingDescription{
-            0,
-            sizeof(Vertex),
-            vk::VertexInputRate::eVertex
-        };
-
-        return bindingDescription;
+        VisualAidsPipeline Pipeline(m_vulkanContext, m_vulkanContext.m_renderPass);
+        PipelineDirector director;
+        director.setBuilder(&Pipeline);
+        director.constructPipeline();
+        m_pipeline = director.getPipeline();
     }
 
     void createBuffer(vk::DeviceSize size,
@@ -1078,7 +885,7 @@ public:
 
 public:
     VulkanContext m_vulkanContext;
-    GraphicsPipeline m_graphicsPipeline;
+    Pipeline m_pipeline;
     PhysicalDevice m_physicalDevice;
 
     uint32_t currentFrame = 0;

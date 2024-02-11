@@ -27,6 +27,8 @@ namespace st::renderer
         public:
         //Pipeline subparts
         std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
+
+        std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
         vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
         vk::PipelineInputAssemblyStateCreateInfo inputAssembly;
         //TODO add support for tessellation and geometry shaders
@@ -34,10 +36,15 @@ namespace st::renderer
         vk::PipelineRasterizationStateCreateInfo rasterizer;
         vk::PipelineMultisampleStateCreateInfo multisampling;
         vk::PipelineDepthStencilStateCreateInfo depthStencil;
+
+        vk::PipelineColorBlendAttachmentState colorBlendAttachment;
         vk::PipelineColorBlendStateCreateInfo colorBlending;
+
+        std::vector<vk::DynamicState> dynamicStates;
         vk::PipelineDynamicStateCreateInfo dynamicStateInfo;
         vk::PipelineLayout pipelineLayout;
 
+        //Dynamic state
 
         //Descriptor and resources
         vk::DescriptorSetLayout descriptorSetLayout;
@@ -46,8 +53,6 @@ namespace st::renderer
 
         vk::Pipeline pipeline;
     };
-
-
 
     class PipelineBuilder
     {
@@ -62,9 +67,6 @@ namespace st::renderer
         
         virtual void buildShader() = 0;
         virtual void buildDynamicState() = 0;
-
-        virtual vk::Pipeline getPipeline() = 0;
-
 
         void createInputAssembly()
         {
@@ -121,23 +123,23 @@ namespace st::renderer
 
         void createColorBlending()
         {
-            vk::PipelineColorBlendAttachmentState colorBlendAttachment { VK_FALSE,
-                                                                         vk::BlendFactor::eZero,
-                                                                         vk::BlendFactor::eZero,
-                                                                         vk::BlendOp::eAdd,
-                                                                         vk::BlendFactor::eZero,
-                                                                         vk::BlendFactor::eZero,
-                                                                         vk::BlendOp::eAdd,
-                                                                         vk::ColorComponentFlagBits::eR | 
-                                                                             vk::ColorComponentFlagBits::eG |
-                                                                             vk::ColorComponentFlagBits::eB | 
-                                                                             vk::ColorComponentFlagBits::eA 
-                                                                       };
+            pipeline.colorBlendAttachment = vk::PipelineColorBlendAttachmentState  { VK_FALSE,
+                                                                                     vk::BlendFactor::eZero,
+                                                                                     vk::BlendFactor::eZero,
+                                                                                     vk::BlendOp::eAdd,
+                                                                                     vk::BlendFactor::eZero,
+                                                                                     vk::BlendFactor::eZero,
+                                                                                     vk::BlendOp::eAdd,
+                                                                                     vk::ColorComponentFlagBits::eR | 
+                                                                                         vk::ColorComponentFlagBits::eG |
+                                                                                         vk::ColorComponentFlagBits::eB | 
+                                                                                         vk::ColorComponentFlagBits::eA 
+                                                                                    };
 
             pipeline.colorBlending = vk::PipelineColorBlendStateCreateInfo { vk::PipelineColorBlendStateCreateFlags {},
                                                                              VK_FALSE,
                                                                              vk::LogicOp::eCopy,
-                                                                             colorBlendAttachment,
+                                                                             pipeline.colorBlendAttachment,
                                                                              { 0.0f, 0.0f, 0.0f, 0.0f }
                                                                            };
         }
@@ -172,7 +174,7 @@ namespace st::renderer
             std::vector<uint32_t> fragmentShaderSpvCode = compileShader(fragmentShader, shaderc_shader_kind::shaderc_glsl_fragment_shader);
 
             vk::ShaderModule vertexShaderModule = vulkanContext.m_device.createShaderModule({{}, vertexShaderSpvCode});
-            vk::ShaderModule fragmentShaderModule = vulkanContext.m_device.createShaderModule({{},vertexShaderSpvCode});
+            vk::ShaderModule fragmentShaderModule = vulkanContext.m_device.createShaderModule({{},fragmentShaderSpvCode});
 
             vk::PipelineShaderStageCreateInfo vertShaderStageInfo { {}, vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main" };
 		    vk::PipelineShaderStageCreateInfo fragShaderStageInfo { {}, vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main" };
@@ -350,6 +352,7 @@ namespace st::renderer
                                               VK_FALSE
                                              };
 
+
             vk::Sampler textureSampler = vulkanContext.m_device.createSampler(samplerInfo);
             pipeline.resources.textureSamplers.push_back(textureSampler);
         }
@@ -360,7 +363,6 @@ namespace st::renderer
             spirv_cross::ShaderResources shaderResources = crossCompiler.get_shader_resources();
 
             size_t totalSize = 0;
-            std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
             for(const auto& resource : shaderResources.stage_inputs)
             {
                 const spirv_cross::SPIRType& type = crossCompiler.get_type(resource.base_type_id);
@@ -372,7 +374,7 @@ namespace st::renderer
                 totalSize          += getTypeSize(type);
 
                 vk::VertexInputAttributeDescription attributeDescription { location, binding, format, offset };
-                attributeDescriptions.push_back(attributeDescription);
+                pipeline.attributeDescriptions.push_back(attributeDescription);
 
             }
 
@@ -381,7 +383,7 @@ namespace st::renderer
 
 		    pipeline.vertexInputInfo = vk::PipelineVertexInputStateCreateInfo { vk::PipelineVertexInputStateCreateFlags{},
                                                                                 vertexBindingDescription,
-                                                                                attributeDescriptions
+                                                                                pipeline.attributeDescriptions
                                                                               };
 
         }
@@ -418,6 +420,26 @@ namespace st::renderer
             return elementSize * type.vecsize; // vec3 has 3 elements
         }
 
+        //--------------------------------------------------------------------------------
+        //---------------------------------Debug------------------------------------------
+        //--------------------------------------------------------------------------------
+        void printDynamicStateCreateInfo(const vk::PipelineDynamicStateCreateInfo& dynamicStateInfo) 
+        {
+            std::cout << "Dynamic State Create Info:\n";
+            //std::cout << "  Flags: " << to_string(dynamicStateInfo.flags) << "\n";
+            std::cout << "  Dynamic State Count: " << dynamicStateInfo.dynamicStateCount << "\n";
+            std::cout << "  Dynamic States:\n";
+            for (uint32_t i = 0; i < dynamicStateInfo.dynamicStateCount; ++i) 
+            {
+                std::cout << "    " << vk::to_string(dynamicStateInfo.pDynamicStates[i]) << "\n";
+            }
+        }
+
+        Pipeline getPipeline()
+        {
+            return pipeline;
+        }
+
         protected:
 		const vk::RenderPass& renderPass;
         const VulkanContext& vulkanContext;
@@ -447,9 +469,10 @@ namespace st::renderer
             builder->createMultisampleState();
             builder->createDepthStencilState();
             builder->createColorBlending();
+            builder->createPipeline();
         }
 
-        vk::Pipeline getPipeline()
+        Pipeline getPipeline()
         {
             return builder->getPipeline();
         }
@@ -458,6 +481,8 @@ namespace st::renderer
         PipelineBuilder* builder;
     };
 
+
+    
 
     
 }   // namespace st::renderer

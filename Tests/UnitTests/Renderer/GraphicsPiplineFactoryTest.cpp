@@ -115,12 +115,6 @@ class TestPipeline : public PipelineBuilder
                                                                        dynamicStates);
     };
 
-    vk::Pipeline getPipeline()
-    {
-        return pipeline.pipeline;
-    }
-
-
 };
 
 
@@ -138,7 +132,7 @@ TEST(GraphicsPiplineFactoryTest, CreateGraphicsPipeline)
 
     director.constructPipeline();
 
-    vk::Pipeline graphicsPipeline = director.getPipeline();
+    Pipeline graphicsPipeline = director.getPipeline();
 
     //TODO
     //st::renderer::GraphicsPiplineFactory factory;
