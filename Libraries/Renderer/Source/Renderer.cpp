@@ -55,69 +55,6 @@ namespace st::renderer
         return details;
     }
 
-    struct Vertex
-    {
-        Eigen::Vector3f m_position;
-        Eigen::Vector2f m_texCoord;
-        Eigen::Vector3f m_color;
-        Eigen::Vector3f m_normal;
-
-
-        static vk::VertexInputBindingDescription getBindingDescription()
-        {
-             vk::VertexInputBindingDescription bindingDescription{0,
-                                                                  sizeof(Vertex),
-                                                                  vk::VertexInputRate::eVertex
-                                                                  };
-
-            return bindingDescription;
-        }
-
-        static std::array<vk::VertexInputAttributeDescription, 4> getAttributeDescriptions()
-        {
-            std::array<vk::VertexInputAttributeDescription, 4> attributeDescriptions{
-            vk::VertexInputAttributeDescription{
-                0,
-                0,
-                vk::Format::eR32G32B32Sfloat,
-                static_cast<uint32_t>(offsetof(Vertex, m_position))
-                },
-                vk::VertexInputAttributeDescription{
-                    1,
-                    0,
-                    vk::Format::eR32G32Sfloat,
-                    static_cast<uint32_t>(offsetof(Vertex, m_texCoord))
-                },
-                vk::VertexInputAttributeDescription{
-                    2,
-                    0,
-                    vk::Format::eR32G32B32Sfloat,
-                    static_cast<uint32_t>(offsetof(Vertex, m_color))
-                },
-                vk::VertexInputAttributeDescription {
-                    3,
-                    0,
-                    vk::Format::eR32G32B32Sfloat,
-                    static_cast<uint32_t>(offsetof(Vertex, m_normal))
-                }
-            };
-
-            return attributeDescriptions;
-        }
-
-        bool operator==(const Vertex&) const = default;
-        auto operator<=>(const Vertex&) const = default;
-    };
-
-    struct UniformBufferObject
-    {
-        Eigen::Matrix4f m_model;
-        Eigen::Matrix4f m_view;
-        Eigen::Matrix4f m_proj;
-    };
-
-
-
 	VkBool32 debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 						   VkDebugUtilsMessageTypeFlagsEXT messageType,
 						   const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -210,8 +147,6 @@ public:
         std::vector<const char*> extensions = {
             VK_KHR_SURFACE_EXTENSION_NAME,
             VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
-
-            VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
             VK_EXT_DEBUG_UTILS_EXTENSION_NAME
         };
 
@@ -380,7 +315,7 @@ public:
     {
         commandBuffer.begin(vk::CommandBufferBeginInfo {});
 
-        const vk::ClearColorValue clearColor(std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
+        const vk::ClearColorValue clearColor(std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
         const vk::ClearDepthStencilValue clearDepthStencil(1.0f, 0);
 
         std::array<vk::ClearValue, 2> clearValues = { clearColor, clearDepthStencil };
@@ -391,6 +326,7 @@ public:
 												 clearValues };
 
 		commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+        commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.pipeline);
 
         vk::Viewport viewport { 0.0F, 
                                 0.0F, 
@@ -407,8 +343,14 @@ public:
 		commandBuffer.setViewport(0, 1, &viewport);
 		commandBuffer.setScissor(0, 1, &scissor);
 
+        vk::Buffer vertexBuffers[] = { m_pipeline.resources.vertexBuffer };
+        vk::DeviceSize offsets[] = { 0 };
+        commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
+        commandBuffer.bindIndexBuffer(m_pipeline.resources.indexBuffer, 0, vk::IndexType::eUint32);
+        commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipeline.pipelineLayout, 0, m_pipeline.resources.descriptorSets[currentFrame], {});
+        commandBuffer.drawIndexed(static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+    
 
-        commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.pipeline);
 
 
 
@@ -700,6 +642,9 @@ public:
         director.setBuilder(&Pipeline);
         director.constructPipeline();
         m_pipeline = director.getPipeline();
+
+        updateVertexBuffer();
+        updateIndexBuffer();
     }
 
     void createBuffer(vk::DeviceSize size,
@@ -883,6 +828,66 @@ public:
         m_vulkanContext.m_device.destroySwapchainKHR(m_vulkanContext.m_swapchain);
     }
 
+
+    //Temporary
+    void updateVertexBuffer()
+    {
+        vk::BufferCreateInfo bufferInfo { {}, 
+                                          sizeof(vertices[0]) * vertices.size(), 
+                                          vk::BufferUsageFlagBits::eVertexBuffer, 
+                                          vk::SharingMode::eExclusive 
+        };
+
+
+        m_pipeline.resources.vertexBuffer = m_vulkanContext.m_device.createBuffer(bufferInfo);
+
+        vk::MemoryRequirements memRequirements = m_vulkanContext.m_device.getBufferMemoryRequirements(m_pipeline.resources.vertexBuffer);
+
+        vk::MemoryAllocateInfo allocInfo { memRequirements.size, 
+                                           findMemoryType(memRequirements.memoryTypeBits, 
+                                           vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent) 
+        };
+
+        m_pipeline.resources.vertexBufferMemory = m_vulkanContext.m_device.allocateMemory(allocInfo);
+
+        m_vulkanContext.m_device.bindBufferMemory(m_pipeline.resources.vertexBuffer, m_pipeline.resources.vertexBufferMemory, 0);
+
+        void* data = m_vulkanContext.m_device.mapMemory(m_pipeline.resources.vertexBufferMemory, 0, bufferInfo.size);
+        memcpy(data, vertices.data(), (size_t)bufferInfo.size);
+        m_vulkanContext.m_device.unmapMemory(m_pipeline.resources.vertexBufferMemory);
+
+    }
+
+    void updateIndexBuffer()
+    {
+        vk::BufferCreateInfo bufferInfo { {}, 
+                                          sizeof(indices[0]) * indices.size(), 
+                                          vk::BufferUsageFlagBits::eIndexBuffer, 
+                                          vk::SharingMode::eExclusive 
+        };
+
+        m_pipeline.resources.indexBuffer = m_vulkanContext.m_device.createBuffer(bufferInfo);
+
+        vk::MemoryRequirements memRequirements = m_vulkanContext.m_device.getBufferMemoryRequirements(m_pipeline.resources.indexBuffer);
+
+        vk::MemoryAllocateInfo allocInfo { memRequirements.size, 
+                                           findMemoryType(memRequirements.memoryTypeBits, 
+                                           vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent) 
+        };
+
+        m_pipeline.resources.indexBufferMemory = m_vulkanContext.m_device.allocateMemory(allocInfo);
+        
+        m_vulkanContext.m_device.bindBufferMemory(m_pipeline.resources.indexBuffer, m_pipeline.resources.indexBufferMemory, 0);
+
+        void* data = m_vulkanContext.m_device.mapMemory(m_pipeline.resources.indexBufferMemory, 0, bufferInfo.size);
+        memcpy(data, indices.data(), (size_t)bufferInfo.size);
+        m_vulkanContext.m_device.unmapMemory(m_pipeline.resources.indexBufferMemory);
+    }
+
+
+
+
+
 public:
     VulkanContext m_vulkanContext;
     Pipeline m_pipeline;
@@ -893,6 +898,28 @@ public:
 
     uint32_t m_width = 800;
     uint32_t m_height = 600;
+
+    struct Vertex 
+    {
+        Eigen::Vector3f position;
+        Eigen::Vector3f color;
+    };
+
+
+    std::vector<Vertex> vertices 
+    {
+        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Bottom-left corner, red
+        {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},  // Bottom-right corner, green
+        {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},   // Top-right corner, blue
+        {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}}   // Top-left corner, white
+    };
+
+    std::vector<uint32_t> indices
+    {
+        0, 1, 2, // First triangle (bottom-right)
+        2, 3, 0  // Second triangle (top-left)
+    };
+
 };
 
 

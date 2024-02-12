@@ -20,7 +20,19 @@ namespace st::renderer
         std::vector<vk::Buffer> uniformBuffers;
         std::vector<vk::DeviceMemory> uniformBuffersMemory;
         std::vector<vk::Sampler> textureSamplers;
+
+        vk::Buffer vertexBuffer;
+        vk::DeviceMemory vertexBufferMemory;
+
+        vk::Buffer indexBuffer;
+        vk::DeviceMemory indexBufferMemory;
+
+        std::vector<vk::DescriptorSet> descriptorSets;
+        vk::DescriptorPool descriptorPool;
+
     };
+
+
 
     class Pipeline
     {
@@ -29,6 +41,7 @@ namespace st::renderer
         std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
         std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
+        vk::VertexInputBindingDescription vertexBindingDescription;
         vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
         vk::PipelineInputAssemblyStateCreateInfo inputAssembly;
         //TODO add support for tessellation and geometry shaders
@@ -48,7 +61,6 @@ namespace st::renderer
 
         //Descriptor and resources
         vk::DescriptorSetLayout descriptorSetLayout;
-        vk::DescriptorPool descriptorPool;
         PipelineResources resources;
 
         vk::Pipeline pipeline;
@@ -92,7 +104,7 @@ namespace st::renderer
                                                                              VK_FALSE,
                                                                              VK_FALSE,
                                                                              vk::PolygonMode::eFill,
-                                                                             vk::CullModeFlagBits::eBack,
+                                                                             vk::CullModeFlagBits::eFront,
                                                                              vk::FrontFace::eCounterClockwise,
                                                                              VK_FALSE,
                                                                              0.0f,
@@ -378,11 +390,10 @@ namespace st::renderer
 
             }
 
-            vk::VertexInputBindingDescription vertexBindingDescription { 0, static_cast<uint32_t>(totalSize), vk::VertexInputRate::eVertex };
-
+            pipeline.vertexBindingDescription = vk::VertexInputBindingDescription{ 0, static_cast<uint32_t>(totalSize), vk::VertexInputRate::eVertex };
 
 		    pipeline.vertexInputInfo = vk::PipelineVertexInputStateCreateInfo { vk::PipelineVertexInputStateCreateFlags{},
-                                                                                vertexBindingDescription,
+                                                                                pipeline.vertexBindingDescription,
                                                                                 pipeline.attributeDescriptions
                                                                               };
 
@@ -419,6 +430,30 @@ namespace st::renderer
 
             return elementSize * type.vecsize; // vec3 has 3 elements
         }
+
+
+        void allocateResources()
+        {
+            vk::DescriptorPoolSize poolSize { vk::DescriptorType::eUniformBuffer, vulkanContext.MAX_FRAMES_IN_FLIGHT * 2 };
+
+            vk::DescriptorPoolCreateInfo poolInfo { vk::DescriptorPoolCreateFlags{}, vulkanContext.MAX_FRAMES_IN_FLIGHT * 2, poolSize};
+            pipeline.resources.descriptorPool = vulkanContext.m_device.createDescriptorPool(poolInfo);
+
+
+
+            std::vector<vk::DescriptorSetLayout> layouts(vulkanContext.MAX_FRAMES_IN_FLIGHT, pipeline.descriptorSetLayout);
+            vk::DescriptorSetAllocateInfo allocInfo { pipeline.resources.descriptorPool, layouts };
+            pipeline.resources.descriptorSets = vulkanContext.m_device.allocateDescriptorSets(allocInfo);
+
+            for(int i = 0; i < vulkanContext.MAX_FRAMES_IN_FLIGHT; i++)
+            {
+                vk::DescriptorBufferInfo bufferInfo { pipeline.resources.uniformBuffers[i], 0, VK_WHOLE_SIZE };
+                
+                vk::WriteDescriptorSet descriptorWrite { pipeline.resources.descriptorSets[i], 0, 0, vk::DescriptorType::eUniformBuffer, {}, bufferInfo, {} };
+                vulkanContext.m_device.updateDescriptorSets(descriptorWrite, {});
+            }
+        }
+
 
         //--------------------------------------------------------------------------------
         //---------------------------------Debug------------------------------------------
@@ -470,6 +505,9 @@ namespace st::renderer
             builder->createDepthStencilState();
             builder->createColorBlending();
             builder->createPipeline();
+
+            /*Allocate resources*/
+            builder->allocateResources();
         }
 
         Pipeline getPipeline()
