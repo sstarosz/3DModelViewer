@@ -85,13 +85,6 @@
       "configurePreset": "Window-MSVC-x64-Release",
       "configuration": "Release",
       "inherits": "Base-Build"
-    },
-    {
-      "name": "Linux-Build",
-      "displayName": "Linux x64 Verbose Debug Build ",
-      "description": "Linux x64 Debug Build with Unix Makefile generator",
-      "configurePreset": "Linux-Base",
-      "inherits": "Base-Build"
     }
   ],
   "testPresets": [
@@ -108,12 +101,6 @@
       "name": "Windows-Unittest",
       "displayName": "Windows Unit Tests",
       "configurePreset": "Window-MSVC-x64-Debug",
-      "inherits": "Core-Test"
-    },
-    {
-      "name": "Linux-Unittest",
-      "displayName": "Linux Unittest",
-      "configurePreset": "Linux-Base",
       "inherits": "Core-Test"
     }
   ]
