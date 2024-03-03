@@ -226,7 +226,6 @@ namespace st::renderer
 			{
 				const spirv_cross::SPIRType& type = crossCompiler.get_type(resource.base_type_id);
 
-				const uint32_t set = crossCompiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 				const uint32_t binding = crossCompiler.get_decoration(resource.id, spv::DecorationBinding);
 
 				uint32_t count = 1;
@@ -243,7 +242,7 @@ namespace st::renderer
 			for (const auto& resource : shaderResources.sampled_images)
 			{
 				const spirv_cross::SPIRType& type = crossCompiler.get_type(resource.base_type_id);
-				const uint32_t set = crossCompiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+
 				const uint32_t binding = crossCompiler.get_decoration(resource.id, spv::DecorationBinding);
 
 				uint32_t count = 1;
@@ -270,7 +269,7 @@ namespace st::renderer
 				createUniformBuffer(uniformSize);
 			}
 
-			for (const auto& resource : shaderResources.sampled_images)
+			for(size_t i = 0; i< shaderResources.sampled_images.size(); i++)
 			{
 				createTextureSampler();
 			}
@@ -278,7 +277,7 @@ namespace st::renderer
 
 		void createUniformBuffer(const size_t& uniformSize)
 		{
-			for (int i = 0; i < vulkanContext.MAX_FRAMES_IN_FLIGHT; i++)
+			for (uint32_t i = 0; i < vulkanContext.MAX_FRAMES_IN_FLIGHT; i++)
 			{
 				// TODO replace with a common function for buffer creation
 				vk::Buffer buffer;
@@ -407,7 +406,7 @@ namespace st::renderer
 			vk::DescriptorSetAllocateInfo allocInfo{pipeline.resources.descriptorPool, layouts};
 			pipeline.resources.descriptorSets = vulkanContext.m_device.allocateDescriptorSets(allocInfo);
 
-			for (int i = 0; i < vulkanContext.MAX_FRAMES_IN_FLIGHT; i++)
+			for (uint32_t  i = 0; i < vulkanContext.MAX_FRAMES_IN_FLIGHT; i++)
 			{
 				vk::DescriptorBufferInfo bufferInfo{pipeline.resources.uniformBuffers[i], 0, VK_WHOLE_SIZE};
 
@@ -450,35 +449,35 @@ namespace st::renderer
 	  public:
 		void setBuilder(PipelineBuilder* builder)
 		{
-			this->builder = builder;
+			m_pBuilder = builder;
 		}
 
 		void constructPipeline()
 		{
 			/*User defined*/
-			builder->buildShader();
-			builder->buildDynamicState();
+			m_pBuilder->buildShader();
+			m_pBuilder->buildDynamicState();
 
 			/*Common functionality, override for custom behavior*/
-			builder->createInputAssembly();
-			builder->createViewportState();
-			builder->createRasterizationState();
-			builder->createMultisampleState();
-			builder->createDepthStencilState();
-			builder->createColorBlending();
-			builder->createPipeline();
+			m_pBuilder->createInputAssembly();
+			m_pBuilder->createViewportState();
+			m_pBuilder->createRasterizationState();
+			m_pBuilder->createMultisampleState();
+			m_pBuilder->createDepthStencilState();
+			m_pBuilder->createColorBlending();
+			m_pBuilder->createPipeline();
 
 			/*Allocate resources*/
-			builder->allocateResources();
+			m_pBuilder->allocateResources();
 		}
 
 		Pipeline getPipeline()
 		{
-			return builder->getPipeline();
+			return m_pBuilder->getPipeline();
 		}
 
 	  private:
-		PipelineBuilder* builder;
+		PipelineBuilder* m_pBuilder;
 	};
 
 } // namespace st::renderer

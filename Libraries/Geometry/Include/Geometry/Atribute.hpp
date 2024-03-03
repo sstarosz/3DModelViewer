@@ -83,7 +83,7 @@ namespace st::geometry
 		AttributeValue();
 
 		template <typename DataType>
-		AttributeValue(const DataType& value)
+		AttributeValue(const DataType&)
 		{
 			// data = std::as_bytes(std::span{value});
 		}

@@ -57,7 +57,7 @@ namespace st::renderer
 	VkBool32 debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 						   VkDebugUtilsMessageTypeFlagsEXT messageType,
 						   const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-						   void* pUserData)
+						   void*)
 	{
 		std::ostringstream message;
 
@@ -174,7 +174,7 @@ namespace st::renderer
 
 		void waitForPreviousFrame()
 		{
-			auto resultFence = m_vulkanContext.m_device.waitForFences(m_vulkanContext.m_inFlightFences.at(currentFrame),
+			auto resultFence = m_vulkanContext.m_device.waitForFences(m_vulkanContext.m_inFlightFences.at(m_currentFrame),
 																	  VK_TRUE,
 																	  UINT64_MAX);
 			if (resultFence != vk::Result::eSuccess)
@@ -192,7 +192,7 @@ namespace st::renderer
 		{
 			auto [result, imageIndex] = m_vulkanContext.m_device.acquireNextImageKHR(m_vulkanContext.m_swapchain,
 																					 UINT64_MAX,
-																					 m_vulkanContext.m_imageAvailableSemaphores[currentFrame],
+																					 m_vulkanContext.m_imageAvailableSemaphores[m_currentFrame],
 																					 VK_NULL_HANDLE);
 			if (result == vk::Result::eErrorOutOfDateKHR)
 			{
@@ -230,25 +230,25 @@ namespace st::renderer
 			waitForPreviousFrame();
 
 			// Reset the fence for the current frame
-			m_vulkanContext.m_device.resetFences(m_vulkanContext.m_inFlightFences.at(currentFrame));
+			m_vulkanContext.m_device.resetFences(m_vulkanContext.m_inFlightFences.at(m_currentFrame));
 
 			// Acquire swap chain image
 			uint32_t imageIndex = acquireSwapChainImage();
 
 			// Reset the command buffer for the current frame
-			resetCommandBuffer(currentFrame);
+			resetCommandBuffer(m_currentFrame);
 
 			// Record command for the current frame
-			recordCommandBuffer(m_vulkanContext.m_commandBuffers[currentFrame], imageIndex);
+			recordCommandBuffer(m_vulkanContext.m_commandBuffers[m_currentFrame], imageIndex);
 
 			// Submit command buffer
-			submitCommandBuffer(currentFrame);
+			submitCommandBuffer(m_currentFrame);
 
 			// Present image
 			presentImage(imageIndex);
 
 			// Advance to next frame
-			currentFrame = (currentFrame + 1) % m_vulkanContext.MAX_FRAMES_IN_FLIGHT;
+			m_currentFrame = (m_currentFrame + 1) % m_vulkanContext.MAX_FRAMES_IN_FLIGHT;
 		}
 
 		void submitCommandBuffer(uint32_t currentFrame)
@@ -266,11 +266,11 @@ namespace st::renderer
 		void presentImage(uint32_t imageIndex)
 		{
 			vk::PresentInfoKHR presentInfo{
-				m_vulkanContext.m_renderFinishedSemaphores[currentFrame],
+				m_vulkanContext.m_renderFinishedSemaphores[m_currentFrame],
 				m_vulkanContext.m_swapchain,
 				imageIndex};
 
-			vk::Result result;
+			vk::Result result{};
 			try
 			{
 				result = m_vulkanContext.m_presentQueue.presentKHR(presentInfo);
@@ -332,8 +332,8 @@ namespace st::renderer
 			vk::DeviceSize offsets[] = {0};
 			commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
 			commandBuffer.bindIndexBuffer(m_pipeline.resources.indexBuffer, 0, vk::IndexType::eUint32);
-			commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipeline.pipelineLayout, 0, m_pipeline.resources.descriptorSets[currentFrame], {});
-			commandBuffer.drawIndexed(static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+			commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipeline.pipelineLayout, 0, m_pipeline.resources.descriptorSets[m_currentFrame], {});
+			commandBuffer.drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
 
 			commandBuffer.endRenderPass();
 			commandBuffer.end();
@@ -564,7 +564,7 @@ namespace st::renderer
 			std::array<vk::AttachmentDescription, 2> attachments{colorAttachment, depthAttachment};
 
 			// attachment [0] -> color
-			// atachment  [1] -> depth
+			// attachment  [1] -> depth
 			vk::RenderPassCreateInfo renderPassInfo{vk::RenderPassCreateFlags(), attachments, subpass, dependency};
 
 			m_vulkanContext.m_renderPass = m_vulkanContext.m_device.createRenderPass(renderPassInfo);
@@ -824,7 +824,7 @@ namespace st::renderer
 		void updateIndexBuffer()
 		{
 			vk::BufferCreateInfo bufferInfo{{},
-											sizeof(indices[0]) * indices.size(),
+											sizeof(m_indices[0]) * m_indices.size(),
 											vk::BufferUsageFlagBits::eIndexBuffer,
 											vk::SharingMode::eExclusive};
 
@@ -841,7 +841,7 @@ namespace st::renderer
 			m_vulkanContext.m_device.bindBufferMemory(m_pipeline.resources.indexBuffer, m_pipeline.resources.indexBufferMemory, 0);
 
 			void* data = m_vulkanContext.m_device.mapMemory(m_pipeline.resources.indexBufferMemory, 0, bufferInfo.size);
-			memcpy(data, indices.data(), (size_t)bufferInfo.size);
+			memcpy(data, m_indices.data(), (size_t)bufferInfo.size);
 			m_vulkanContext.m_device.unmapMemory(m_pipeline.resources.indexBufferMemory);
 		}
 
@@ -850,7 +850,7 @@ namespace st::renderer
 		Pipeline m_pipeline;
 		PhysicalDevice m_physicalDevice;
 
-		uint32_t currentFrame = 0;
+		uint32_t m_currentFrame = 0;
 		uint32_t framebufferResized = 0;
 
 		uint32_t m_width = 800;
@@ -869,7 +869,7 @@ namespace st::renderer
 			{{-0.5f, 0.5f, 0.0f},  {1.0f, 1.0f, 1.0f}}	// Top-left corner, white
 		};
 
-		std::vector<uint32_t> indices{
+		std::vector<uint32_t> m_indices{
 			0,
 			1,
 			2, // First triangle (bottom-right)

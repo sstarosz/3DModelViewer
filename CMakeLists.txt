@@ -20,6 +20,24 @@ option(Enable_ASAN          "Build with AddressSanitizer" OFF) #TODO
 
 
 #---------------------------------------------------------------------------------------#
+#----------------------------------Project flags----------------------------------------#
+#---------------------------------------------------------------------------------------#
+set(CMAKE_CXX_STANDARD 20)
+
+if(MSVC)
+    add_compile_options(/W4)            #Enable all warnings
+#   add_compile_options(/WX)            #Treat warnings as errors    
+    add_compile_options(/permissive-)   #Disable language extensions
+    add_compile_options(/EHsc)          #Enable C++ exception handling
+else()
+    add_compile_options(-Wall)          #Enable all warnings
+    add_compile_options(-Wextra)        #Enable extra warnings
+    add_compile_options(-Wpedantic)     #Enable pedantic warnings
+#   add_compile_options(-Werror)        #Treat warnings as errors
+endif()
+
+
+#---------------------------------------------------------------------------------------#
 #----------------------------------Project configuration-------------------------------#
 #---------------------------------------------------------------------------------------#
 include(CMake/Deploy.cmake)
