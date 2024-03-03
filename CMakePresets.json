@@ -46,7 +46,7 @@
       }
     },
     {
-      "name": "Windowx-MSVC-x64-Debug",
+      "name": "Window-MSVC-x64-Debug",
       "displayName": "Windows x64 MSVC Debug",
       "description": "Sets Ninja generator, build and install directory",
       "inherits": "Windows-Base",
@@ -55,41 +55,12 @@
       }
     },
     {
-      "name": "Windowx-MSVC-x64-Release",
+      "name": "Window-MSVC-x64-Release",
       "displayName": "Windows x64 MSVC Release",
       "description": "Sets Ninja generator, build and install directory",
       "inherits": "Windows-Base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
-      }
-    },
-    {
-      "name": "Linux-Base",
-      "displayName": "Linux x64 Debug",
-      "description": "Linux Gcc Makefiles",
-      "inherits": [
-        "Base-Configure"
-      ],
-      "generator": "Unix Makefiles",
-      "cacheVariables": {
-        "REMOTE_DEVELOPMENT": true,
-        "BUILD_UNITTESTS": true,
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_CXX_COMPILER": "g++"
-      },
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": "Linux",
-          "intelliSenseMode": "linux-gcc-x64"
-        },
-        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
-          "copyAdditionalIncludeDirectoriesList": [
-            "$env{HOME}/.conan/data",
-            "$env{HOME}/.generatedProto/ptcontrol"
-          ],
-          "copySourcesOptions": { "exclusionList": [ ".vs", ".git", "out", ".svn", ".vscode", "build" ] },
-          "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
-        }
       }
     }
   ],
@@ -104,14 +75,14 @@
     {
       "name": "MSVC-2022-x64-Debug-Build",
       "description": "Windows x64 Debug Build",
-      "configurePreset": "Windowx-MSVC-x64-Debug",
+      "configurePreset": "Window-MSVC-x64-Debug",
       "configuration": "Debug",
       "inherits": "Base-Build"
     },
     {
       "name": "MSVC-2022-x64-Release-Build",
       "description": "Windows x64 Release Build",
-      "configurePreset": "Windowx-MSVC-x64-Release",
+      "configurePreset": "Window-MSVC-x64-Release",
       "configuration": "Release",
       "inherits": "Base-Build"
     },
@@ -134,9 +105,9 @@
       }
     },
     {
-      "name": "Windows-Unittests",
+      "name": "Windows-Unittest",
       "displayName": "Windows Unit Tests",
-      "configurePreset": "Windowx-MSVC-x64-Debug",
+      "configurePreset": "Window-MSVC-x64-Debug",
       "inherits": "Core-Test"
     },
     {

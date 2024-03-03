@@ -1,14 +1,23 @@
 {
     "cSpell.words": [
+        "basetype",
+        "buildsystems",
         "Eigen",
         "Framebuffer",
+        "Mipmap",
         "msvc",
         "multisampling",
+        "Ruleset",
         "Sfloat",
+        "shaderc",
+        "SPIR",
+        "spirv",
         "Subpass",
         "Subresource",
         "Swapchain",
+        "toolset",
         "vcpkg",
+        "vecsize",
         "VKAPI"
     ],
     "cSpell.ignorePaths": [
