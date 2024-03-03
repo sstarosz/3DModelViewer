@@ -39,7 +39,7 @@
             "Windows"
           ],
           "intelliSenseMode": "windows-msvc-x64",
-          "disableExternalAnalysis": true,
+          "disableExternalAnalysis": false,
           "enableMicrosoftCodeAnalysis": true,
           "codeAnalysisRuleset": "AllRules"
         }

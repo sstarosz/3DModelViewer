@@ -46,17 +46,16 @@ include(CMake/Deploy.cmake)
 #---------------------------------------------------------------------------------------#
 #----------------------------------Project dependicies----------------------------------#
 #---------------------------------------------------------------------------------------#
-find_package(Qt6               CONFIG REQUIRED
+find_package(Qt6 CONFIG REQUIRED
              COMPONENTS Core
                         Gui
                         Widgets
                         CoreTools
             )
 
-find_package(Vulkan            REQUIRED
-                COMPONENTS
-                glslc 
-                shaderc_combined
+find_package(Vulkan REQUIRED
+                COMPONENTS  glslc 
+                            shaderc_combined
             )
 
 find_package(Stb                      REQUIRED)

@@ -307,7 +307,7 @@ namespace st::renderer
 
 			vk::RenderPassBeginInfo renderPassInfo{m_vulkanContext.m_renderPass,
 												   m_vulkanContext.m_swapchainFramebuffers[imageIndex],
-												   vk::Rect2D((0, 0), m_vulkanContext.m_swapchainExtent),
+												   vk::Rect2D{vk::Offset2D{0, 0}, m_vulkanContext.m_swapchainExtent},
 												   clearValues};
 
 			commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
