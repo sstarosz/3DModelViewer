@@ -6,18 +6,18 @@
 namespace st::ui
 {
 
-class Viewport : public QWidget
-{
-    Q_OBJECT
+	class Viewport : public QWidget
+	{
+		Q_OBJECT
 
-    public:
-        explicit Viewport(QWidget *parent = nullptr, Qt::WindowFlags flags = {});
+	  public:
+		explicit Viewport(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
 
-    private:
-        class PrivateWindow;
-        PrivateWindow* m_window;
-};
+	  private:
+		class PrivateWindow;
+		PrivateWindow* m_window;
+	};
 
-}//namespace st::ui
+} // namespace st::ui
 
-#endif //ST_UI_VIEWPORT_HPP
+#endif // ST_UI_VIEWPORT_HPP

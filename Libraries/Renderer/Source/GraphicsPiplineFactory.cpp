@@ -3,9 +3,4 @@
 namespace st::geometry
 {
 
-
-
-
-
-
-}   // namespace st::geometry
+} // namespace st::geometry

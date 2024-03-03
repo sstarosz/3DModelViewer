@@ -3,21 +3,17 @@
 
 #include <QMainWindow>
 
-
 namespace st::ui
 {
 
+	class MainWindow : public QMainWindow
+	{
+		Q_OBJECT
 
-class MainWindow : public QMainWindow
-{
-    Q_OBJECT
+	  public:
+		explicit MainWindow(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
+	};
 
-    public:
-        explicit MainWindow(QWidget *parent = nullptr, Qt::WindowFlags flags = {}); 
-};
+} // namespace st::ui
 
-
-
-}//namespace st::ui
-
-#endif //ST_UI_MAINWINDOW_HPP
+#endif // ST_UI_MAINWINDOW_HPP

@@ -11,6 +11,7 @@ set(Sources
     "Source/Renderer.cpp"
     "Source/PhysicalDevice.cpp"
     "Source/QueueFamily.cpp"
+    "Source/GraphicsPiplineFactory.cpp"
     )
 
 set(Public_Headers

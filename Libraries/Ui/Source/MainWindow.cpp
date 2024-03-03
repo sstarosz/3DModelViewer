@@ -7,17 +7,18 @@
 
 namespace st::ui
 {
-    MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags)
-    {
-        setWindowTitle("StModelViewer");
-        
-        Viewport *viewport = new Viewport();
-        QWidget *centralWidget = new QWidget(this);
-        QHBoxLayout *layout = new QHBoxLayout(centralWidget);
-        layout->addWidget(viewport);
-        layout->addWidget(new QLabel("Hello World!"));
+	MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags) :
+		QMainWindow(parent, flags)
+	{
+		setWindowTitle("StModelViewer");
 
-        setCentralWidget(centralWidget);
-    }
+		Viewport* viewport = new Viewport();
+		QWidget* centralWidget = new QWidget(this);
+		QHBoxLayout* layout = new QHBoxLayout(centralWidget);
+		layout->addWidget(viewport);
+		layout->addWidget(new QLabel("Hello World!"));
 
-}//namespace st::ui
+		setCentralWidget(centralWidget);
+	}
+
+} // namespace st::ui

@@ -7,21 +7,21 @@ namespace vk
 {
 	class PhysicalDevice;
 	class SurfaceKHR;
-}
+} // namespace vk
 
 namespace st::renderer
 {
 
-struct QueueFamily
-{
-    std::optional<uint32_t> m_graphicsFamily = -1;
-    std::optional<uint32_t> m_presentFamily = -1;
+	struct QueueFamily
+	{
+		std::optional<uint32_t> m_graphicsFamily = -1;
+		std::optional<uint32_t> m_presentFamily = -1;
 
-    [[nodiscard]] bool isComplete() const;
+		[[nodiscard]] bool isComplete() const;
 
-    static QueueFamily findQueueFamilies(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface);
-};
+		static QueueFamily findQueueFamilies(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface);
+	};
 
 } // namespace st::renderer
 
-#endif //ST_RENDERER_QUEUEFAMILY_HPP
+#endif // ST_RENDERER_QUEUEFAMILY_HPP
