@@ -17,4 +17,4 @@ set(Sources
 add_executable(${PROJECT_NAME} ${Sources})
 
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Renderer)
+target_link_libraries(${PROJECT_NAME} PRIVATE Core Renderer)
