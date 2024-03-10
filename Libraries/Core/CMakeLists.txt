@@ -10,11 +10,15 @@ project(Core
 set(Sources
     "Source/Scene.cpp"
     "Source/Camera.cpp"
+    "Source/Transform.cpp"
+    "Source/StObject.cpp"
     )
 
 set(Public_Headers
     "Include/Core/Scene.hpp"
     "Include/Core/Camera.hpp"
+    "Include/Core/Transform.hpp"
+    "Include/Core/StObject.hpp"
     )
 
 set(Private_Headers

@@ -1,16 +1,17 @@
 #ifndef ST_CORE_CAMERA_HPP
 #define ST_CORE_CAMERA_HPP
 
-#include <memory>
+#include "StObject.hpp"
 #include <Eigen/Core>
+#include <memory>
 
 namespace st::core
 {
-    class Camera
+    class Camera : public StObject
     {
     public:
         Camera();
-        Camera(const Eigen::Vector3f& position, const Eigen::Vector3f& target, const Eigen::Vector3f& up);
+        Camera(float angleOfView, float focalLength, float nearClippingPlane, float farClippingPlane);
         ~Camera();
         Camera(const Camera&) = delete;
         Camera(Camera&&) = delete;
@@ -18,12 +19,16 @@ namespace st::core
         Camera& operator=(Camera&&) = delete;
 
         // Setters
-        void setViewMatrix(const Eigen::Matrix4f& viewMatrix);
-        void setProjectionMatrix(const Eigen::Matrix4f& projectionMatrix);
+        void setAngleOfView(float angleOfView);
+        void setFocalLength(float focalLength);
+        void setNearClippingPlane(float nearClippingPlane);
+        void setFarClippingPlane(float farClippingPlane);
 
         // Getters
-        const Eigen::Matrix4f getViewMatrix() const;
-        const Eigen::Matrix4f getProjectionMatrix() const;
+        const float getAngleOfView() const;
+        const float getFocalLength() const;
+        const float getNearClippingPlane() const;
+        const float getFarClippingPlane() const;
 
 
 

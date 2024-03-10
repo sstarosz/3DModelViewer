@@ -6,32 +6,29 @@ namespace st::core
     {
     public:
         PrivateCamera() :
-            viewMatrix(Eigen::Matrix4f::Identity()),
-            projectionMatrix(Eigen::Matrix4f::Identity()),
-            position(Eigen::Vector3f(0.0f, 0.0f, 0.0f)),
-            target(Eigen::Vector3f(0.0f, 0.0f, 0.0f)),
-            up(Eigen::Vector3f(0.0f, 0.0f, 0.0f))
+            m_angleOfView(45.0f),
+            m_focalLength(35.0f),
+            m_nearClippingPlane(0.1f),
+            m_farClippingPlane(10000.0f)
         {
         }
 
-        PrivateCamera(const Eigen::Vector3f& position, const Eigen::Vector3f& target, const Eigen::Vector3f& up) :
-            viewMatrix(Eigen::Matrix4f::Identity()),
-            projectionMatrix(Eigen::Matrix4f::Identity()),
-            position(position),
-            target(target),
-            up(up)
+        PrivateCamera(float angleOfView, float focalLength, float nearClippingPlane, float farClippingPlane) :
+            m_angleOfView(angleOfView),
+            m_focalLength(focalLength),
+            m_nearClippingPlane(nearClippingPlane),
+            m_farClippingPlane(farClippingPlane)
         {
         }
 
 
 
     public:
-        Eigen::Matrix4f viewMatrix;
-        Eigen::Matrix4f projectionMatrix;
+        float m_angleOfView;
+        float m_focalLength;
 
-        Eigen::Vector3f position;
-        Eigen::Vector3f target;
-        Eigen::Vector3f up;
+        float m_nearClippingPlane;
+        float m_farClippingPlane;
     };
 
 
@@ -43,34 +40,53 @@ namespace st::core
     {
     }
 
-    Camera::Camera(const Eigen::Vector3f& position, const Eigen::Vector3f& target, const Eigen::Vector3f& up): 
-        m_privateCamera(std::make_unique<PrivateCamera>())
+    Camera::Camera(float angleOfView, float focalLength, float nearClippingPlane, float farClippingPlane): 
+        m_privateCamera(std::make_unique<PrivateCamera>(angleOfView, focalLength, nearClippingPlane, farClippingPlane))
     {
-        m_privateCamera->position = position;
-        m_privateCamera->target = target;
-        m_privateCamera->up = up;
-    }
-
-    void Camera::setViewMatrix(const Eigen::Matrix4f& viewMatrix)
-    {
-        m_privateCamera->viewMatrix = viewMatrix;
-    }
-
-    void Camera::setProjectionMatrix(const Eigen::Matrix4f& projectionMatrix)
-    {
-        m_privateCamera->projectionMatrix = projectionMatrix;
-    }
-
-    const Eigen::Matrix4f Camera::getViewMatrix() const
-    {
-        return m_privateCamera->viewMatrix;
-    }
-
-    const Eigen::Matrix4f Camera::getProjectionMatrix() const
-    {
-        return m_privateCamera->projectionMatrix;
     }
 
     Camera::~Camera() = default;
+
+    void Camera::setAngleOfView(float angleOfView)
+    {
+        m_privateCamera->m_angleOfView = angleOfView;
+    }
+
+    void Camera::setFocalLength(float focalLength)
+    {
+        m_privateCamera->m_focalLength = focalLength;
+    }
+
+    void Camera::setNearClippingPlane(float nearClippingPlane)
+    {
+        m_privateCamera->m_nearClippingPlane = nearClippingPlane;
+    }
+
+    void Camera::setFarClippingPlane(float farClippingPlane)
+    {
+        m_privateCamera->m_farClippingPlane = farClippingPlane;
+    }
+
+    const float Camera::getAngleOfView() const
+    {
+        return m_privateCamera->m_angleOfView;
+    }
+
+    const float Camera::getFocalLength() const
+    {
+        return m_privateCamera->m_focalLength;
+    }
+
+    const float Camera::getNearClippingPlane() const
+    {
+        return m_privateCamera->m_nearClippingPlane;
+    }
+
+    const float Camera::getFarClippingPlane() const
+    {
+        return m_privateCamera->m_farClippingPlane;
+    }
+
+    
 
 } // namespace st::core
