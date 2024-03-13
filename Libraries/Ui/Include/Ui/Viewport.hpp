@@ -3,6 +3,11 @@
 
 #include <QWidget>
 
+namespace st::renderer
+{
+	class Renderer;
+}
+
 namespace st::ui
 {
 
@@ -12,6 +17,8 @@ namespace st::ui
 
 	  public:
 		explicit Viewport(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
+
+		void embedRenderer(renderer::Renderer& renderer);
 
 	  private:
 		class PrivateWindow;

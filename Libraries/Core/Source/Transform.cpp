@@ -17,7 +17,7 @@ namespace st::core
     {
     }
 
-    Transform::Transform(StObject& object): m_privateTransform(std::make_unique<PrivateTransform>())
+    Transform::Transform(StObject& /*object*/): m_privateTransform(std::make_unique<PrivateTransform>())
     {
     }
 
@@ -26,7 +26,7 @@ namespace st::core
         return Eigen::Vector3f();
     }
 
-    void Transform::setTranslation(const Eigen::Vector3f& translation)
+    void Transform::setTranslation(const Eigen::Vector3f& /*translation*/)
     {
     }
 

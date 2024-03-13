@@ -1,4 +1,7 @@
 #include "Scene.hpp"
+#include "Camera.hpp"
+
+#include <vector>
 
 namespace st::core
 {
@@ -8,6 +11,9 @@ namespace st::core
         PrivateScene()
         {
         }
+
+
+        std::vector<Camera> m_cameras;
     };
 
 
@@ -24,8 +30,9 @@ namespace st::core
     {
     }
 
-    void Scene::addCamera(const Camera& camera)
+    void Scene::addCamera(Camera&& camera)
     {
+        m_privateScene->m_cameras.emplace_back(std::move(camera));
     }
 
     Scene::~Scene() = default;

@@ -80,10 +80,15 @@ namespace st::ui
 		QWidget(parent, flags),
 		m_window(new PrivateWindow)
 	{
-		QWidget* vulkaWidget = QWidget::createWindowContainer(m_window, this);
+		QWidget* vulkanWidget = QWidget::createWindowContainer(m_window, this);
 
 		QHBoxLayout* layout = new QHBoxLayout(this);
-		layout->addWidget(vulkaWidget);
+		layout->addWidget(vulkanWidget);
+	}
+
+	void Viewport::embedRenderer(renderer::Renderer& renderer)
+	{
+		//m_window->m_renderer = std::move(renderer);
 	}
 
 } // namespace st::ui

@@ -2,7 +2,6 @@
 #define ST_CORE_CAMERA_HPP
 
 #include "StObject.hpp"
-#include <Eigen/Core>
 #include <memory>
 
 namespace st::core
@@ -14,9 +13,9 @@ namespace st::core
         Camera(float angleOfView, float focalLength, float nearClippingPlane, float farClippingPlane);
         ~Camera();
         Camera(const Camera&) = delete;
-        Camera(Camera&&) = delete;
+        Camera(Camera&&) noexcept;
         Camera& operator=(const Camera&) = delete;
-        Camera& operator=(Camera&&) = delete;
+        Camera& operator=(Camera&&);
 
         // Setters
         void setAngleOfView(float angleOfView);
@@ -25,10 +24,10 @@ namespace st::core
         void setFarClippingPlane(float farClippingPlane);
 
         // Getters
-        const float getAngleOfView() const;
-        const float getFocalLength() const;
-        const float getNearClippingPlane() const;
-        const float getFarClippingPlane() const;
+        float getAngleOfView() const;
+        float getFocalLength() const;
+        float getNearClippingPlane() const;
+        float getFarClippingPlane() const;
 
 
 

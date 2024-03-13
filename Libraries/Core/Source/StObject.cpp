@@ -10,8 +10,7 @@ namespace st::core
         {
         }
 
-        private:
-        int m_dummy;
+        int32_t m_dummy;
     };
 
     /*---------------------*/
@@ -22,6 +21,10 @@ namespace st::core
     }
 
     StObject::~StObject() = default;
+
+    StObject::StObject(StObject&&) = default;
+
+    StObject& StObject::operator=(StObject&&) = default;
 
 
 } // namespace st::core

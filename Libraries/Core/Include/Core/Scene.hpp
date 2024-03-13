@@ -2,10 +2,16 @@
 #define ST_CORE_SCENE_HPP
 
 #include <memory>
-#include "Camera.hpp"
 
 namespace st::core
 {
+    class Camera;
+} // namespace st::core
+
+namespace st::core
+{
+
+
     class Scene
     {
     public:
@@ -17,7 +23,7 @@ namespace st::core
         Scene& operator=(Scene&&) = delete;
 
         void addModel();
-        void addCamera(const Camera& camera);
+        void addCamera(Camera&& camera);
 
     private:
         class PrivateScene;

@@ -25,6 +25,7 @@ option(Enable_ASAN          "Build with AddressSanitizer" OFF) #TODO
 set(CMAKE_CXX_STANDARD 20)
 
 if(MSVC)
+    message(STATUS "MSVC detected")
     add_compile_options(/W4)            #Enable all warnings
 #   add_compile_options(/WX)            #Treat warnings as errors    
     add_compile_options(/permissive-)   #Disable language extensions

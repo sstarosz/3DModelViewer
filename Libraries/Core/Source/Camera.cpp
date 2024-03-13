@@ -47,6 +47,10 @@ namespace st::core
 
     Camera::~Camera() = default;
 
+    Camera::Camera(Camera&&) noexcept = default;
+
+    Camera& Camera::operator=(Camera&&) = default;
+
     void Camera::setAngleOfView(float angleOfView)
     {
         m_privateCamera->m_angleOfView = angleOfView;
@@ -67,22 +71,22 @@ namespace st::core
         m_privateCamera->m_farClippingPlane = farClippingPlane;
     }
 
-    const float Camera::getAngleOfView() const
+    float Camera::getAngleOfView() const
     {
         return m_privateCamera->m_angleOfView;
     }
 
-    const float Camera::getFocalLength() const
+    float Camera::getFocalLength() const
     {
         return m_privateCamera->m_focalLength;
     }
 
-    const float Camera::getNearClippingPlane() const
+    float Camera::getNearClippingPlane() const
     {
         return m_privateCamera->m_nearClippingPlane;
     }
 
-    const float Camera::getFarClippingPlane() const
+    float Camera::getFarClippingPlane() const
     {
         return m_privateCamera->m_farClippingPlane;
     }

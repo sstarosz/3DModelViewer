@@ -17,4 +17,9 @@ set(Sources
 add_executable(${PROJECT_NAME} ${Sources})
 
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Core Renderer)
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+                                            Core 
+                                            Renderer
+                                            Ui
+                                            Qt6::Widgets
+                                            )

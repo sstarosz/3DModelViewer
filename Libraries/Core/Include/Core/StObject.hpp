@@ -11,9 +11,9 @@ namespace st::core
         StObject();
         ~StObject();
         StObject(const StObject&) = delete;
-        StObject(StObject&&) = delete;
+        StObject(StObject&&);
         StObject& operator=(const StObject&) = delete;
-        StObject& operator=(StObject&&) = delete;
+        StObject& operator=(StObject&&);
 
 
     private:

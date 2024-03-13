@@ -4,6 +4,11 @@
 #include <memory>
 #include <vulkan/vulkan.hpp>
 
+namespace st::core
+{
+	class Scene;
+}
+
 namespace st::renderer
 {
 
@@ -13,13 +18,15 @@ namespace st::renderer
 		Renderer();
 		~Renderer();
 		Renderer(const Renderer&) = delete;
-		Renderer(Renderer&&) = delete;
+		Renderer(Renderer&&) = default;
+		
 		Renderer& operator=(const Renderer&) = delete;
-		Renderer& operator=(Renderer&&) = delete;
+		Renderer& operator=(Renderer&&) = default;
 
 
 		void init();
 		void render();
+		void render(const core::Scene& scene);
 
 		vk::Instance createInstance() const;
 		void setSurface(vk::SurfaceKHR surface);

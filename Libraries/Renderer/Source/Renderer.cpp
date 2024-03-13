@@ -3,9 +3,12 @@
 #include "QueueFamily.hpp"
 #include "VisualAidsPipline.hpp"
 #include "VulkanContext.hpp"
-#include <vector>
+#include "Core/Scene.hpp"
 
 #include <Eigen/Core>
+#include <vulkan/vulkan.hpp>
+
+#include <vector>
 #include <array>
 #include <filesystem>
 #include <fstream>
@@ -13,7 +16,6 @@
 #include <numeric>
 #include <set>
 #include <sstream>
-#include <vulkan/vulkan.hpp>
 
 PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT;
 PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
@@ -250,6 +252,36 @@ namespace st::renderer
 			// Advance to next frame
 			m_currentFrame = (m_currentFrame + 1) % m_vulkanContext.MAX_FRAMES_IN_FLIGHT;
 		}
+
+		void render(const core::Scene& /*scene*/)
+		{
+			//TODO implement rendering scene
+
+			// Wait for previous frame to finish
+			waitForPreviousFrame();
+
+			// Reset the fence for the current frame
+			m_vulkanContext.m_device.resetFences(m_vulkanContext.m_inFlightFences.at(m_currentFrame));
+
+			// Acquire swap chain image
+			uint32_t imageIndex = acquireSwapChainImage();
+
+			// Reset the command buffer for the current frame
+			resetCommandBuffer(m_currentFrame);
+
+			// Record command for the current frame
+			recordCommandBuffer(m_vulkanContext.m_commandBuffers[m_currentFrame], imageIndex);
+
+			// Submit command buffer
+			submitCommandBuffer(m_currentFrame);
+
+			// Present image
+			presentImage(imageIndex);
+
+			// Advance to next frame
+			m_currentFrame = (m_currentFrame + 1) % m_vulkanContext.MAX_FRAMES_IN_FLIGHT;
+		}
+
 
 		void submitCommandBuffer(uint32_t currentFrame)
 		{
@@ -897,6 +929,11 @@ namespace st::renderer
 	void Renderer::render()
 	{
 		m_privateRenderer->render();
+	}
+
+	void Renderer::render(const core::Scene& scene)
+	{
+		
 	}
 
 	void Renderer::setSurface(vk::SurfaceKHR surface)
