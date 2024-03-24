@@ -56,7 +56,14 @@ jobs:
 
     ## Install missing dependencies
     - name : Install Ninja
-      uses: seanmiddleditch/gha-setup-ninja@master
+      run: >
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            choco install ninja
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+            brew install ninja
+          else
+            sudo apt-get install ninja-build
+          fi
 
 
     ## CMake configuration and build steps
