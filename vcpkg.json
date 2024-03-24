@@ -19,6 +19,9 @@
       "name": "spirv-cross"
     },
     {
+      "name": "shaderc"
+    },
+    {
       "name": "qtbase",
       "features": [
         "widgets",
