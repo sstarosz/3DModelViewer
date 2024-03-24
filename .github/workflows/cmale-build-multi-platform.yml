@@ -54,16 +54,11 @@ jobs:
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
-    ## Install missing dependencies
-    - name : Install Ninja
-      run: >
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
-            choco install ninja
-          elif [[ "${{ runner.os }}" == "macOS" ]]; then
-            brew install ninja
-          else
-            sudo apt-get install ninja-build
-          fi
+    ## Install missing dependencies on windows, linux and macos using package managers
+    - name: Install Ninja on Windows
+      if: matrix.os == 'windows-latest'
+      run: choco install ninja -y
+
 
 
     ## CMake configuration and build steps
