@@ -73,7 +73,10 @@ jobs:
         echo "VCPKG_BINARY_SOURCES is $VCPKG_BINARY_SOURCES"
 
     - name: Print MSVC version
-      run: cl.exe
+      run: |
+      .\vcvarsall.bat x64
+      echo $MSVC_VERSION
+      echo $VCToolsVersion
 
     ### Install missing dependencies on windows, linux and macos using package managers
     - name: Install Ninja
