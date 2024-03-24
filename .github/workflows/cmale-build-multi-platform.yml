@@ -72,16 +72,14 @@ jobs:
         echo "VCPKG_ROOT is $VCPKG_ROOT"
         echo "VCPKG_BINARY_SOURCES is $VCPKG_BINARY_SOURCES"
 
-    - name: Print MSVC version
-      run: |
-      .\vcvarsall.bat x64
-      echo $MSVC_VERSION
-      echo $VCToolsVersion
+
 
     ### Install missing dependencies on windows, linux and macos using package managers
     - name: Install Ninja
       uses: seanmiddleditch/gha-setup-ninja@master
-
+      
+    - name: Setup VS Environment
+      uses: seanmiddleditch/gha-setup-vsdevenv@master
 
 
     ## CMake configuration and build steps
