@@ -79,9 +79,9 @@ jobs:
       shell: bash
       run: echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
 
-   - name: "Check if VCPKG_ROOT is set"
-      run: echo "VCPKG_ROOT=$VCPKG_ROOT"
-      
+    - name: "Check if VCPKG_ROOT is set"
+        run: echo "VCPKG_ROOT=$VCPKG_ROOT"
+
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
