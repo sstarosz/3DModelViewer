@@ -54,6 +54,13 @@ jobs:
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
+    ## Debugging steps
+    - name: Print GitHub workspace
+      run: echo $GITHUB_WORKSPACE
+
+    - name: Print all environment variables
+      run: printenv
+
     ## Install missing dependencies on windows, linux and macos using package managers
     - name: Install Ninja on Windows
       if: matrix.os == 'windows-latest'
