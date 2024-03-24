@@ -77,10 +77,15 @@ jobs:
     ### Install missing dependencies on windows, linux and macos using package managers
     - name: Install Ninja
       uses: seanmiddleditch/gha-setup-ninja@master
-      
+
     - name: Setup VS Environment
       uses: seanmiddleditch/gha-setup-vsdevenv@master
 
+    - name: Install Vulkan SDK
+      uses: seanmiddleditch/gha-setup-vulkan-sdk@master
+      with:
+        vulkan-components: Vulkan-Headers Vulkan-Loader
+        vulkan-use-cache: true
 
     ## CMake configuration and build steps
     - name : Print available cmake presets
