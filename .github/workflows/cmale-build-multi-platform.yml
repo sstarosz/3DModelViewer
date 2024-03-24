@@ -54,6 +54,10 @@ jobs:
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
+    ## Install missing dependencies
+    - name : Install Ninja
+      uses: seanmiddleditch/gha-setup-ninja@master
+
 
     ## CMake configuration and build steps
     - name : Print available cmake presets
@@ -62,7 +66,6 @@ jobs:
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      uses: seanmiddleditch/gha-setup-ninja@master
       env:
         VCPKG_ROOT: ${{ env.VCPKG_INSTALLATION_ROOT }}
         VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"

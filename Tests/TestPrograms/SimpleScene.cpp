@@ -5,6 +5,7 @@
 
 #include "Renderer/Renderer.hpp"
 #include "Ui/Viewport.hpp"
+#include "Geometry/Grid.hpp"
 
 #include <QApplication>
 
@@ -47,8 +48,14 @@ int main(int argc, char* argv[])
 
 
     //viewport.embedRenderer(&renderer);
+    //Renderer
+    //renderer
 
-    
+    //Show Viewport
+    viewport.embedRenderer(std::move(renderer));
+    viewport.embedScene(std::move(scene));
+
+    viewport.setGeometry(100, 100, 800, 600);
     viewport.show();
     return QApplication::exec();
 }

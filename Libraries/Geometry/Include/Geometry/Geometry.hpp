@@ -1,8 +1,8 @@
 #ifndef ST_GEOMETRY_GEOMETRY_HPP
 #define ST_GEOMETRY_GEOMETRY_HPP
 
-#include "Atribute.hpp"
-#include <map>
+#include "Vertex.hpp"
+#include <vector>
 
 namespace st::geometry
 {
@@ -14,14 +14,7 @@ namespace st::geometry
 	class Geometry
 	{
 	  public:
-		template <typename DataType>
-		void addAttribute(const std::string& name, const Attribute::Type& type, const DataType& value)
-		{
-			attributes.insert(std::make_pair(Attribute(name, type), AttributeValue(value)));
-		}
-
-	  private:
-		std::map<Attribute, AttributeValue> attributes;
+		virtual const std::vector<Vertex>& getVertices() const = 0;
 	};
 
 } // namespace st::geometry

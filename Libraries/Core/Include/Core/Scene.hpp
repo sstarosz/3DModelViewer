@@ -18,9 +18,9 @@ namespace st::core
         Scene();
         ~Scene();
         Scene(const Scene&) = delete;
-        Scene(Scene&&) = delete;
+        Scene(Scene&&) noexcept;
         Scene& operator=(const Scene&) = delete;
-        Scene& operator=(Scene&&) = delete;
+        Scene& operator=(Scene&&) noexcept;
 
         void addModel();
         void addCamera(Camera&& camera);

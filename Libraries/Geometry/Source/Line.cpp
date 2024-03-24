@@ -3,14 +3,7 @@
 namespace st::geometry
 {
 
-	Line::Line() :
-		start(),
-		end()
-	{
-		addAttribute("vertexPosition", Attribute::Type::eFloat, start);
-	}
-
-	Line::Line(const Point3D& start, const Point3D& end) :
+	Line::Line(const Eigen::Vector3f& start, const Eigen::Vector3f& end):
 		start(start),
 		end(end)
 	{

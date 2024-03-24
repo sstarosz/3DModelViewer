@@ -19,7 +19,10 @@ add_executable(${PROJECT_NAME} ${Sources})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
                                             Core 
+                                            Geometry
                                             Renderer
                                             Ui
                                             Qt6::Widgets
                                             )
+
+Deploy_QT(${PROJECT_NAME})

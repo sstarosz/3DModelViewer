@@ -241,7 +241,7 @@ namespace st::renderer
 			resetCommandBuffer(m_currentFrame);
 
 			// Record command for the current frame
-			recordCommandBuffer(m_vulkanContext.m_commandBuffers[m_currentFrame], imageIndex);
+			//recordCommandBuffer(m_vulkanContext.m_commandBuffers[m_currentFrame], imageIndex);
 
 			// Submit command buffer
 			submitCommandBuffer(m_currentFrame);
@@ -253,7 +253,7 @@ namespace st::renderer
 			m_currentFrame = (m_currentFrame + 1) % m_vulkanContext.MAX_FRAMES_IN_FLIGHT;
 		}
 
-		void render(const core::Scene& /*scene*/)
+		void render(const core::Scene& scene)
 		{
 			//TODO implement rendering scene
 
@@ -270,7 +270,7 @@ namespace st::renderer
 			resetCommandBuffer(m_currentFrame);
 
 			// Record command for the current frame
-			recordCommandBuffer(m_vulkanContext.m_commandBuffers[m_currentFrame], imageIndex);
+			recordCommandBuffer(m_vulkanContext.m_commandBuffers[m_currentFrame], scene, imageIndex);
 
 			// Submit command buffer
 			submitCommandBuffer(m_currentFrame);
@@ -328,7 +328,7 @@ namespace st::renderer
 			}
 		}
 
-		void recordCommandBuffer(vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
+		void recordCommandBuffer(vk::CommandBuffer& commandBuffer, const core::Scene& /*scene*/, uint32_t imageIndex)
 		{
 			commandBuffer.begin(vk::CommandBufferBeginInfo{});
 
@@ -343,6 +343,8 @@ namespace st::renderer
 												   clearValues};
 
 			commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+
+			//Material
 			commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.pipeline);
 
 			vk::Viewport viewport{0.0F,
@@ -360,6 +362,7 @@ namespace st::renderer
 			commandBuffer.setViewport(0, 1, &viewport);
 			commandBuffer.setScissor(0, 1, &scissor);
 
+			//Object
 			vk::Buffer vertexBuffers[] = {m_pipeline.resources.vertexBuffer};
 			vk::DeviceSize offsets[] = {0};
 			commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
@@ -921,6 +924,10 @@ namespace st::renderer
 
 	Renderer::~Renderer() = default;
 
+	Renderer::Renderer(Renderer&&) noexcept = default;
+
+	Renderer& Renderer::operator=(Renderer&&) noexcept = default;
+
 	void Renderer::init()
 	{
 		m_privateRenderer->init();
@@ -933,7 +940,7 @@ namespace st::renderer
 
 	void Renderer::render(const core::Scene& scene)
 	{
-		
+		m_privateRenderer->render(scene);
 	}
 
 	void Renderer::setSurface(vk::SurfaceKHR surface)

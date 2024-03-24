@@ -18,10 +18,10 @@ namespace st::renderer
 		Renderer();
 		~Renderer();
 		Renderer(const Renderer&) = delete;
-		Renderer(Renderer&&) = default;
+		Renderer(Renderer&&) noexcept;
 		
 		Renderer& operator=(const Renderer&) = delete;
-		Renderer& operator=(Renderer&&) = default;
+		Renderer& operator=(Renderer&&) noexcept;
 
 
 		void init();

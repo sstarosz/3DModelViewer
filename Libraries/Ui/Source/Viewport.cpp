@@ -5,7 +5,8 @@
 #include <QVulkanInstance>
 #include <QWindow>
 
-#include <Renderer/Renderer.hpp>
+#include "Renderer/Renderer.hpp"
+#include "Core/Scene.hpp"
 
 namespace st::ui
 {
@@ -57,13 +58,25 @@ namespace st::ui
 			m_renderer.changeSwapchainExtent(width(), height());
 		}
 
+		void setRenderer(renderer::Renderer&& renderer)
+		{
+			m_renderer = std::move(renderer);
+		}
+
+		void setScene(core::Scene&& scene)
+		{
+			m_scene = std::move(scene);
+		}
+
 	  private:
 		// Main loop
 		void update()
 		{
 			if (m_initialized)
 			{
-				m_renderer.render();
+				m_renderer.render(m_scene);
+
+
 				requestUpdate();
 			}
 		}
@@ -71,6 +84,7 @@ namespace st::ui
 		bool m_initialized = false;
 		QTimer m_timer;
 		renderer::Renderer m_renderer;
+		core::Scene m_scene;
 	};
 
 	/*---------------------*/
@@ -86,9 +100,14 @@ namespace st::ui
 		layout->addWidget(vulkanWidget);
 	}
 
-	void Viewport::embedRenderer(renderer::Renderer& renderer)
+	void Viewport::embedRenderer(renderer::Renderer&& renderer)
 	{
-		//m_window->m_renderer = std::move(renderer);
+		m_window->setRenderer(std::move(renderer));
+	}
+
+	void Viewport::embedScene(core::Scene&& scene)
+	{
+
 	}
 
 } // namespace st::ui

@@ -37,4 +37,8 @@ namespace st::core
 
     Scene::~Scene() = default;
 
+    Scene::Scene(Scene&&) noexcept = default;
+
+    Scene& Scene::operator=(Scene&&) noexcept = default;
+
 } // namespace st::core

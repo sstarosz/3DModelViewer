@@ -1,8 +1,8 @@
 #ifndef ST_GEOMETRY_LINE_HPP
 #define ST_GEOMETRY_LINE_HPP
 
-#include <Geometry.hpp>
-#include <Point3D.hpp>
+#include "Geometry.hpp"
+#include "Vertex.hpp"
 
 namespace st::geometry
 {
@@ -10,12 +10,16 @@ namespace st::geometry
 	class Line : public Geometry
 	{
 	  public:
-		Line();
-		Line(const Point3D& start, const Point3D& end);
+		Line(const Eigen::Vector3f& start, const Eigen::Vector3f& end);
+
+		const std::vector<Vertex>& getVertices() const override
+		{
+			return {start, end};
+		}
 
 	  private:
-		Point3D start;
-		Point3D end;
+		Vertex start;
+		Vertex end;
 	};
 
 } // namespace st::geometry
