@@ -75,14 +75,9 @@ jobs:
     - name : Print available cmake presets
       run: cmake --list-presets=all .
 
-    - name: Setup vcpkg env variable test
-      env:
-        VCPKG_ROOT: ${{ env.VCPKG_INSTALLATION_ROOT }}
-      run: | 
-        echo "VCPKG_ROOT=$VCPKG_ROOT"
-        echo "VCPKG_INSTALLATION_ROOT=$VCPKG_INSTALLATION_ROOT"
-        echo "VCPKG_INSTALLATION_ROOT = ${{ env.VCPKG_INSTALLATION_ROOT }}"
-        ls $VCPKG_ROOT
+    - name: "Set vcpkg environmental variables"
+      shell: bash
+      run: echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
