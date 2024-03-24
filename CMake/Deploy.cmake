@@ -14,7 +14,6 @@ function(Deploy_QT TARGET)
         COMMAND ${WINDEPLOYQT_EXECUTABLE} 
         --debug                                                         #TODO: Remove this when we have a release build
         --no-translations
-        --no-virtualkeyboard
         --no-system-d3d-compiler
         --no-opengl-sw 
         $<TARGET_FILE:${PROJECT_NAME}>
