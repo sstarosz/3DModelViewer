@@ -78,9 +78,9 @@ jobs:
     - name: "Set vcpkg environmental variables"
       shell: bash
       run: echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
-      
+
     - name: "Check if VCPKG_ROOT is set"
-      run: echo "VCPKG_ROOT=$VCPKG_ROOT"
+      run: echo "VCPKG_ROOT=${{ env.action_state }}"
 
 
     - name: Configure CMake
