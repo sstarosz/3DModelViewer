@@ -61,10 +61,13 @@ jobs:
     - name: Print all environment variables
       run: printenv
 
-    ## Install missing dependencies on windows, linux and macos using package managers
-    - name: Install Ninja on Windows
-      if: matrix.os == 'windows-latest'
-      run: choco install ninja -y
+    - name:  Use VCPKG_INSTALLATION_ROOT
+      run: echo "VCPKG_INSTALLATION_ROOT is $VCPKG_INSTALLATION_ROOT"
+
+    ### Install missing dependencies on windows, linux and macos using package managers
+    #- name: Install Ninja on Windows
+    #  if: matrix.os == 'windows-latest'
+    #  run: choco install ninja -y
 
 
 
@@ -78,6 +81,7 @@ jobs:
       run: | 
         echo "VCPKG_ROOT=$VCPKG_ROOT"
         echo "VCPKG_INSTALLATION_ROOT=$VCPKG_INSTALLATION_ROOT"
+        echo "VCPKG_INSTALLATION_ROOT = ${{ env.VCPKG_INSTALLATION_ROOT }}"
         ls $VCPKG_ROOT
 
     - name: Configure CMake
