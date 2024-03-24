@@ -30,8 +30,7 @@
         "strategy": "external"
       },
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "cl.exe",
-        "CMAKE_PREFIX_PATH": "C:/Qt/6.4.2/msvc2019_64/;${sourceDir}/CMake;"
+        "CMAKE_CXX_COMPILER": "cl.exe"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {

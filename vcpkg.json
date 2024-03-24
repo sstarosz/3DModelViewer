@@ -3,10 +3,29 @@
   "name": "3d-model-viewer",
   "version": "0.0.1",
   "dependencies": [
-    "stb",
-    "gtest",
-    "benchmark",
-    "eigen3",
-    "spirv-cross"
+    {
+      "name": "stb"
+    },
+    {
+      "name": "gtest"
+    },
+    {
+      "name": "benchmark"
+    },
+    {
+      "name": "eigen3"
+    },
+    {
+      "name": "spirv-cross"
+    },
+    {
+      "name": "qtbase",
+      "features": [
+        "widgets",
+        "gui",
+        "vulkan"
+      ],
+      "default-features": false
+    }
   ]
 }

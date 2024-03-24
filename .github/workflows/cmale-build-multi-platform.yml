@@ -1,0 +1,79 @@
+# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
+name: CMake on multiple platforms
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+
+      # Set up a matrix to run the following 3 configurations:
+      # 1. <Windows, Release, latest MSVC compiler toolchain on the default runner image, default generator>
+      # 2. <Linux, Release, latest GCC compiler toolchain on the default runner image, default generator>
+      # 3. <Linux, Release, latest Clang compiler toolchain on the default runner image, default generator>
+      matrix:
+        os: [windows-latest]  #TODO add ubuntu-latest and macos-latest
+        build_type: [Release]
+        c_compiler: [cl]      #TODO add gcc and clang
+        cpp_compiler: [cl]    #TODO add g++ and clang++
+        cmake_configure_preset: [Window-MSVC-x64-Release] #TODO add Linux-GCC-x64-Release and Linux-Clang-x64-Release
+        cmake_build_preset: [MSVC-2022-x64-Release-Build] #TODO add GCC-x64-Release-Build and Clang-x64-Release-Build
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+            cmake_configure_preset: Window-MSVC-x64-Release
+        #exclude:
+        #  - os: windows-latest
+        #    c_compiler: gcc
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    ## Setup vcpkg
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v6
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+
+    ## CMake configuration and build steps
+    - name : Print available cmake presets
+      run: cmake --list-presets=all .
+
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      env:
+        VCPKG_ROOT: ${{ env.VCPKG_INSTALLATION_ROOT }}
+        VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+      run: >
+        cmake --preset ${{ matrix.cmake_configure_preset }} 
+
+    - name: Build
+      run: cmake --build -preset ${{ matrix.cmake_configure_preset }} 
+
+    # TODO: Add test steps
+    #- name: Test
+    #  working-directory: ${{ steps.strings.outputs.build-output-dir }}
+    #  # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+    #  # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+    #  run: ctest --build-config ${{ matrix.build_type }}
