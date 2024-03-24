@@ -105,7 +105,7 @@ jobs:
         cmake --preset ${{ matrix.cmake_configure_preset }} 
 
     - name: Build
-      run: cmake --build -preset ${{ matrix.cmake_configure_preset }} 
+      run: cmake --build --preset ${{ matrix.cmake_configure_preset }} 
 
     # TODO: Add test steps
     #- name: Test
