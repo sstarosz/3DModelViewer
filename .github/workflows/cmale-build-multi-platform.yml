@@ -67,7 +67,13 @@ jobs:
       run: printenv
 
     - name:  Use VCPKG_INSTALLATION_ROOT
-      run: echo "VCPKG_INSTALLATION_ROOT is $VCPKG_INSTALLATION_ROOT"
+      run: | 
+        echo "VCPKG_INSTALLATION_ROOT is $VCPKG_INSTALLATION_ROOT"
+        echo "VCPKG_ROOT is $VCPKG_ROOT"
+        echo "VCPKG_BINARY_SOURCES is $VCPKG_BINARY_SOURCES"
+
+    - name: Print MSVC version
+      run: cl.exe
 
     ### Install missing dependencies on windows, linux and macos using package managers
     - name: Install Ninja
