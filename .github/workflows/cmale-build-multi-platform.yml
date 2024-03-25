@@ -102,10 +102,12 @@ jobs:
     - name: Build
       run: cmake --build --preset ${{ matrix.cmake_build_preset }} 
 
+
+      #TODO Investigate how to run tests on GPU
     - name: Run CMake
       env:
         GTEST_COLOR: yes
-      run: cmake --workflow --preset ${{ matrix.cmake_workflow_preset }} -DBuild_Tests_For_Gpu=OFF #TODO Investigate how to run tests on GPU
+      run: cmake --workflow --preset ${{ matrix.cmake_workflow_preset }} 
 
     # TODO: Add test steps
     #- name: Test
