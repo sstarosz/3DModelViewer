@@ -86,6 +86,12 @@ jobs:
       with:
         cache: true
 
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.*'
+        cache: true
+
     ## CMake configuration and build steps
     - name : Print available cmake presets
       run: cmake --list-presets=all .
