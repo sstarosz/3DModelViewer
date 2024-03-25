@@ -36,6 +36,8 @@ jobs:
             c_compiler: cl
             cpp_compiler: cl
             cmake_configure_preset: Window-MSVC-x64-Release
+            cmake_build_preset: MSVC-2022-x64-Release-Build
+            cmake_workflow_preset: Windows-Workflow
         #exclude:
         #  - os: windows-latest
         #    c_compiler: gcc
