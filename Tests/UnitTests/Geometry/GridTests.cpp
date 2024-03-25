@@ -33,7 +33,7 @@ namespace st::geometry::test
    
         //Test Indices
         ASSERT_THAT(grid.getIndices().size(), testing::Eq(8));
-        ASSERT_THAT(grid.getIndices(), testing::ElementsAre(0, 1, 0, 2, 1, 3, 2, 3));
+        ASSERT_THAT(grid.getIndices(), testing::ElementsAre(0, 2, 0, 1, 1, 3, 2, 3));
     }
 
 
