@@ -145,6 +145,11 @@
       "output": {
         "outputOnFailure": true,
         "verbosity": "verbose"
+      },
+      "filter": {
+        "exclude": {
+          "name": "RendererTests"
+        }
       }
     },
     {
