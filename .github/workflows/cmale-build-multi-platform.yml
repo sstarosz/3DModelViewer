@@ -103,7 +103,7 @@ jobs:
       run: cmake --build --preset ${{ matrix.cmake_build_preset }} 
 
     - name: Run CMake
-      run: cmake --workflow --preset ${{ matrix.cmkae_workflow_preset }}
+      run: cmake --workflow --preset ${{ matrix.cmake_workflow_preset }}
 
     # TODO: Add test steps
     #- name: Test
