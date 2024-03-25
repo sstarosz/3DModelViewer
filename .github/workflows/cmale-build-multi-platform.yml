@@ -113,3 +113,15 @@ jobs:
     #  # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
     #  # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
     #  run: ctest --build-config ${{ matrix.build_type }}
+
+  job2_gpu:
+    runs-on: linux-amd64-gpu-v100-latest-1
+    container: # GPU jobs must run in a container
+      image: nvidia/cuda:12.0.0-base-ubuntu22.04
+      env:
+        NVIDIA_VISIBLE_DEVICES: ${{ env.NVIDIA_VISIBLE_DEVICES }} # GPU jobs must set this container env variable
+    steps:
+      - name: hello
+        run: |
+          echo "hello"
+          nvidia-smi
