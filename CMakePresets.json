@@ -117,7 +117,10 @@
       "description": "Base build presets, setting default values for all build presets",
       "hidden": true,
       "verbose": true,
-      "jobs": 8
+      "jobs": 8,
+      "environment": {
+        "GTEST_COLOR": "yes"
+      }
     },
     {
       "name": "MSVC-2022-x64-Debug-Build",

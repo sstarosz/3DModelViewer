@@ -14,7 +14,7 @@ namespace st::geometry::test
 
     TEST_F(GridTest, GridConstructor)
     {
-        Grid grid(10.0F, 1.0F);
+        Grid grid(10.0F, 1);
 
         //EXPECT_EQ(grid.getLines().size(), 20);
 
@@ -23,11 +23,17 @@ namespace st::geometry::test
         // P2 = (-5, 0,  5)
         // P3 = ( 5, 0, -5)
         // P4 = ( 5, 0,  5)
+
+        //Test Vertices
         ASSERT_THAT(grid.getVertices().size(), testing::Eq(4));
         ASSERT_THAT(grid.getVertices().at(0), testing::Eq(Vertex(Eigen::Vector3f{-5.0F, 0.0F, -5.0F})));
         ASSERT_THAT(grid.getVertices().at(1), testing::Eq(Vertex(Eigen::Vector3f{-5.0F, 0.0F, 5.0F})));
         ASSERT_THAT(grid.getVertices().at(2), testing::Eq(Vertex(Eigen::Vector3f{5.0F, 0.0F, -5.0F})));
         ASSERT_THAT(grid.getVertices().at(3), testing::Eq(Vertex(Eigen::Vector3f{5.0F, 0.0F, 5.0F})));
+   
+        //Test Indices
+        ASSERT_THAT(grid.getIndices().size(), testing::Eq(8));
+        ASSERT_THAT(grid.getIndices(), testing::ElementsAre(0, 1, 0, 2, 1, 3, 2, 3));
     }
 
 

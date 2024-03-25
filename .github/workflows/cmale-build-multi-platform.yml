@@ -103,6 +103,8 @@ jobs:
       run: cmake --build --preset ${{ matrix.cmake_build_preset }} 
 
     - name: Run CMake
+      env:
+        GTEST_COLOR: yes
       run: cmake --workflow --preset ${{ matrix.cmake_workflow_preset }}
 
     # TODO: Add test steps
