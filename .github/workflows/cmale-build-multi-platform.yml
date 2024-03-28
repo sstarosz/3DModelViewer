@@ -26,17 +26,9 @@ jobs:
       matrix:
         os: [windows-latest]  #TODO add ubuntu-latest and macos-latest
         build_type: [Release]
-        c_compiler: [cl]      #TODO add gcc and clang
-        cpp_compiler: [cl]    #TODO add g++ and clang++
-        cmake_configure_preset: [Window-MSVC-x64-Release] #TODO add Linux-GCC-x64-Release and Linux-Clang-x64-Release
-        cmake_build_preset: [MSVC-2022-x64-Release-Build] #TODO add GCC-x64-Release-Build and Clang-x64-Release-Build
         cmake_workflow_preset: [Windows-Workflow] #TODO add GCC-x64-Release-Workflow and Clang-x64-Release-Workflow
         include:
           - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-            cmake_configure_preset: Window-MSVC-x64-Release
-            cmake_build_preset: MSVC-2022-x64-Release-Build
             cmake_workflow_preset: Windows-Workflow
         #exclude:
         #  - os: windows-latest
@@ -68,6 +60,7 @@ jobs:
       uses: seanmiddleditch/gha-setup-ninja@master
 
     - name: Setup VS Environment
+      if:
       uses: seanmiddleditch/gha-setup-vsdevenv@master
 
     - name: Install Vulkan SDK
@@ -81,10 +74,8 @@ jobs:
         version: '6.*'
         cache: true
 
-    ## CMake configuration and build steps
-    - name : Print available cmake presets
-      run: cmake --list-presets=all .
 
+    ### Setup vcpkg
     - name: "Set vcpkg environmental variables"
       shell: bash
       run: echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
@@ -92,26 +83,8 @@ jobs:
     - name: "Check if VCPKG_ROOT is set"
       run: echo "VCPKG_ROOT=${{ env.action_state }}"
 
-
-    - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: >
-        cmake --preset ${{ matrix.cmake_configure_preset }} 
-
-    - name: Build
-      run: cmake --build --preset ${{ matrix.cmake_build_preset }} 
-
-
       #TODO Investigate how to run tests on GPU
-    - name: Run CMake
+    - name: Run CMake Workflow
       env:
         GTEST_COLOR: yes
       run: cmake --workflow --preset ${{ matrix.cmake_workflow_preset }} 
-
-    # TODO: Add test steps
-    #- name: Test
-    #  working-directory: ${{ steps.strings.outputs.build-output-dir }}
-    #  # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-    #  # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-    #  run: ctest --build-config ${{ matrix.build_type }}
