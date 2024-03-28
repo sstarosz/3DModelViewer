@@ -29,13 +29,11 @@ jobs:
         cmake_workflow_preset: [Windows-MSVC-Workflow, Windows-Clang-Workflow] #TODO add GCC-x64-Release-Workflow and Clang-x64-Release-Workflow
         include:
           - os: windows-latest
-            cmake_workflow_preset: Windows-Workflow
+            cmake_workflow_preset: Windows-MSVC-Workflow
           - os: windows-latest
             cmake_workflow_preset: Windows-Clang-Workflow
         #exclude:
-        #  - os: windows-latest
-        #    c_compiler: gcc
-
+          
     
 
     steps:
