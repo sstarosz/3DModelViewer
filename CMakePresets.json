@@ -16,7 +16,7 @@
       "installDir": "${sourceDir}/out/install/${presetName}"
     },
     {
-      "name": "Windows-Base",
+      "name": "Windows-Base-MSVC",
       "displayName": "Windows Base",
       "description": "Base configuration presets for windows targets, setting default values for all build presets",
       "inherits": "Base-Configure",
@@ -78,7 +78,7 @@
       "name": "Window-MSVC-x64-Debug",
       "displayName": "Windows x64 MSVC Debug",
       "description": "Sets Ninja generator, build and install directory",
-      "inherits": "Windows-Base",
+      "inherits": "Windows-Base-MSVC",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -87,7 +87,7 @@
       "name": "Window-MSVC-x64-Release",
       "displayName": "Windows x64 MSVC Release",
       "description": "Sets Ninja generator, build and install directory",
-      "inherits": "Windows-Base",
+      "inherits": "Windows-Base-MSVC",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
@@ -123,16 +123,30 @@
       }
     },
     {
-      "name": "MSVC-2022-x64-Debug-Build",
+      "name": "Window-MSVC-x64-Debug-Build",
       "description": "Windows x64 Debug Build",
       "configurePreset": "Window-MSVC-x64-Debug",
       "configuration": "Debug",
       "inherits": "Base-Build"
     },
     {
-      "name": "MSVC-2022-x64-Release-Build",
+      "name": "Window-MSVC-x64-Release-Build",
       "description": "Windows x64 Release Build",
       "configurePreset": "Window-MSVC-x64-Release",
+      "configuration": "Release",
+      "inherits": "Base-Build"
+    },
+    {
+      "name": "Window-Clang-x64-Debug-Build",
+      "description": "Windows x64 Debug Build",
+      "configurePreset": "Window-Clang-x64-Debug",
+      "configuration": "Debug",
+      "inherits": "Base-Build"
+    },
+    {
+      "name": "Window-Clang-x64-Release-Build",
+      "description": "Windows x64 Release Build",
+      "configurePreset": "Window-Clang-x64-Release",
       "configuration": "Release",
       "inherits": "Base-Build"
     }
@@ -153,21 +167,33 @@
       }
     },
     {
-      "name": "Windows-Unittest-Debug",
+      "name": "Windows-MSVC-x64-Debug-Test",
       "displayName": "Windows Unit Tests",
       "configurePreset": "Window-MSVC-x64-Debug",
       "inherits": "Core-Test"
     },
     {
-      "name": "Windows-Unittest-Release",
+      "name": "Window-MSVC-x64-Release-Test",
       "displayName": "Windows Unit Tests",
       "configurePreset": "Window-MSVC-x64-Release",
+      "inherits": "Core-Test"
+    },
+    {
+      "name": "Window-Clang-x64-Debug-Test",
+      "displayName": "Windows Unit Tests",
+      "configurePreset": "Window-Clang-x64-Debug",
+      "inherits": "Core-Test"
+    },
+    {
+      "name": "Window-Clang-x64-Release-Test",
+      "displayName": "Windows Unit Tests",
+      "configurePreset": "Window-Clang-x64-Release",
       "inherits": "Core-Test"
     }
   ],
   "workflowPresets": [
     {
-      "name": "Windows-Workflow",
+      "name": "Windows-MSVC-Workflow",
       "displayName": "Windows Workflow",
       "description": "Base workflow presets for windows targets, setting default values for all workflow presets",
       "steps": [
@@ -177,11 +203,30 @@
         },
         {
           "type": "build",
-          "name": "MSVC-2022-x64-Release-Build"
+          "name": "Window-MSVC-x64-Release-Build"
         },
         {
           "type": "test",
-          "name": "Windows-Unittest-Release"
+          "name": "Window-MSVC-x64-Release-Test"
+        }
+      ]
+    },
+    {
+      "name": "Windows-Clang-Workflow",
+      "displayName": "Windows Clang Workflow (clang-cl)",
+      "description": "Base workflow presets for windows targets, setting default values for all workflow presets",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "Window-Clang-x64-Release"
+        },
+        {
+          "type": "build",
+          "name": "Window-Clang-x64-Release-Build"
+        },
+        {
+          "type": "test",
+          "name": "Window-Clang-x64-Release-Test"
         }
       ]
     }

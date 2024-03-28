@@ -26,10 +26,12 @@ jobs:
       matrix:
         os: [windows-latest]  #TODO add ubuntu-latest and macos-latest
         build_type: [Release]
-        cmake_workflow_preset: [Windows-Workflow] #TODO add GCC-x64-Release-Workflow and Clang-x64-Release-Workflow
+        cmake_workflow_preset: [Windows-MSVC-Workflow, Windows-Clang-Workflow] #TODO add GCC-x64-Release-Workflow and Clang-x64-Release-Workflow
         include:
           - os: windows-latest
             cmake_workflow_preset: Windows-Workflow
+          - os: windows-latest
+            cmake_workflow_preset: Windows-Clang-Workflow
         #exclude:
         #  - os: windows-latest
         #    c_compiler: gcc
@@ -39,13 +41,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set reusable strings
-      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-      id: strings
-      shell: bash
-      run: |
-        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
     ## Setup vcpkg
     - name: Export GitHub Actions cache environment variables
       uses: actions/github-script@v6
@@ -54,13 +49,16 @@ jobs:
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
+    - name: "Set vcpkg environmental variables"
+      shell: bash
+      run: echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
 
     ### Install missing dependencies on windows, linux and macos using package managers
     - name: Install Ninja
       uses: seanmiddleditch/gha-setup-ninja@master
 
     - name: Setup VS Environment
-      if:
+      if: runner.os == 'Windows'
       uses: seanmiddleditch/gha-setup-vsdevenv@master
 
     - name: Install Vulkan SDK
@@ -74,15 +72,7 @@ jobs:
         version: '6.*'
         cache: true
 
-
-    ### Setup vcpkg
-    - name: "Set vcpkg environmental variables"
-      shell: bash
-      run: echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
-
-    - name: "Check if VCPKG_ROOT is set"
-      run: echo "VCPKG_ROOT=${{ env.action_state }}"
-
+    ### Run CMake
       #TODO Investigate how to run tests on GPU
     - name: Run CMake Workflow
       env:
