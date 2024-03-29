@@ -19,13 +19,7 @@
       "name": "spirv-cross"
     },
     {
-      "name": "qtbase",
-      "features": [
-        "widgets",
-        "gui",
-        "vulkan"
-      ],
-      "default-features": false
+      "name": "shaderc"
     }
   ]
 }

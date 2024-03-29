@@ -5,7 +5,7 @@
             "name": "(Windows) Launch",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/out/build/Windowx-MSVC-x64-Debug/Tests/UnitTests/Renderer/RendererTests.exe",
+            "program": "${workspaceFolder}/out/build/Window-MSVC-x64-Debug/Tests/UnitTests/Renderer/RendererTests.exe",
             "args": ["--gtest_catch_exceptions=0"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

@@ -9,8 +9,92 @@
 #include <fstream>
 #include <string>
 
+
+PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT;
+PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
+
+// TODO - change it to class method
+[[maybe_unused]] VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugUtilsMessengerEXT(VkInstance instance,
+																			   const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+																			   const VkAllocationCallbacks* pAllocator,
+																			   VkDebugUtilsMessengerEXT* pMessenger)
+{
+	return pfnVkCreateDebugUtilsMessengerEXT(instance, pCreateInfo, pAllocator, pMessenger);
+}
+
+[[maybe_unused]] VKAPI_ATTR void VKAPI_CALL vkDestroyDebugUtilsMessengerEXT(VkInstance instance,
+																			VkDebugUtilsMessengerEXT messenger,
+																			VkAllocationCallbacks const* pAllocator)
+{
+	return pfnVkDestroyDebugUtilsMessengerEXT(instance, messenger, pAllocator);
+}
+
 namespace st::renderer::test
 {
+	VkBool32 debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+							VkDebugUtilsMessageTypeFlagsEXT messageType,
+							const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+							void*)
+	{
+		std::ostringstream message;
+
+		message << vk::to_string(static_cast<vk::DebugUtilsMessageSeverityFlagBitsEXT>(messageSeverity)) << ": "
+				<< vk::to_string(static_cast<vk::DebugUtilsMessageTypeFlagsEXT>(messageType)) << ":\n";
+		message << "\t"
+				<< "messageIDName   = <" << pCallbackData->pMessageIdName << ">\n";
+		message << "\t"
+				<< "messageIdNumber = " << pCallbackData->messageIdNumber << "\n";
+		message << "\t"
+				<< "message         = <" << pCallbackData->pMessage << ">\n";
+
+		if (0 < pCallbackData->queueLabelCount)
+		{
+			message << "\t"
+					<< "Queue Labels:\n";
+			for (uint32_t i = 0; i < pCallbackData->queueLabelCount; i++)
+			{
+				message << "\t\t"
+						<< "labelName = <" << pCallbackData->pQueueLabels[i].pLabelName << ">\n";
+			}
+		}
+
+		if (0 < pCallbackData->cmdBufLabelCount)
+		{
+			message << "\t"
+					<< "CommandBuffer Labels:\n";
+			for (uint32_t i = 0; i < pCallbackData->cmdBufLabelCount; i++)
+			{
+				message << "\t\t"
+						<< "labelName = <" << pCallbackData->pCmdBufLabels[i].pLabelName << ">\n";
+			}
+		}
+
+		if (0 < pCallbackData->objectCount)
+		{
+			message << "\t"
+					<< "Objects:\n";
+			for (uint32_t i = 0; i < pCallbackData->objectCount; i++)
+			{
+				message << "\t\t"
+						<< "Object " << i << "\n";
+				message << "\t\t\t"
+						<< "objectType   = " << vk::to_string(static_cast<vk::ObjectType>(pCallbackData->pObjects[i].objectType)) << "\n";
+				message << "\t\t\t"
+						<< "objectHandle = " << pCallbackData->pObjects[i].objectHandle << "\n";
+				if (pCallbackData->pObjects[i].pObjectName)
+				{
+					message << "\t\t\t"
+							<< "objectName   = <" << pCallbackData->pObjects[i].pObjectName << ">\n";
+				}
+			}
+		}
+
+		std::cout << message.str() << std::endl;
+
+		return false;
+	}
+
+
 
 	class TestableVulkanContext : public VulkanContext
 	{
@@ -26,9 +110,57 @@ namespace st::renderer::test
 		{
 			vk::ApplicationInfo appInfo("Test Instance", VK_MAKE_VERSION(1, 0, 0), "No Engine", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_2);
 
-			vk::InstanceCreateInfo createInfo({}, &appInfo);
+			std::vector<const char*> extensions = {
+				VK_KHR_SURFACE_EXTENSION_NAME,
+				VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
+
+			std::vector<const char*> layers = {
+				"VK_LAYER_KHRONOS_validation",
+			};
+
+			vk::InstanceCreateInfo createInfo({}, &appInfo, layers, extensions);
 
 			m_instance = vk::createInstance(createInfo);
+
+			// Setup debug messenger
+			pfnVkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(m_instance.getProcAddr("vkCreateDebugUtilsMessengerEXT"));
+			if (!pfnVkCreateDebugUtilsMessengerEXT)
+			{
+				// TODO - Change it to something independent of iostream
+				std::cout << "GetInstanceProcAddr: Unable to find "
+							 "pfnVkCreateDebugUtilsMessengerEXT function."
+						  << std::endl;
+				exit(1);
+			}
+
+			pfnVkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(m_instance.getProcAddr("vkDestroyDebugUtilsMessengerEXT"));
+			if (!pfnVkDestroyDebugUtilsMessengerEXT)
+			{
+				// TODO - Change it to something independent of iostream
+				std::cout << "GetInstanceProcAddr: Unable to find "
+							 "pfnVkDestroyDebugUtilsMessengerEXT function."
+						  << std::endl;
+				exit(1);
+			}
+
+			vk::DebugUtilsMessageSeverityFlagsEXT severityFlags{
+				vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+				vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+				vk::DebugUtilsMessageSeverityFlagBitsEXT::eError};
+
+			vk::DebugUtilsMessageTypeFlagsEXT messageTypeFlags{
+				vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+				vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+				vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance};
+
+			vk::DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfoEXT{
+				{},
+				severityFlags,
+				messageTypeFlags,
+				&debugCallback};
+
+			m_debugMessenger = m_instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);
+
 
 			// Chose physical device
 			std::vector<vk::PhysicalDevice> devices = m_instance.enumeratePhysicalDevices();
@@ -45,6 +177,49 @@ namespace st::renderer::test
 			vk::DeviceCreateInfo logicalDeviceCreateInfo({}, 1, &queueCreateInfo, 0, nullptr, 0, nullptr, &deviceFeatures);
 			m_device = m_physicalDevice.createDevice(logicalDeviceCreateInfo);
 		}
+	};
+
+	class TestableRenderPass
+	{
+	  public:
+		TestableRenderPass(TestableVulkanContext& context) : m_context(context)
+		{
+		}
+
+		void initialize()
+		{
+			vk::AttachmentDescription colorAttachment({}, 
+													  vk::Format::eB8G8R8A8Unorm, 
+													  vk::SampleCountFlagBits::e1, 
+													  vk::AttachmentLoadOp::eClear, 
+													  vk::AttachmentStoreOp::eStore, 
+													  vk::AttachmentLoadOp::eDontCare, 
+													  vk::AttachmentStoreOp::eDontCare, 
+													  vk::ImageLayout::eUndefined, 
+													  vk::ImageLayout::ePresentSrcKHR
+													 );
+
+			vk::AttachmentReference colorAttachmentRef(0, vk::ImageLayout::eColorAttachmentOptimal);
+
+			vk::SubpassDescription subpass({}, vk::PipelineBindPoint::eGraphics, 0, nullptr, 1, &colorAttachmentRef, nullptr, nullptr, 0, nullptr);
+
+			vk::SubpassDependency dependency(VK_SUBPASS_EXTERNAL, 
+											 0, 
+											 vk::PipelineStageFlagBits::eColorAttachmentOutput, 
+											 vk::PipelineStageFlagBits::eColorAttachmentOutput, 
+											 {}, 
+											 vk::AccessFlagBits::eColorAttachmentRead | 
+											 	vk::AccessFlagBits::eColorAttachmentWrite
+											);
+
+			vk::RenderPassCreateInfo renderPassInfo({}, 1, &colorAttachment, 1, &subpass, 1, &dependency);
+
+			m_renderPass = m_context.m_device.createRenderPass(renderPassInfo);
+		}
+
+	  public:
+	    TestableVulkanContext& m_context;
+		vk::RenderPass m_renderPass;
 	};
 
 	class TestPipeline : public PipelineBuilder
@@ -100,9 +275,10 @@ namespace st::renderer::test
 		void buildDynamicState() override
 		{
 			// TOD
-			std::array dynamicStates{vk::DynamicState::eViewport, vk::DynamicState::eScissor};
+			pipeline.dynamicStates.push_back(vk::DynamicState::eViewport);
+			pipeline.dynamicStates.push_back(vk::DynamicState::eScissor);
 			pipeline.dynamicStateInfo = vk::PipelineDynamicStateCreateInfo(vk::PipelineDynamicStateCreateFlags{},
-																		   dynamicStates);
+																		   pipeline.dynamicStates);
 		};
 	};
 
@@ -110,9 +286,10 @@ namespace st::renderer::test
 	{
 		TestableVulkanContext context;
 		context.initialize();
-		vk::RenderPass renderPass;
+		TestableRenderPass renderPass{context};
+		renderPass.initialize();
 
-		TestPipeline pipeline{context, renderPass};
+		TestPipeline pipeline{context, renderPass.m_renderPass};
 
 		PipelineDirector director;
 		director.setBuilder(&pipeline);

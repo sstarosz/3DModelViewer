@@ -3,7 +3,7 @@
 
 #include <Eigen/Core>
 #include <compare>
-
+#include <ostream>
 
 namespace st::geometry
 {
@@ -27,6 +27,11 @@ namespace st::geometry
 
         auto operator<=>(const Vertex&) const = default;
 
+        friend std::ostream& operator<<(std::ostream& os, const Vertex& vertex)
+        {
+            os << "Vertex(" << vertex.m_position.transpose() << ")";
+            return os;
+        }
 
       private:
         Eigen::Vector3f m_position;

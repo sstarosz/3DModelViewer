@@ -4,9 +4,12 @@ name: CMake on multiple platforms
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "github-actions-tests" ]
   pull_request:
     branches: [ "main" ]
+
+env:
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
 
 jobs:
   build:
@@ -23,28 +26,18 @@ jobs:
       matrix:
         os: [windows-latest]  #TODO add ubuntu-latest and macos-latest
         build_type: [Release]
-        c_compiler: [cl]      #TODO add gcc and clang
-        cpp_compiler: [cl]    #TODO add g++ and clang++
-        cmake_configure_preset: [Window-MSVC-x64-Release] #TODO add Linux-GCC-x64-Release and Linux-Clang-x64-Release
-        cmake_build_preset: [MSVC-2022-x64-Release-Build] #TODO add GCC-x64-Release-Build and Clang-x64-Release-Build
+        cmake_workflow_preset: [Windows-MSVC-Workflow, Windows-Clang-Workflow] #TODO add GCC-x64-Release-Workflow and Clang-x64-Release-Workflow
         include:
           - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-            cmake_configure_preset: Window-MSVC-x64-Release
+            cmake_workflow_preset: Windows-MSVC-Workflow
+          - os: windows-latest
+            cmake_workflow_preset: Windows-Clang-Workflow
         #exclude:
-        #  - os: windows-latest
-        #    c_compiler: gcc
+          
+    
 
     steps:
     - uses: actions/checkout@v3
-
-    - name: Set reusable strings
-      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-      id: strings
-      shell: bash
-      run: |
-        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
     ## Setup vcpkg
     - name: Export GitHub Actions cache environment variables
@@ -54,37 +47,32 @@ jobs:
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
-    ## Install missing dependencies on windows, linux and macos using package managers
-    - name: Install Ninja on Windows
-      if: matrix.os == 'windows-latest'
-      run: choco install ninja -y
+    - name: "Set vcpkg environmental variables"
+      shell: bash
+      run: echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
 
+    ### Install missing dependencies on windows, linux and macos using package managers
+    - name: Install Ninja
+      uses: seanmiddleditch/gha-setup-ninja@master
 
+    - name: Setup VS Environment
+      if: runner.os == 'Windows'
+      uses: seanmiddleditch/gha-setup-vsdevenv@master
 
-    ## CMake configuration and build steps
-    - name : Print available cmake presets
-      run: cmake --list-presets=all .
+    - name: Install Vulkan SDK
+      uses: humbletim/install-vulkan-sdk@v1.1.1
+      with:
+        cache: true
 
-    - name: Setup vcpkg env variable test
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.*'
+        cache: true
+
+    ### Run CMake
+      #TODO Investigate how to run tests on GPU
+    - name: Run CMake Workflow
       env:
-        VCPKG_ROOT: ${{ env.VCPKG_INSTALLATION_ROOT }}
-      run: echo "VCPKG_ROOT=$VCPKG_ROOT"
-
-    - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      env:
-        VCPKG_ROOT: ${{ env.VCPKG_INSTALLATION_ROOT }}
-        VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
-      run: >
-        cmake --preset ${{ matrix.cmake_configure_preset }} 
-
-    - name: Build
-      run: cmake --build -preset ${{ matrix.cmake_configure_preset }} 
-
-    # TODO: Add test steps
-    #- name: Test
-    #  working-directory: ${{ steps.strings.outputs.build-output-dir }}
-    #  # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-    #  # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-    #  run: ctest --build-config ${{ matrix.build_type }}
+        GTEST_COLOR: yes
+      run: cmake --workflow --preset ${{ matrix.cmake_workflow_preset }} 

@@ -14,7 +14,8 @@ namespace st::geometry
 	class Geometry
 	{
 	  public:
-		virtual const std::vector<Vertex>& getVertices() const = 0;
+		virtual const std::vector<Vertex> getVertices() const = 0;
+		virtual const std::vector<uint32_t> getIndices() const = 0;
 	};
 
 } // namespace st::geometry

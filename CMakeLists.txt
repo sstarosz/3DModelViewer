@@ -13,10 +13,21 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #---------------------------------------------------------------------------------------#
 option(Build_Docs           "Determine if build documentation" OFF)
 option(Build_Tests          "Determine if build unit tests" ON)
+option(Build_Tests_For_Gpu  "Determine if build unit that use Vulkan or other gpu features" ON)
 option(Build_Benchmarks     "Determine if build benchmarks" OFF)
 
 
 option(Enable_ASAN          "Build with AddressSanitizer" OFF) #TODO
+
+
+#---------------------------------------------------------------------------------------#
+#----------------------------------Project configuration-------------------------------#
+#---------------------------------------------------------------------------------------#
+include(CMake/Deploy.cmake)
+
+if(Build_Tests)
+    enable_testing()
+endif()
 
 
 #---------------------------------------------------------------------------------------#
@@ -36,12 +47,6 @@ else()
     add_compile_options(-Wpedantic)     #Enable pedantic warnings
 #   add_compile_options(-Werror)        #Treat warnings as errors
 endif()
-
-
-#---------------------------------------------------------------------------------------#
-#----------------------------------Project configuration-------------------------------#
-#---------------------------------------------------------------------------------------#
-include(CMake/Deploy.cmake)
 
 
 #---------------------------------------------------------------------------------------#
