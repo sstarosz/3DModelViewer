@@ -2,6 +2,7 @@
 #define ST_GEOMETRY_GEOMETRY_HPP
 
 #include "Vertex.hpp"
+#include "Core/StObject.hpp"
 #include <vector>
 
 namespace st::geometry
@@ -11,7 +12,7 @@ namespace st::geometry
 	 * @brief
 	 *
 	 */
-	class Geometry
+	class Geometry : public core::StObject
 	{
 	  public:
 		virtual const std::vector<Vertex> getVertices() const = 0;

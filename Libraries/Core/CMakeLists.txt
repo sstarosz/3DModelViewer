@@ -12,6 +12,7 @@ set(Sources
     "Source/Camera.cpp"
     "Source/Transform.cpp"
     "Source/StObject.cpp"
+    "Source/EventSystem.cpp"
     )
 
 set(Public_Headers
@@ -19,6 +20,7 @@ set(Public_Headers
     "Include/Core/Camera.hpp"
     "Include/Core/Transform.hpp"
     "Include/Core/StObject.hpp"
+    "Include/Core/EventSystem.hpp"
     )
 
 set(Private_Headers

@@ -3,7 +3,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-namespace st::geometry::test
+namespace st::renderer::test
 {
 
     class GridTest : public ::testing::Test
@@ -26,10 +26,10 @@ namespace st::geometry::test
 
         //Test Vertices
         ASSERT_THAT(grid.getVertices().size(), testing::Eq(4));
-        ASSERT_THAT(grid.getVertices().at(0), testing::Eq(Vertex(Eigen::Vector3f{-5.0F, 0.0F, -5.0F})));
-        ASSERT_THAT(grid.getVertices().at(1), testing::Eq(Vertex(Eigen::Vector3f{-5.0F, 0.0F, 5.0F})));
-        ASSERT_THAT(grid.getVertices().at(2), testing::Eq(Vertex(Eigen::Vector3f{5.0F, 0.0F, -5.0F})));
-        ASSERT_THAT(grid.getVertices().at(3), testing::Eq(Vertex(Eigen::Vector3f{5.0F, 0.0F, 5.0F})));
+        ASSERT_THAT(grid.getVertices().at(0), testing::Eq(geometry::Vertex(Eigen::Vector3f{-5.0F, 0.0F, -5.0F})));
+        ASSERT_THAT(grid.getVertices().at(1), testing::Eq(geometry::Vertex(Eigen::Vector3f{-5.0F, 0.0F, 5.0F})));
+        ASSERT_THAT(grid.getVertices().at(2), testing::Eq(geometry::Vertex(Eigen::Vector3f{5.0F, 0.0F, -5.0F})));
+        ASSERT_THAT(grid.getVertices().at(3), testing::Eq(geometry::Vertex(Eigen::Vector3f{5.0F, 0.0F, 5.0F})));
    
         //Test Indices
         ASSERT_THAT(grid.getIndices().size(), testing::Eq(8));

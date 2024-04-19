@@ -1,7 +1,7 @@
 #ifndef ST_GEOMETRY_VERTEX_HPP
 #define ST_GEOMETRY_VERTEX_HPP
 
-#include <Eigen/Core>
+#include "Eigen/Core"
 #include <compare>
 #include <ostream>
 

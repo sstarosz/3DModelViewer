@@ -10,7 +10,7 @@ namespace st::core
         {
         }
 
-        int32_t m_dummy;
+        StObject::Type m_type;
     };
 
     /*---------------------*/
@@ -25,6 +25,21 @@ namespace st::core
     StObject::StObject(StObject&&) = default;
 
     StObject& StObject::operator=(StObject&&) = default;
+
+    void StObject::setType(Type type)
+    {
+        m_privateObject->m_type = type;
+    }
+
+    StObject::Type StObject::getType() const
+    {
+        return m_privateObject->m_type;
+    }
+
+    bool StObject::isOfType(Type type) const
+    {
+        return m_privateObject->m_type == type;
+    }
 
 
 } // namespace st::core

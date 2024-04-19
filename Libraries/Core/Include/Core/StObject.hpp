@@ -8,6 +8,14 @@ namespace st::core
     class StObject
     {
     public:
+        enum class Type
+        {
+            eMesh,
+            eCamera,
+            eTypeCount
+        };
+
+    public:
         StObject();
         ~StObject();
         StObject(const StObject&) = delete;
@@ -15,6 +23,9 @@ namespace st::core
         StObject& operator=(const StObject&) = delete;
         StObject& operator=(StObject&&);
 
+        void setType(Type type);
+        Type getType() const;
+        bool isOfType(Type type) const;
 
     private:
         class PrivateStObject;

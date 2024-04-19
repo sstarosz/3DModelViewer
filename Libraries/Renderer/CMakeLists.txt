@@ -12,11 +12,13 @@ set(Sources
     "Source/PhysicalDevice.cpp"
     "Source/QueueFamily.cpp"
     "Source/GraphicsPiplineFactory.cpp"
+    "Source/Grid.cpp"
     )
 
 set(Public_Headers
     "Include/Renderer/Renderer.hpp"
     "Include/Renderer/VulkanContext.hpp"
+    "Include/Renderer/Grid.hpp"
     )
 
 set(Private_Headers
@@ -39,6 +41,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE ${Compiler_Flags})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC 
                         Core
+                        Geometry
                         Vulkan::Vulkan
                         Vulkan::shaderc_combined
                         Eigen3::Eigen

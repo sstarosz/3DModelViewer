@@ -27,6 +27,7 @@ namespace st::renderer
 		void init();
 		void render();
 		void render(const core::Scene& scene);
+		void embedScene(std::shared_ptr<core::Scene> scene);
 
 		vk::Instance createInstance() const;
 		void setSurface(vk::SurfaceKHR surface);

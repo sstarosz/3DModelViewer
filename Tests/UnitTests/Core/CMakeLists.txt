@@ -1,15 +1,13 @@
 
-project(GeometryTests)
+project(CoreTests)
 
 
-set(Test_Library "Geometry")
-set(Test_Name "GeometryTests")
+set(Test_Library "Core")
+set(Test_Name "CoreTests")
 
 
 set(Tests_Sources
-    "GeometryTest.cpp"
-    "Point3DTest.cpp"
-    "VertexTest.cpp"
+    "CameraTest.cpp"
 )
 
 

@@ -107,7 +107,7 @@ namespace st::ui
 
 	void Viewport::embedScene(core::Scene&& scene)
 	{
-
+		m_window->setScene(std::move(scene));
 	}
 
 } // namespace st::ui

@@ -87,6 +87,7 @@ if(Build_Benchmarks)
 endif()
 
 if(Build_Tests)
+    enable_testing()
     add_subdirectory(Tests)
 endif()
 

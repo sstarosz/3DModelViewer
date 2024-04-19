@@ -5,7 +5,7 @@
 
 #include "Renderer/Renderer.hpp"
 #include "Ui/Viewport.hpp"
-#include "Geometry/Grid.hpp"
+#include "Renderer/Grid.hpp"
 
 #include <QApplication>
 
@@ -27,15 +27,17 @@ int main(int argc, char* argv[])
     renderer::Renderer renderer;
 
     //Create Scene
-    core::Scene scene;
+    std::shared_ptr<core::Scene> scene = std::make_shared<core::Scene>();
 
     //Add Camera
     core::Camera camera{45.0f, 35.0f, 0.1f, 10000.0f};
     core::Transform transform{camera};
     transform.setTranslation(Eigen::Vector3f{0.0f, 0.0f, 6.0f});
-    scene.addCamera(std::move(camera));
+    scene->addCamera(std::move(camera));
 
     //Add Grid
+    renderer::Grid grid(10.0f, 1);
+    scene->addObject(std::move(grid));
 
     //Add Axis
 
@@ -52,8 +54,8 @@ int main(int argc, char* argv[])
     //renderer
 
     //Show Viewport
+    renderer.embedScene(scene);
     viewport.embedRenderer(std::move(renderer));
-    viewport.embedScene(std::move(scene));
 
     viewport.setGeometry(100, 100, 800, 600);
     viewport.show();

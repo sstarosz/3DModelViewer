@@ -3,7 +3,9 @@
 #include "QueueFamily.hpp"
 #include "VisualAidsPipline.hpp"
 #include "VulkanContext.hpp"
+#include "Mesh.hpp"
 #include "Core/Scene.hpp"
+#include "Core/EventSystem.hpp"
 
 #include <Eigen/Core>
 #include <vulkan/vulkan.hpp>
@@ -281,7 +283,6 @@ namespace st::renderer
 			// Advance to next frame
 			m_currentFrame = (m_currentFrame + 1) % m_vulkanContext.MAX_FRAMES_IN_FLIGHT;
 		}
-
 
 		void submitCommandBuffer(uint32_t currentFrame)
 		{
@@ -880,6 +881,41 @@ namespace st::renderer
 			m_vulkanContext.m_device.unmapMemory(m_pipeline.resources.indexBufferMemory);
 		}
 
+
+		//TODO - Missing error handling
+		void onNewMeshAdded(const core::Event* event)
+		{
+			//TODO - Implement adding model to the scene
+			auto* eventData = dynamic_cast<const core::EventData*>(event);
+			if(eventData)
+			{
+				if(std::shared_ptr<core::StObject> object = eventData->m_eventData.lock())
+				{
+					//Add renderable object to the scene
+					std::cout << "New object added to the scene" << std::endl;
+				}
+			}
+
+			
+		}
+
+		void embedScene(std::shared_ptr<core::Scene> scene)
+		{
+			m_scene = scene;
+
+			//Initialize Renderable objects
+			for (const auto& object : m_scene->getSceneContent())
+			{
+				//TODO - Implement adding model to the scene
+				//Add renderable object to the scene
+				std::cout << "New object added to the scene: " << static_cast<uint32_t>(object->getType()) << std::endl;
+			}
+
+			//Register to the event system
+			core::EventSystem::registerEvent(core::Event::Type::eAddedModel, [this](const core::Event* event) { onNewMeshAdded(event); });
+
+		}
+
 	  public:
 		VulkanContext m_vulkanContext;
 		Pipeline m_pipeline;
@@ -912,6 +948,9 @@ namespace st::renderer
 			3,
 			0 // Second triangle (top-left)
 		};
+
+		std::shared_ptr<core::Scene> m_scene;
+		
 	};
 
 	/*---------------------*/
@@ -941,6 +980,11 @@ namespace st::renderer
 	void Renderer::render(const core::Scene& scene)
 	{
 		m_privateRenderer->render(scene);
+	}
+
+	void Renderer::embedScene(std::shared_ptr<core::Scene> scene)
+	{
+		m_privateRenderer->embedScene(scene);
 	}
 
 	void Renderer::setSurface(vk::SurfaceKHR surface)

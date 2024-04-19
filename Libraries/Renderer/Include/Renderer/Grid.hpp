@@ -1,22 +1,25 @@
 #ifndef ST_GEOMETRY_GRID_HPP
 #define ST_GEOMETRY_GRID_HPP
 
-#include "Geometry.hpp"
-#include "Line.hpp"
+#include "Mesh.hpp"
+#include "Geometry/Geometry.hpp"
+#include "Geometry/Line.hpp"
+#include <Eigen/Core>
+#include <vector>
 
-
-namespace st::geometry
+namespace st::renderer
 {
 
     /**
      * @brief 
      * 
      */
-    class Grid : public Geometry
+    class Grid : public Mesh
     {
         public:
             Grid(float lengthAndWidth, uint32_t division)
             {
+                setType(core::StObject::Type::eMesh);
                 assert(division >= 1 && "Division must be greater or equal to 1");
  
                 // From -lengthAndWidth/2 to lengthAndWidth/2
@@ -27,7 +30,7 @@ namespace st::geometry
                     for (uint32_t j = 0; j <= division; j++) 
                     {
                         // Add a vertex at each grid point
-                        m_vertices.push_back(Vertex(Eigen::Vector3f(xStart + static_cast<float>(i) * step, 0.0F, xStart + static_cast<float>(j) * step)));
+                        m_vertices.push_back(geometry::Vertex(Eigen::Vector3f(xStart + static_cast<float>(i) * step, 0.0F, xStart + static_cast<float>(j) * step)));
 
                         // Add lines between the vertices
                         if (i < division)
@@ -45,12 +48,12 @@ namespace st::geometry
 
             }
  
-            const std::vector<Vertex> getVertices() const override
+            const std::vector<geometry::Vertex> getVertices() const
             {
                 return m_vertices;
             }
 
-            const std::vector<uint32_t> getIndices() const override
+            const std::vector<uint32_t> getIndices() const
             {
                 return m_indices;
             }
@@ -61,11 +64,11 @@ namespace st::geometry
             float m_depth;
             float m_cellSize;
 
-            std::vector<Vertex> m_vertices;
+            std::vector<geometry::Vertex> m_vertices;
             std::vector<uint32_t> m_indices;
 
     };
 
-} // namespace st::geometry
+} // namespace st::renderer
 
 #endif //  ST_GEOMETRY_GRID_HPP

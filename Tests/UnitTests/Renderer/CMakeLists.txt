@@ -8,6 +8,7 @@ set(Test_Name "RendererTests")
 
 set(Tests_Sources
     "GraphicsPiplineFactoryTest.cpp"
+    "GridTests.cpp"
 )
 
 
