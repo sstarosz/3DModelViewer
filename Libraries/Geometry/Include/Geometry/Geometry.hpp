@@ -12,11 +12,23 @@ namespace st::geometry
 	 * @brief
 	 *
 	 */
-	class Geometry : public core::StObject
+	class Geometry
 	{
-	  public:
-		virtual const std::vector<Vertex> getVertices() const = 0;
-		virtual const std::vector<uint32_t> getIndices() const = 0;
+		public:
+			const std::vector<Vertex> getVertices() const
+			{
+				return m_vertices;
+			}
+
+			const std::vector<uint32_t> getIndices() const
+			{
+				return m_indices;
+			
+			}
+
+		private:
+			std::vector<Vertex> m_vertices;
+			std::vector<uint32_t> m_indices;
 	};
 
 } // namespace st::geometry

@@ -15,6 +15,7 @@ namespace st::core
     public:
         Transform();
         Transform(StObject& object);
+        Transform(std::weak_ptr<StObject> object) {}//TODO clean this up
 
         ~Transform();
         Transform(const Transform&) = delete;

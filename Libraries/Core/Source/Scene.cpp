@@ -2,6 +2,7 @@
 #include "Camera.hpp"
 #include "StObject.hpp"
 #include "EventSystem.hpp"
+#include "NodeGraph.hpp"
 
 #include <vector>
 #include <memory>
@@ -21,6 +22,7 @@ namespace st::core
 
         std::vector<Camera> m_cameras;
         std::vector<std::shared_ptr<StObject>> m_objects;
+        NodeGraph m_nodeGraph;
     };
 
 
@@ -38,17 +40,14 @@ namespace st::core
         m_privateScene->m_cameras.emplace_back(std::move(camera));
     }
 
-    void Scene::addObject(StObject&& object)
+    void Scene::addNode(Node&& node)
     {
-        std::shared_ptr<StObject> newObject = m_privateScene->m_objects.emplace_back(std::make_shared<StObject>(std::move(object)));
+        auto* newNode = m_privateScene->m_nodeGraph.addNode(std::move(node));
 
-        if(newObject->isOfType(StObject::Type::eMesh))
-        {
-            EventData event;
-            event.m_eventType = Event::Type::eAddedModel;
-            event.m_eventData = newObject;
-            EventSystem::sendEvent(event);
-        }
+        EventData event;
+        event.m_eventType = Event::Type::eAddedModel;
+        event.m_eventData = newNode;
+        EventSystem::sendEvent(event);
     }
 
     SceneContent Scene::getSceneContent() const
@@ -57,7 +56,12 @@ namespace st::core
 
     }
 
-    Scene::~Scene() = default;
+	void Scene::dumpScene() const
+	{
+        //m_nodeGraph
+	}
+
+	Scene::~Scene() = default;
 
     Scene::Scene(Scene&&) noexcept = default;
 

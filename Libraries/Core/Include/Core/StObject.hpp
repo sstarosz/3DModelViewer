@@ -10,6 +10,7 @@ namespace st::core
     public:
         enum class Type
         {
+            eUnknown,
             eMesh,
             eCamera,
             eTypeCount
@@ -17,7 +18,7 @@ namespace st::core
 
     public:
         StObject();
-        ~StObject();
+        virtual ~StObject();
         StObject(const StObject&) = delete;
         StObject(StObject&&);
         StObject& operator=(const StObject&) = delete;

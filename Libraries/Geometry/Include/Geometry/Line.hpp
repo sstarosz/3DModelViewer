@@ -12,12 +12,12 @@ namespace st::geometry
 	  public:
 		Line(const Eigen::Vector3f& start, const Eigen::Vector3f& end);
 
-		const std::vector<Vertex> getVertices() const override
+		const std::vector<Vertex> getVertices() const
 		{
 			return {start, end};
 		}
 
-		const std::vector<uint32_t> getIndices() const override
+		const std::vector<uint32_t> getIndices() const
 		{
 			return {0, 1};
 		}

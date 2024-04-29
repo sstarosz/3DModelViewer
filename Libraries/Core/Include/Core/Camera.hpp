@@ -29,7 +29,7 @@ namespace st::core
         float getNearClippingPlane() const;
         float getFarClippingPlane() const;
 
-
+        std::weak_ptr<StObject> create() {return std::weak_ptr<StObject>();}; //TODO clean this up
 
     private:
         class PrivateCamera;

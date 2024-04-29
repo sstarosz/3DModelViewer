@@ -8,6 +8,8 @@ namespace st::core
 {
     class Camera;
     class StObject;
+    class Node;
+    class NodeGraph;
 } // namespace st::core
 
 namespace st::core
@@ -25,9 +27,12 @@ namespace st::core
         Scene& operator=(Scene&&) noexcept;
 
         void addCamera(Camera&& camera);
-        void addObject(StObject&& object);
+        void addNode(Node&& node);
 
         SceneContent getSceneContent() const;
+
+        //Debug
+        void dumpScene() const;
 
     private:
         class PrivateScene;

@@ -4,6 +4,8 @@
 #include "VisualAidsPipline.hpp"
 #include "VulkanContext.hpp"
 #include "Mesh.hpp"
+#include "StandardMaterial.hpp"
+#include "MaterialManager.hpp"
 #include "Core/Scene.hpp"
 #include "Core/EventSystem.hpp"
 
@@ -174,6 +176,9 @@ namespace st::renderer
 			createFrameBuffer();
 			createCommandBuffers();
 			createSyncObjects();
+
+			m_materialManager = std::make_unique<MaterialManager>();
+			m_materialManager->m_materials.push_back(std::make_shared<StandardMaterial>());
 		}
 
 		void waitForPreviousFrame()
@@ -333,21 +338,6 @@ namespace st::renderer
 		{
 			commandBuffer.begin(vk::CommandBufferBeginInfo{});
 
-			const vk::ClearColorValue clearColor(std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
-			const vk::ClearDepthStencilValue clearDepthStencil(1.0f, 0);
-
-			std::array<vk::ClearValue, 2> clearValues = {clearColor, clearDepthStencil};
-
-			vk::RenderPassBeginInfo renderPassInfo{m_vulkanContext.m_renderPass,
-												   m_vulkanContext.m_swapchainFramebuffers[imageIndex],
-												   vk::Rect2D{vk::Offset2D{0, 0}, m_vulkanContext.m_swapchainExtent},
-												   clearValues};
-
-			commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
-
-			//Material
-			commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.pipeline);
-
 			vk::Viewport viewport{0.0F,
 								  0.0F,
 								  static_cast<float>(m_vulkanContext.m_swapchainExtent.width),
@@ -363,6 +353,32 @@ namespace st::renderer
 			commandBuffer.setViewport(0, 1, &viewport);
 			commandBuffer.setScissor(0, 1, &scissor);
 
+
+			const vk::ClearColorValue clearColor(std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
+			const vk::ClearDepthStencilValue clearDepthStencil(1.0f, 0);
+
+			std::array<vk::ClearValue, 2> clearValues = {clearColor, clearDepthStencil};
+
+			vk::RenderPassBeginInfo renderPassInfo{m_vulkanContext.m_renderPass,
+												   m_vulkanContext.m_swapchainFramebuffers[imageIndex],
+												   vk::Rect2D{vk::Offset2D{0, 0}, m_vulkanContext.m_swapchainExtent},
+												   clearValues};
+
+			commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+
+			//Iterate over all materials used in the sceneNO o
+			for(const auto& material : m_materialManager->m_materials)
+			{
+				commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, material->m_pipeline);
+
+				//Iterate over all objects associated with the material
+
+			}
+
+
+			commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.pipeline);
+
+		
 			//Object
 			vk::Buffer vertexBuffers[] = {m_pipeline.resources.vertexBuffer};
 			vk::DeviceSize offsets[] = {0};
@@ -889,10 +905,13 @@ namespace st::renderer
 			auto* eventData = dynamic_cast<const core::EventData*>(event);
 			if(eventData)
 			{
-				if(std::shared_ptr<core::StObject> object = eventData->m_eventData.lock())
+				if(core::Node* node = eventData->m_eventData)
 				{
-					//Add renderable object to the scene
-					std::cout << "New object added to the scene" << std::endl;
+					if(node->isOfType(core::Node::Type::eMesh))
+					{
+						//Add renderable object to the scene
+						std::cout << "New object added to the scene" << std::endl;
+					}
 				}
 			}
 
@@ -906,9 +925,15 @@ namespace st::renderer
 			//Initialize Renderable objects
 			for (const auto& object : m_scene->getSceneContent())
 			{
-				//TODO - Implement adding model to the scene
-				//Add renderable object to the scene
-				std::cout << "New object added to the scene: " << static_cast<uint32_t>(object->getType()) << std::endl;
+				if (object->isOfType(core::StObject::Type::eMesh))
+				{
+					auto mesh = std::dynamic_pointer_cast<Mesh>(object);
+					if (mesh)
+					{
+						//TODO - Implement adding mesh to the scene
+						std::cout << "Mesh added to the scene" << std::endl;
+					}
+				}
 			}
 
 			//Register to the event system
@@ -950,7 +975,7 @@ namespace st::renderer
 		};
 
 		std::shared_ptr<core::Scene> m_scene;
-		
+		std::unique_ptr<MaterialManager> m_materialManager;
 	};
 
 	/*---------------------*/
@@ -1004,5 +1029,11 @@ namespace st::renderer
 
 		m_privateRenderer->recreateSwapChain();
 	}
+
+	const MaterialManager& Renderer::getMaterialManager() const
+	{
+		return *m_privateRenderer->m_materialManager.get();
+	}
+
 
 } // namespace st::renderer

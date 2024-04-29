@@ -2,6 +2,7 @@
 #define ST_EVENT_SYSTEM_HPP
 
 #include "StObject.hpp"
+#include "NodeGraph.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -28,7 +29,7 @@ namespace st::core
     {
 
     public:
-        std::weak_ptr<StObject> m_eventData;
+       Node* m_eventData;
     };
 
 

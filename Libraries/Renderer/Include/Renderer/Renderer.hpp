@@ -1,6 +1,8 @@
 #ifndef ST_RENDERER_RENDERER_HPP
 #define ST_RENDERER_RENDERER_HPP
 
+#include "MaterialManager.hpp"
+
 #include <memory>
 #include <vulkan/vulkan.hpp>
 
@@ -33,6 +35,8 @@ namespace st::renderer
 		void setSurface(vk::SurfaceKHR surface);
 
 		void changeSwapchainExtent(uint32_t width, uint32_t height);
+
+		const MaterialManager& getMaterialManager() const;
 
 	  private:
 		class PrivateRenderer;

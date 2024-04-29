@@ -19,7 +19,6 @@ namespace st::renderer
         public:
             Grid(float lengthAndWidth, uint32_t division)
             {
-                setType(core::StObject::Type::eMesh);
                 assert(division >= 1 && "Division must be greater or equal to 1");
  
                 // From -lengthAndWidth/2 to lengthAndWidth/2

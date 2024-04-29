@@ -330,6 +330,7 @@ namespace st::renderer
 			spirv_cross::CompilerGLSL crossCompiler(shaderSpvCode);
 			spirv_cross::ShaderResources shaderResources = crossCompiler.get_shader_resources();
 
+			uint32_t bindingIndex = 0;
 			size_t totalSize = 0;
 			for (const auto& resource : shaderResources.stage_inputs)
 			{
@@ -345,9 +346,15 @@ namespace st::renderer
 				pipeline.attributeDescriptions.push_back(attributeDescription);
 			}
 
-			pipeline.vertexBindingDescription = vk::VertexInputBindingDescription{0, static_cast<uint32_t>(totalSize), vk::VertexInputRate::eVertex};
+			pipeline.vertexBindingDescription = vk::VertexInputBindingDescription{bindingIndex,
+																				  static_cast<uint32_t>(totalSize),
+																				  vk::VertexInputRate::eVertex};
 
-			pipeline.vertexInputInfo = vk::PipelineVertexInputStateCreateInfo{vk::PipelineVertexInputStateCreateFlags{}, pipeline.vertexBindingDescription, pipeline.attributeDescriptions};
+			pipeline.vertexInputInfo = vk::PipelineVertexInputStateCreateInfo{vk::PipelineVertexInputStateCreateFlags{},
+																			  pipeline.vertexBindingDescription,
+																			  pipeline.attributeDescriptions};
+
+			bindingIndex++;
 		}
 
 		vk::Format spirvTypeToVkFormat(const spirv_cross::SPIRType& type)

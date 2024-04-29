@@ -1,17 +1,17 @@
 #include "StObject.hpp"
-
+#include "StObjectPrivate.hpp"
 
 namespace st::core
 {
-    class StObject::PrivateStObject
+    /*---------------------*/
+    /*-------Private-------*/
+    /*---------------------*/
+    StObject::PrivateStObject::PrivateStObject():
+        m_type(StObject::Type::eUnknown)
     {
-    public:
-        PrivateStObject()
-        {
-        }
 
-        StObject::Type m_type;
-    };
+    }
+
 
     /*---------------------*/
     /*-------Public--------*/
