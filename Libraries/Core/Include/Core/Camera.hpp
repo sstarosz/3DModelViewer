@@ -1,12 +1,13 @@
 #ifndef ST_CORE_CAMERA_HPP
 #define ST_CORE_CAMERA_HPP
 
+#include "NodeGraph.hpp"
 #include "StObject.hpp"
 #include <memory>
 
 namespace st::core
 {
-    class Camera : public StObject
+    class Camera : public Node
     {
     public:
         Camera();

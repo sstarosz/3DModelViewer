@@ -1,4 +1,3 @@
-#include <iostream>
 #include "Core/Scene.hpp"
 #include "Core/Camera.hpp"
 #include "Core/Transform.hpp"
@@ -13,17 +12,29 @@
 
 #include <QApplication>
 
-
-
 using namespace st;
 
 
+namespace st{
+    class Application
+    {
+    public:
+        Application(int argc, char* argv[])
+        {
+            QApplication a(argc, argv);
+        }
 
+        int exec()
+        {
+            return QApplication::exec();
+        }
+    };
+    
+}
 
 
 int main(int argc, char* argv[])
 {
-    std::cout << "Hello, World!" << std::endl;
     QApplication a(argc, argv);
 
     ui::Viewport viewport;

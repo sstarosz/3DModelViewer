@@ -1,15 +1,15 @@
 #ifndef ST_CORE_TRANSFORM_HPP
 #define ST_CORE_TRANSFORM_HPP
 
-
-#include "StObject.hpp"
-
 #include <memory>
 #include <Eigen/Core>
 
 
 namespace st::core
 {
+    class StObject;
+
+
     class Transform
     {
     public:
@@ -19,9 +19,9 @@ namespace st::core
 
         ~Transform();
         Transform(const Transform&) = delete;
-        Transform(Transform&&) = delete;
+        Transform(Transform&&);
         Transform& operator=(const Transform&) = delete;
-        Transform& operator=(Transform&&) = delete;
+        Transform& operator=(Transform&&);
 
 
         Eigen::Vector3f getTranslation() const;
@@ -29,8 +29,8 @@ namespace st::core
 
 
     private:
-        class PrivateTransform;
-        std::unique_ptr<PrivateTransform> m_privateTransform;
+        //class PrivateTransform;
+        //std::unique_ptr<PrivateTransform> m_privateTransform;
     };
 
 

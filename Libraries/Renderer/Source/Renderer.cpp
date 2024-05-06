@@ -367,13 +367,13 @@ namespace st::renderer
 			commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 
 			//Iterate over all materials used in the sceneNO o
-			for(const auto& material : m_materialManager->m_materials)
-			{
-				commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, material->m_pipeline);
-
-				//Iterate over all objects associated with the material
-
-			}
+			//for(const auto& material : m_materialManager->m_materials)
+			//{
+			//	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, material->m_pipeline);
+//
+			//	//Iterate over all objects associated with the material
+//
+			//}
 
 
 			commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.pipeline);

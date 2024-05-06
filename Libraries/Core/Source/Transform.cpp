@@ -2,22 +2,22 @@
 
 namespace st::core 
 {
-    class Transform::PrivateTransform
-    {
-    public:
-        PrivateTransform()
-        {
-        }
-    };
+    //class Transform::PrivateTransform
+    //{
+    //public:
+    //    PrivateTransform()
+    //    {
+    //    }
+    //};
 
     /*---------------------*/
     /*-------Public--------*/
     /*---------------------*/
-    Transform::Transform(): m_privateTransform(std::make_unique<PrivateTransform>())
+    Transform::Transform()//: m_privateTransform(std::make_unique<PrivateTransform>())
     {
     }
 
-    Transform::Transform(StObject& /*object*/): m_privateTransform(std::make_unique<PrivateTransform>())
+    Transform::Transform(StObject& /*object*/)//: m_privateTransform(std::make_unique<PrivateTransform>())
     {
     }
 
@@ -30,7 +30,12 @@ namespace st::core
     {
     }
 
+
     Transform::~Transform() = default;
+
+    Transform::Transform(Transform&&) = default;
+
+    Transform& Transform::operator=(Transform&&) = default;
 
 
 } // namespace st::core

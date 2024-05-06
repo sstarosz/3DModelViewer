@@ -5,11 +5,12 @@
 #include "Material.hpp"
 
 #include <string_view>
+#include <string>
 
 namespace st::renderer
 {
 
-	std::string_view standardMaterialVertexShader = R"(
+	constexpr std::string_view standardMaterialVertexShader = R"(
         #version 330 core
 
         layout(location = 0) in vec3 aPos;
@@ -28,7 +29,7 @@ namespace st::renderer
         }
     )";
 
-	std::string_view standardMaterialFragmentShader = R"(
+	constexpr std::string_view standardMaterialFragmentShader = R"(
         #version 330 core
 
         out vec4 FragColor;

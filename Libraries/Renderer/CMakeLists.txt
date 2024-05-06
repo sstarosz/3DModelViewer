@@ -17,6 +17,7 @@ set(Sources
 
 set(Public_Headers
     "Include/Renderer/Renderer.hpp"
+    "Include/Renderer/GraphicsPiplineFactory.hpp"
     "Include/Renderer/VulkanContext.hpp"
     "Include/Renderer/Grid.hpp"
     )
@@ -24,7 +25,6 @@ set(Public_Headers
 set(Private_Headers
     "Source/PhysicalDevice.hpp"
     "Source/QueueFamily.hpp"
-    "Source/GraphicsPiplineFactory.hpp"
     "Source/VisualAidsPipline.hpp"
     )
 
