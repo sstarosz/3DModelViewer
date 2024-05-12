@@ -3,17 +3,34 @@
 
 #include <QMainWindow>
 
-namespace st::ui
+namespace st
 {
+
+namespace core
+{
+	class ContentManager;
+}
+
+namespace ui
+{
+	class Viewport;
+	class NodeEditor;
 
 	class MainWindow : public QMainWindow
 	{
 		Q_OBJECT
 
 	  public:
-		explicit MainWindow(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
+		explicit MainWindow(core::ContentManager& contentManager, QWidget* parent = nullptr, Qt::WindowFlags flags = {});
+
+		void initialize();
+	  private:
+		core::ContentManager& m_contentManager;
+		Viewport* m_viewport;
+		NodeEditor* m_nodeEditor;
 	};
 
-} // namespace st::ui
+} // namespace ui
+} // namespace st
 
 #endif // ST_UI_MAINWINDOW_HPP

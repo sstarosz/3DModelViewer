@@ -83,7 +83,8 @@
         "xtr1common": "cpp",
         "xtree": "cpp",
         "xutility": "cpp",
-        "print": "cpp"
+        "print": "cpp",
+        "qgraphicsview": "cpp"
     },
     "cSpell.words": [
         "Eigen",

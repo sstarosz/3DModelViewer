@@ -126,6 +126,19 @@ namespace st::core
 		std::vector<std::unique_ptr<Node>> m_nodes;
 	};
 
+    template<typename T>
+    void connect(std::weak_ptr<Node> parent, std::weak_ptr<Node> child)
+    {
+        if (auto p = parent.lock())
+        {
+            if (auto c = child.lock())
+            {
+                p->m_children.push_back(c.get());
+                c->m_parents.push_back(p.get());
+            }
+        }
+    }
+
 } // namespace st::core
 
 #endif // ST_CORE_NOTE_HPP

@@ -1,6 +1,7 @@
 #ifndef ST_RENDERER_RENDERER_HPP
 #define ST_RENDERER_RENDERER_HPP
 
+#include "Core/NodeGraph.hpp"
 #include "MaterialManager.hpp"
 
 #include <memory>

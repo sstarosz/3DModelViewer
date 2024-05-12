@@ -1,20 +1,23 @@
 #ifndef ST_CORE_TRANSFORM_HPP
 #define ST_CORE_TRANSFORM_HPP
 
+#include "Core/NodeGraph.hpp"
+
 #include <memory>
 #include <Eigen/Core>
-
 
 namespace st::core
 {
     class StObject;
 
 
-    class Transform
+    class Transform : public Node
     {
     public:
         Transform();
         Transform(StObject& object);
+        Transform(std::weak_ptr<Node> node);
+
         Transform(std::weak_ptr<StObject> object) {}//TODO clean this up
 
         ~Transform();

@@ -15,11 +15,13 @@ set(CMAKE_AUTOUIC ON)
 set(Sources
     "Source/MainWindow.cpp"
     "Source/Viewport.cpp"
+    "Source/NodeEditor.cpp"
     )
 
 set(Public_Headers
     "Include/Ui/MainWindow.hpp"
     "Include/Ui/Viewport.hpp"
+    "Include/Ui/NodeEditor.hpp"
     )
 
 set(Private_Headers)
@@ -40,8 +42,9 @@ target_compile_options(${PROJECT_NAME} PRIVATE ${Compiler_Flags})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
                         Qt6::Widgets
+                        Qt6::OpenGLWidgets
                         Renderer
-                        Core
+                        Core 
                         Vulkan::Vulkan
                      )
 

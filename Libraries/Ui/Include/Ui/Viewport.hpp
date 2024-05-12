@@ -3,17 +3,19 @@
 
 #include <QWidget>
 
-namespace st::core
+namespace st
+{
+namespace core
 {
 	class Scene;
 }
 
-namespace st::renderer
+namespace renderer
 {
 	class Renderer;
 }
 
-namespace st::ui
+namespace ui
 {
 
 	class Viewport : public QWidget
@@ -31,6 +33,7 @@ namespace st::ui
 		PrivateWindow* m_window;
 	};
 
-} // namespace st::ui
+} // namespace ui
+} // namespace st
 
 #endif // ST_UI_VIEWPORT_HPP

@@ -13,6 +13,7 @@ set(Sources
     "Source/Transform.cpp"
     "Source/StObject.cpp"
     "Source/EventSystem.cpp"
+    "Source/ContentManager.cpp"
     )
 
 set(Public_Headers
@@ -21,6 +22,7 @@ set(Public_Headers
     "Include/Core/Transform.hpp"
     "Include/Core/StObject.hpp"
     "Include/Core/EventSystem.hpp"
+    "Include/Core/ContentManager.hpp"
     )
 
 set(Private_Headers

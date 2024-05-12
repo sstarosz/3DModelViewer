@@ -58,6 +58,7 @@ find_package(Qt6 CONFIG REQUIRED
                         Gui
                         Widgets
                         CoreTools
+                        OpenGLWidgets
             )
 
 find_package(Vulkan REQUIRED

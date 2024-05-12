@@ -4,6 +4,7 @@
 #include <QTimer>
 #include <QVulkanInstance>
 #include <QWindow>
+#include <QOpenGLWidget>
 
 #include "Renderer/Renderer.hpp"
 #include "Core/Scene.hpp"
@@ -95,8 +96,11 @@ namespace st::ui
 		m_window(new PrivateWindow)
 	{
 		QWidget* vulkanWidget = QWidget::createWindowContainer(m_window, this);
+		vulkanWidget->setContentsMargins(0, 0, 0, 0);
+		vulkanWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
 		QHBoxLayout* layout = new QHBoxLayout(this);
+		layout->setContentsMargins(0, 0, 0, 0);
 		layout->addWidget(vulkanWidget);
 	}
 
