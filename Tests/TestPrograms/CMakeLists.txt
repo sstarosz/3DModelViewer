@@ -26,3 +26,17 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
                                             )
 
 Deploy_QT(${PROJECT_NAME})
+
+
+
+set(Sources2
+    "NodeGraphPrototype.cpp"
+)
+
+add_executable(NodeGraphPrototype ${Sources2})
+
+target_link_libraries(NodeGraphPrototype PRIVATE 
+                                            Core 
+                                            Geometry
+                                            Renderer
+                                            )
