@@ -40,3 +40,18 @@ target_link_libraries(NodeGraphPrototype PRIVATE
                                             Geometry
                                             Renderer
                                             )
+
+
+set(Sources3
+    "InputPrototype.cpp"
+)
+
+add_executable(InputPrototype ${Sources3})
+
+target_link_libraries(InputPrototype PRIVATE 
+                                            Core 
+                                            Geometry
+                                            Renderer
+                                            Ui
+                                            Qt6::Widgets
+                                            )
