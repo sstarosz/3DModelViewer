@@ -399,7 +399,7 @@ public:
     }
 
 private:
-    AttributeBase* m_input;
+    const AttributeBase* m_input;
     std::string m_name;
     TypeInfo m_valueInfo;
 };
@@ -514,6 +514,8 @@ public:
 
     NodeMultiply()
     {
+        defineNode("NodeMultiply");
+
         registerInputs(m_inputs.input1, "input1");
         registerInputs(m_inputs.input2, "input2");
 
@@ -560,34 +562,49 @@ private:
 class NodeGraph
 {
 public:
-class Connection
-{
-public:
-    Connection() = default;
-    ~Connection() = default;
+  class Connection
+  {
+	public:
+	  Connection(std::weak_ptr<Node> nodeConnectedFrom,
+				 const OutputHandle outputHandle,
+				 std::weak_ptr<Node> nodeConnectedTo,
+				 const InputHandle inputHandle) :
 
-    std::weak_ptr<Node> m_nodeConnectedTo;
-    std::weak_ptr<Node> m_nodeConnectedFrom;
-    
-    InputHandle m_inputHandle;
-    OutputHandle m_outputHandle;
-};
+		  m_nodeConnectedTo(nodeConnectedTo),
+		  m_nodeConnectedFrom(nodeConnectedFrom),
+		  m_inputHandle(inputHandle),
+		  m_outputHandle(outputHandle)
+	  {
+	  }
+
+	  std::weak_ptr<Node> m_nodeConnectedTo;
+	  std::weak_ptr<Node> m_nodeConnectedFrom;
+
+	  InputHandle m_inputHandle;
+	  OutputHandle m_outputHandle;
+  };
 
 public:
     NodeGraph() = default;
     ~NodeGraph() = default;
 
-    void addNode(std::shared_ptr<Node> node)
+    
+    template<typename NodeType>
+    std::shared_ptr<NodeType> addNode(std::shared_ptr<NodeType> node)
     {
+        static_assert(std::is_base_of<Node, NodeType>::value, "Node must be derived from Node class");
+
         m_nodes.push_back(node);
+
+        return node;
     }
 
-    void connectNodes(std::shared_ptr<Node> node1, std::shared_ptr<Node> node2, const std::string& outputName, const std::string& inputName)
+    void connectNodes(std::weak_ptr<Node> nodeFrom, 
+                      const OutputHandle outputHandle,
+                      std::weak_ptr<Node> nodeTo,
+                    const InputHandle inputHandle)
     {
-        Connection connection;
-        connection.m_node = node2;
-        connection.m_inputName = inputName;
-        connection.m_outputName = outputName;
+        Connection connection{nodeFrom, outputHandle, nodeTo, inputHandle};
 
         m_connections.push_back(connection);
     }
@@ -614,27 +631,26 @@ int main()
 
     NodeGraph graph;
 
-    NodeAdd nodeAdd;
-    nodeAdd.m_inputs.input1.setDefaultValue(10u);
-    nodeAdd.m_inputs.input2.setDefaultValue(20u);
-    nodeAdd.compute();
-
-    std::cout << "Output from Node 1: " << nodeAdd.m_outputs.output1() << std::endl;
-    graph.addNode(std::make_shared<NodeAdd>(nodeAdd));
-
-    NodeMultiply nodeMultiply;
-    nodeMultiply.m_inputs.input1.setDefaultValue(10u);
-    nodeMultiply.m_inputs.input2.setDefaultValue(20u);
-    nodeMultiply.compute();
-
-    std::cout << "Output from Node 2: " << nodeMultiply.m_outputs.output1() << std::endl;
-    graph.addNode(std::make_shared<NodeMultiply>(nodeMultiply));
+    std::shared_ptr<NodeAdd> nodeAdd = graph.addNode(std::make_shared<NodeAdd>());
+    nodeAdd->m_inputs.input1.setDefaultValue(10u);
+    nodeAdd->m_inputs.input2.setDefaultValue(20u);
+    nodeAdd->compute();
+    std::cout << "Output from Node 1: " << nodeAdd->m_outputs.output1() << std::endl;
 
 
-    connect(nodeAdd.m_outputs.output1, nodeMultiply.m_inputs.input1);
+    std::shared_ptr<NodeMultiply> nodeMultiply = graph.addNode(std::make_shared<NodeMultiply>());
+    nodeMultiply->m_inputs.input1.setDefaultValue(10u);
+    nodeMultiply->m_inputs.input2.setDefaultValue(20u);
+    nodeMultiply->compute();
+
+    std::cout << "Output from Node 2: " << nodeMultiply->m_outputs.output1() << std::endl;
+
+    //TODO better way to select which output to connect to which input
+    graph.connectNodes(nodeAdd, nodeAdd->getOutputs().at(0), nodeMultiply, nodeMultiply->getInputs().at(0));
     
-    nodeMultiply.compute();
-    std::cout << "Output from Node 2 after connection: " << nodeMultiply.m_outputs.output1() << std::endl;
+    nodeMultiply->compute();
+    std::cout << "Output from Node 2 after connection: " << nodeMultiply->m_outputs.output1() << std::endl;
+
 
 
     //Display the graph
@@ -661,6 +677,17 @@ int main()
             std::cout << "\t\t\t\tValue: " << outputHandle.getData<uint32_t>() << std::endl;
         }
 
+    }
+
+    //Connections
+    std::cout << "--- Connections ---" << std::endl;
+    for(const auto& connection : graph.m_connections)
+    {
+        std::cout << "Connection: " << std::endl;
+        std::cout << "\tFrom: " << connection.m_nodeConnectedFrom.lock()->getName() << std::endl;
+        std::cout << "\tOutput: " << connection.m_outputHandle.getName() << std::endl;
+        std::cout << "\tTo: " << connection.m_nodeConnectedTo.lock()->getName() << std::endl;
+        std::cout << "\tInput: " << connection.m_inputHandle.getName() << std::endl;
     }
 
 
