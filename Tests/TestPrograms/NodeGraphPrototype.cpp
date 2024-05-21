@@ -65,13 +65,14 @@ class TypeInfo
 {
   public:
 	TypeInfo() = default;
-	TypeInfo(DataType baseType, ComponentCount componentCount) :
+	TypeInfo(DataType baseType,
+			 ComponentCount componentCount) :
 		m_baseType(baseType),
 		m_componentCount(componentCount)
 	{
 	}
 
-    DataType getBaseType() const
+	DataType getBaseType() const
     {
         return m_baseType;
     }
@@ -104,14 +105,6 @@ struct is_basic_type
 								  std::is_same_v<T, uint32_t> ||
 								  std::is_same_v<T, float> ||
 								  std::is_same_v<T, double>;
-};
-
-template <typename T>
-struct is_vector_type
-{
-    static constexpr bool value = std::is_same_v<T, Eigen::Vector2f> ||
-                                  std::is_same_v<T, Eigen::Vector3f> ||
-                                  std::is_same_v<T, Eigen::Vector4f>;
 };
 
 
@@ -175,10 +168,7 @@ constexpr TypeInfo getTypeId()
                               DataType::eUnknown;
 
 
-
-
-    return TypeInfo(type, getComponentCount<T>());
- 
+    return TypeInfo(type, getComponentCount<T>()); 
 }
 
 
@@ -190,12 +180,12 @@ enum class eAttributeType
     eTypeCount
 };
 
-
-
 class AttributeBase
 {
 public:
     virtual ~AttributeBase() = default;
+
+    virtual TypeInfo getTypeInfo() const = 0;
 };
 
 template <eAttributeType AttributeType, typename StoredType>
@@ -223,7 +213,6 @@ public:
             m_value = nullptr;
         }
     }
-
 
     virtual ~Attribute() = default;
 
@@ -256,11 +245,11 @@ public:
         }
     }
 
-
-    TypeInfo getTypeInfo() const
+    TypeInfo getTypeInfo() const override
     {
         return m_typeInfo;
     }
+
 
 
     Data m_value;
@@ -313,98 +302,82 @@ public:
     }
 };
 
-
-
 class Handler
 {
+  public:
+	Handler(AttributeBase& attribute,
+			const std::string& name) :
+		m_attribute(attribute),
+		m_name(name)
+	{
+	}
 
+	virtual ~Handler() = default;
+
+    AttributeBase& getAttribute() const
+    {
+        return m_attribute;
+    }
+
+	std::string getName() const
+	{
+		return m_name;
+	}
+
+	TypeInfo getTypeInfo() const
+	{
+		return m_attribute.getTypeInfo();
+	}
+
+  private:
+    AttributeBase& m_attribute;
+	std::string m_name;
 };
 
-class OutputHandle
+class OutputHandle : public Handler
 {
-   public:
-    template <typename T>
-    OutputHandle(Output<T>* output, const std::string& name) :
-        m_output(output),
-        m_name(name),
-        m_valueInfo(getTypeId<T>())
-    {
-        assert(m_output != nullptr && "Output is nullptr");
-    }
+  public:
+	template <typename T>
+	OutputHandle(Output<T>& output,
+				 const std::string& name) :
+		Handler(output, name)
+	{
+	}
 
-    template <typename T>
-    T getData() const
-    {
-        Output<T>* output = dynamic_cast<Output<T>*>(m_output);
-        if(output == nullptr)
-        {
-            throw std::runtime_error("Invalid type");
-        }
-        return output->m_value;
-    }
-
-    std::string getName() const
-    {
-        return m_name;
-    }
-
-    TypeInfo getTypeInfo() const
-    {
-        return m_valueInfo;
-    }
-
-
-private:
-    AttributeBase* m_output;
-    std::string m_name;
-    TypeInfo m_valueInfo;  
+	template <typename T>
+	T getData() const
+	{
+        //Validate error handling
+		Output<T>& output = dynamic_cast<Output<T>&>(this->getAttribute());
+		return output.m_value;
+	}
 };
 
-class InputHandle
+class InputHandle : public Handler
 {
-public:
-    template <typename T>
-    InputHandle(Input<T>* input, const std::string& name) :
-        m_input(input),
-        m_name(name),
-        m_valueInfo(getTypeId<T>())
-    {
-        assert(input != nullptr && "Input is nullptr");
-    }
+  public:
+	template <typename T>
+	InputHandle(Input<T>& input,
+				const std::string& name) :
+		Handler(input, name)
+	{
+	}
 
-    template <typename T>
-    const T& getData() const
-    {
-        const Input<T>* input = dynamic_cast<const Input<T>*>(m_input);
-        if(input == nullptr)
-        {
-            throw std::runtime_error("Invalid type");
-        }
-        return input->getValue();
-    }
+	template <typename T>
+	const T& getData() const
+	{
+        //Validate error handling
+		const Input<T>& input = dynamic_cast<const Input<T>&>(this->getAttribute());
+		return input.getValue();
+	}
 
-    std::string getName() const
-    {
-        return m_name;
-    }
-
-    TypeInfo getTypeInfo() const
-    {
-        return m_valueInfo;
-    }
-
-    bool isConnected() const
-    {
-        return m_input != nullptr;
-    }
-
-private:
-    const AttributeBase* m_input;
-    std::string m_name;
-    TypeInfo m_valueInfo;
+	bool isConnected() const
+	{
+        //TODO check if the connection is valid
+        return false;
+		//return m_input != nullptr;
+	}
 };
-
-
 
 class Node
 {
@@ -422,12 +395,12 @@ public:
         return m_name;
     }
 
-    std::vector<InputHandle> getInputs()
+    std::vector<InputHandle> getInputHandles()
     {
         return m_inputs;
     }
 
-    virtual std::vector<OutputHandle> getOutputs()
+    virtual std::vector<OutputHandle> getOutputHandles()
     {
         return m_outputs;
     }
@@ -435,13 +408,13 @@ public:
     template <typename Type>
     void registerInputs(Input<Type>& input, const std::string& name)
     {
-        m_inputs.push_back(InputHandle(&input, name));
+        m_inputs.push_back(InputHandle(input, name));
     }
 
     template <typename Type>
     void registerOutputs(Output<Type>& output, const std::string& name)
     {
-        m_outputs.push_back(OutputHandle(&output, name));
+        m_outputs.push_back(OutputHandle(output, name));
     }
 
     //TODO add more node specific data
@@ -458,13 +431,13 @@ private:
 };
 
 
-class NodeAdd : public Node
+class AddNode : public Node
 {
 public:
 
-    NodeAdd()
+    AddNode()
     {
-        defineNode("NodeAdd");
+        defineNode("Add");
 
         registerInputs(m_inputs.input1, "input1");
         registerInputs(m_inputs.input2, "input2");
@@ -497,7 +470,7 @@ public:
 
 };
 
-class NodeMultiply : public Node
+class MultiplyNode : public Node
 {
 public:
 
@@ -512,9 +485,9 @@ public:
         Output<uint32_t> output1;
     };
 
-    NodeMultiply()
+    MultiplyNode()
     {
-        defineNode("NodeMultiply");
+        defineNode("Multiply");
 
         registerInputs(m_inputs.input1, "input1");
         registerInputs(m_inputs.input2, "input2");
@@ -602,12 +575,36 @@ public:
     void connectNodes(std::weak_ptr<Node> nodeFrom, 
                       const OutputHandle outputHandle,
                       std::weak_ptr<Node> nodeTo,
-                    const InputHandle inputHandle)
+                      const InputHandle inputHandle)
     {
+        //connection(nodeFrom, outputHandle, nodeTo, inputHandle);
+        
         Connection connection{nodeFrom, outputHandle, nodeTo, inputHandle};
 
         m_connections.push_back(connection);
     }
+
+    std::vector<std::shared_ptr<Node>> getNodes() const
+    {
+        return m_nodes;
+    }
+
+    std::vector<Connection> getConnections() const
+    {
+        return m_connections;
+    }
+
+
+private:
+    template<typename Type1, typename Type2>
+    void connect(Output<Type1>& output, Input<Type2>& input)
+    {
+        static_assert(std::is_same<Type1, Type2>::value, "Types must be the same");
+        //node1Attribute.
+        //input.setConnection(&output.m_value);
+        input.setConnection(output);
+    }
+
 
     std::vector<std::shared_ptr<Node>> m_nodes;
     std::vector<Connection> m_connections;
@@ -615,14 +612,7 @@ public:
 
 
 
-template<typename Type1, typename Type2>
-void connect(Output<Type1>& output, Input<Type2>& input)
-{
-    static_assert(std::is_same<Type1, Type2>::value, "Types must be the same");
-    //node1Attribute.
-    //input.setConnection(&output.m_value);
-    input.setConnection(output);
-}
+
 
 
 int main()
@@ -631,14 +621,14 @@ int main()
 
     NodeGraph graph;
 
-    std::shared_ptr<NodeAdd> nodeAdd = graph.addNode(std::make_shared<NodeAdd>());
+    std::shared_ptr<AddNode> nodeAdd = graph.addNode(std::make_shared<AddNode>());
     nodeAdd->m_inputs.input1.setDefaultValue(10u);
     nodeAdd->m_inputs.input2.setDefaultValue(20u);
     nodeAdd->compute();
     std::cout << "Output from Node 1: " << nodeAdd->m_outputs.output1() << std::endl;
 
 
-    std::shared_ptr<NodeMultiply> nodeMultiply = graph.addNode(std::make_shared<NodeMultiply>());
+    std::shared_ptr<MultiplyNode> nodeMultiply = graph.addNode(std::make_shared<MultiplyNode>());
     nodeMultiply->m_inputs.input1.setDefaultValue(10u);
     nodeMultiply->m_inputs.input2.setDefaultValue(20u);
     nodeMultiply->compute();
@@ -646,7 +636,7 @@ int main()
     std::cout << "Output from Node 2: " << nodeMultiply->m_outputs.output1() << std::endl;
 
     //TODO better way to select which output to connect to which input
-    graph.connectNodes(nodeAdd, nodeAdd->getOutputs().at(0), nodeMultiply, nodeMultiply->getInputs().at(0));
+    graph.connectNodes(nodeAdd, nodeAdd->getOutputHandles().at(0), nodeMultiply, nodeMultiply->getInputHandles().at(0));
     
     nodeMultiply->compute();
     std::cout << "Output from Node 2 after connection: " << nodeMultiply->m_outputs.output1() << std::endl;
@@ -655,11 +645,11 @@ int main()
 
     //Display the graph
     std::cout << "--- Graph ---" << std::endl;
-    for(auto& node : graph.m_nodes)
+    for(auto& node : graph.getNodes())
     {
         std::cout << "\tNode: " << node->getName() << std::endl;
         std::cout << "\t\tInputs: " << std::endl;
-        for(const auto& inputHandle : node->getInputs())
+        for(const auto& inputHandle : node->getInputHandles())
         {
             std::cout << "\t\t\t" << inputHandle.getName() << std::endl;
             std::cout << "\t\t\t\tType: " << inputHandle.getTypeInfo().getBaseTypeString() << std::endl;
@@ -669,7 +659,7 @@ int main()
         }
 
         std::cout << "\t\tOutputs: " << std::endl;
-        for(const auto& outputHandle: node->getOutputs())
+        for(const auto& outputHandle: node->getOutputHandles())
         {
             std::cout << "\t\t\t" << outputHandle.getName() << std::endl;
             std::cout << "\t\t\t\tType: " << outputHandle.getTypeInfo().getBaseTypeString() << std::endl;
@@ -681,7 +671,7 @@ int main()
 
     //Connections
     std::cout << "--- Connections ---" << std::endl;
-    for(const auto& connection : graph.m_connections)
+    for(const auto& connection : graph.getConnections())
     {
         std::cout << "Connection: " << std::endl;
         std::cout << "\tFrom: " << connection.m_nodeConnectedFrom.lock()->getName() << std::endl;
