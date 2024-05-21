@@ -1,6 +1,7 @@
 #ifndef ST_CORE_CAMERA_HPP
 #define ST_CORE_CAMERA_HPP
 
+#include "Nodes/Node.hpp"
 #include "NodeGraph.hpp"
 #include "StObject.hpp"
 #include <memory>
@@ -36,6 +37,16 @@ namespace st::core
         class PrivateCamera;
         std::unique_ptr<PrivateCamera> m_privateCamera;
     };
+
+
+    class Camera2 : public Node
+    {
+        
+    };
+
+
+    
+
 } // namespace st::core
 
 #endif // ST_CORE_CAMERA_HPP

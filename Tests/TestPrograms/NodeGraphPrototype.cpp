@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <cassert>
+#include <algorithm>
 #include <Eigen/Core>  
 
 enum class DataType
@@ -305,7 +306,7 @@ public:
 class Handler
 {
   public:
-	Handler(AttributeBase& attribute,
+	Handler(AttributeBase* attribute,
 			const std::string& name) :
 		m_attribute(attribute),
 		m_name(name)
@@ -314,7 +315,7 @@ class Handler
 
 	virtual ~Handler() = default;
 
-    AttributeBase& getAttribute() const
+    AttributeBase* getAttribute() const
     {
         return m_attribute;
     }
@@ -326,11 +327,11 @@ class Handler
 
 	TypeInfo getTypeInfo() const
 	{
-		return m_attribute.getTypeInfo();
+		return m_attribute->getTypeInfo();
 	}
 
   private:
-    AttributeBase& m_attribute;
+    AttributeBase* m_attribute;
 	std::string m_name;
 };
 
@@ -338,7 +339,7 @@ class OutputHandle : public Handler
 {
   public:
 	template <typename T>
-	OutputHandle(Output<T>& output,
+	OutputHandle(Output<T>* output,
 				 const std::string& name) :
 		Handler(output, name)
 	{
@@ -348,8 +349,8 @@ class OutputHandle : public Handler
 	T getData() const
 	{
         //Validate error handling
-		Output<T>& output = dynamic_cast<Output<T>&>(this->getAttribute());
-		return output.m_value;
+		Output<T>* output = dynamic_cast<Output<T>*>(this->getAttribute());
+		return output->m_value;
 	}
 };
 
@@ -357,7 +358,7 @@ class InputHandle : public Handler
 {
   public:
 	template <typename T>
-	InputHandle(Input<T>& input,
+	InputHandle(Input<T>* input,
 				const std::string& name) :
 		Handler(input, name)
 	{
@@ -367,8 +368,8 @@ class InputHandle : public Handler
 	const T& getData() const
 	{
         //Validate error handling
-		const Input<T>& input = dynamic_cast<const Input<T>&>(this->getAttribute());
-		return input.getValue();
+		const Input<T>* input = dynamic_cast<const Input<T>*>(this->getAttribute());
+		return input->getValue();
 	}
 
 	bool isConnected() const
@@ -408,13 +409,13 @@ public:
     template <typename Type>
     void registerInputs(Input<Type>& input, const std::string& name)
     {
-        m_inputs.push_back(InputHandle(input, name));
+        m_inputs.push_back(InputHandle(&input, name));
     }
 
     template <typename Type>
     void registerOutputs(Output<Type>& output, const std::string& name)
     {
-        m_outputs.push_back(OutputHandle(output, name));
+        m_outputs.push_back(OutputHandle(&output, name));
     }
 
     //TODO add more node specific data
@@ -528,92 +529,124 @@ private:
     //static std::vector<OutputAtributes> m_outputs;
 };
 
-
-
-
-
 class NodeGraph
 {
-public:
-  class Connection
-  {
-	public:
-	  Connection(std::weak_ptr<Node> nodeConnectedFrom,
-				 const OutputHandle outputHandle,
-				 std::weak_ptr<Node> nodeConnectedTo,
-				 const InputHandle inputHandle) :
+  public:
+	class Connection
+	{
+	  public:
+		Connection(std::weak_ptr<Node> nodeConnectedFrom,
+				   const OutputHandle outputHandle,
+				   std::weak_ptr<Node> nodeConnectedTo,
+				   const InputHandle inputHandle) :
 
-		  m_nodeConnectedTo(nodeConnectedTo),
-		  m_nodeConnectedFrom(nodeConnectedFrom),
-		  m_inputHandle(inputHandle),
-		  m_outputHandle(outputHandle)
-	  {
-	  }
+			m_nodeConnectedTo(nodeConnectedTo),
+			m_nodeConnectedFrom(nodeConnectedFrom),
+			m_inputHandle(inputHandle),
+			m_outputHandle(outputHandle)
+		{
+		}
 
-	  std::weak_ptr<Node> m_nodeConnectedTo;
-	  std::weak_ptr<Node> m_nodeConnectedFrom;
+		bool operator== (const Connection& other) const
+		{
+			return m_nodeConnectedFrom.lock() == other.m_nodeConnectedFrom.lock() &&
+				   m_nodeConnectedTo.lock() == other.m_nodeConnectedTo.lock() &&
+				   m_inputHandle.getName() == other.m_inputHandle.getName() &&
+				   m_outputHandle.getName() == other.m_outputHandle.getName();
+		}
 
-	  InputHandle m_inputHandle;
-	  OutputHandle m_outputHandle;
-  };
+		std::weak_ptr<Node> m_nodeConnectedTo;
+		std::weak_ptr<Node> m_nodeConnectedFrom;
 
-public:
-    NodeGraph() = default;
-    ~NodeGraph() = default;
+		InputHandle m_inputHandle;
+		OutputHandle m_outputHandle;
+	};
 
-    
-    template<typename NodeType>
-    std::shared_ptr<NodeType> addNode(std::shared_ptr<NodeType> node)
+  public:
+	NodeGraph() = default;
+	~NodeGraph() = default;
+
+	template <typename NodeType>
+	std::shared_ptr<NodeType> addNode(std::shared_ptr<NodeType> node)
+	{
+		static_assert(std::is_base_of<Node, NodeType>::value, "Node must be derived from Node class");
+
+		m_nodes.push_back(node);
+
+		return node;
+	}
+
+    void removeNode(std::shared_ptr<Node> node)
     {
-        static_assert(std::is_base_of<Node, NodeType>::value, "Node must be derived from Node class");
+        //First remove all the connections from and to the node
+        for(auto it = m_connections.begin(); it != m_connections.end();)
+        {
+            if(it->m_nodeConnectedFrom.lock() == node || it->m_nodeConnectedTo.lock() == node)
+            {
+                it = m_connections.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
 
-        m_nodes.push_back(node);
-
-        return node;
+        auto it = std::find(m_nodes.begin(), m_nodes.end(), node);
+        if(it != m_nodes.end())
+        {
+            m_nodes.erase(it);
+        }
     }
 
-    void connectNodes(std::weak_ptr<Node> nodeFrom, 
-                      const OutputHandle outputHandle,
-                      std::weak_ptr<Node> nodeTo,
-                      const InputHandle inputHandle)
-    {
-        //connection(nodeFrom, outputHandle, nodeTo, inputHandle);
-        
-        Connection connection{nodeFrom, outputHandle, nodeTo, inputHandle};
+	void connectNodes(std::weak_ptr<Node> nodeFrom,
+					  const OutputHandle outputHandle,
+					  std::weak_ptr<Node> nodeTo,
+					  const InputHandle inputHandle)
+	{
+		// connection(nodeFrom, outputHandle, nodeTo, inputHandle);
 
-        m_connections.push_back(connection);
-    }
+		Connection connection{nodeFrom, outputHandle, nodeTo, inputHandle};
 
-    std::vector<std::shared_ptr<Node>> getNodes() const
-    {
-        return m_nodes;
-    }
+		m_connections.push_back(connection);
+	}
 
-    std::vector<Connection> getConnections() const
-    {
-        return m_connections;
-    }
+	void disconnectNodes(std::weak_ptr<Node> nodeFrom,
+						 const OutputHandle outputHandle,
+						 std::weak_ptr<Node> nodeTo,
+						 const InputHandle inputHandle)
+	{
+		Connection connection{nodeFrom, outputHandle, nodeTo, inputHandle};
 
+		auto it = std::find(m_connections.begin(), m_connections.end(), connection);
+		if (it != m_connections.end())
+		{
+			m_connections.erase(it);
+		}
+	}
 
-private:
-    template<typename Type1, typename Type2>
-    void connect(Output<Type1>& output, Input<Type2>& input)
-    {
-        static_assert(std::is_same<Type1, Type2>::value, "Types must be the same");
-        //node1Attribute.
-        //input.setConnection(&output.m_value);
-        input.setConnection(output);
-    }
+	std::vector<std::shared_ptr<Node>> getNodes() const
+	{
+		return m_nodes;
+	}
 
+	std::vector<Connection> getConnections() const
+	{
+		return m_connections;
+	}
 
-    std::vector<std::shared_ptr<Node>> m_nodes;
-    std::vector<Connection> m_connections;
+  private:
+	template <typename Type1, typename Type2>
+	void connect(Output<Type1>& output, Input<Type2>& input)
+	{
+		static_assert(std::is_same<Type1, Type2>::value, "Types must be the same");
+		// node1Attribute.
+		// input.setConnection(&output.m_value);
+		input.setConnection(output);
+	}
+
+	std::vector<std::shared_ptr<Node>> m_nodes;
+	std::vector<Connection> m_connections;
 };
-
-
-
-
-
 
 int main()
 {
