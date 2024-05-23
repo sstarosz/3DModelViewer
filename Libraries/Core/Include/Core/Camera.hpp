@@ -41,7 +41,23 @@ namespace st::core
 
     class Camera2 : public Node
     {
-        
+        Camera2(float angleOfView, float focalLength, float nearClippingPlane, float farClippingPlane)
+        : Node(),
+            m_angleOfView(angleOfView),
+            m_focalLength(focalLength),
+            m_nearClippingPlane(nearClippingPlane),
+            m_farClippingPlane(farClippingPlane)
+            {
+            }
+
+
+
+
+        private:
+        float m_angleOfView;
+        float m_focalLength;
+        float m_nearClippingPlane;
+        float m_farClippingPlane;
     };
 
 

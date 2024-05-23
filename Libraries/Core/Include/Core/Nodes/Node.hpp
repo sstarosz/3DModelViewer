@@ -6,10 +6,10 @@
 
 namespace st::core
 {
-    class Node
+    class Node2
     {
     public:
-        virtual ~Node() = default;
+        virtual ~Node2() = default;
     };
 
 } // namespace st::core

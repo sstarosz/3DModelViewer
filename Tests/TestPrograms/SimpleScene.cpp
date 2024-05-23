@@ -66,22 +66,22 @@ namespace st
 																				  nearClippingPlane,
 																				  farClippingPlane);
 
-            m_contentManager.add(camera);
+            //m_contentManager.add(camera);
 
 			return std::weak_ptr<core::Node>{camera};
         }
 
-        std::weak_ptr<core::Node> plane(
+        std::weak_ptr<core::Node2> plane(
             [[mayby_unused]]const float width = 1.0f,
             [[mayby_unused]]const float height = 1.0f)
         {
-            std::shared_ptr<renderer::Plane> plane = std::make_shared<renderer::Plane>();
-            std::shared_ptr<renderer::Mesh> mesh = std::make_shared<renderer::Mesh>();
+            std::shared_ptr<renderer::Plane2> plane = std::make_shared<renderer::Plane2>();
+            //std::shared_ptr<renderer::Mesh> mesh = std::make_shared<renderer::Mesh>();
             
 
             m_contentManager.add(plane);
-            m_contentManager.add(mesh);
-            return std::weak_ptr<core::Node>{plane};
+            //m_contentManager.add(mesh);
+            return std::weak_ptr<core::Node2>{plane};
 
         }
 
@@ -145,7 +145,7 @@ namespace st
             //m_transformer = Transformer(node);
             std::shared_ptr<core::Transform> transform = std::make_shared<core::Transform>();
             
-            m_contentManager.addToCurrentContext(transform, m_currentContext);
+            //m_contentManager.addToCurrentContext(transform, m_currentContext);
             return std::weak_ptr<core::Transform>{transform};
         }
 
@@ -230,13 +230,13 @@ int main(int argc, char* argv[])
     Application app(argc, argv);
 
     //Add Camera
-	auto camera = app.create()
-					  .camera(45.0f,
-							  35.0f,
-							  0.1f,
-							  10000.0f);
+	//auto camera = app.create()
+	//				  .camera(45.0f,
+	//						  35.0f,
+	//						  0.1f,
+	//						  10000.0f);
 
-	app.modify(camera).transform();
+	//TODO revert -app.modify(camera).transform();
         //.translate(Eigen::Vector3f{0.0f, 0.0f, 6.0f})
         //.scale(Eigen::Vector3f{1.0f, 1.0f, 1.0f})
         //.translate(Eigen::Vector3f{0.0f, 0.0f, -6.0f})
@@ -254,15 +254,15 @@ int main(int argc, char* argv[])
     /*--------------------------------------Add 
     ---------------------------------------------*/
     /*-----------------------------------------------------------------------------------------------*/
-    auto standardMaterial = app.create().standardMaterial();
+    //TODO revert - auto standardMaterial = app.create().standardMaterial();
 
     //Assign Material to Plane
-    app.modify(plane).material().assign(standardMaterial);
+    //TODO revert - app.modify(plane).material().assign(standardMaterial);
 
     /*-----------------------------------------------------------------------------------------------*/
     /*-------------------------------------Setup renderer--------------------------------------------*/
     /*-----------------------------------------------------------------------------------------------*/
-    auto renderer = app.create().renderer(camera);
+    //TODO revert - auto renderer = app.create().renderer(camera);
     
     /*-----------------------------------------------------------------------------------------------*/
     /*-------------------------------------Setup Gui-------------------------------------------------*/

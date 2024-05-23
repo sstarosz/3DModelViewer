@@ -28,10 +28,10 @@ namespace st::core
         virtual ~Node() = default;
     };
 
-	class NodeGraph : public Node
-	{
-
-	};
+	//class NodeGraph : public Node
+	//{
+//
+	//};
 
 
 

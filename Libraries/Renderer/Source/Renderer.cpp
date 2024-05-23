@@ -907,11 +907,12 @@ namespace st::renderer
 			{
 				if(core::Node* node = eventData->m_eventData)
 				{
-					if(node->isOfType(core::Node::Type::eMesh))
-					{
-						//Add renderable object to the scene
-						std::cout << "New object added to the scene" << std::endl;
-					}
+					//TODO - Implement adding model to the scene
+					//if(node->isOfType(core::Node::Type::eMesh))
+					//{
+					//	//Add renderable object to the scene
+					//	std::cout << "New object added to the scene" << std::endl;
+					//}
 				}
 			}
 

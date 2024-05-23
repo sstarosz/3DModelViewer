@@ -22,7 +22,7 @@ namespace st::core
 
         std::vector<Camera> m_cameras;
         std::vector<std::shared_ptr<StObject>> m_objects;
-        NodeGraph m_nodeGraph;
+        //NodeGraph m_nodeGraph;
     };
 
 
@@ -42,12 +42,12 @@ namespace st::core
 
     void Scene::addNode(Node&& node)
     {
-        auto* newNode = m_privateScene->m_nodeGraph.addNode(std::move(node));
-
-        EventData event;
-        event.m_eventType = Event::Type::eAddedModel;
-        event.m_eventData = newNode;
-        EventSystem::sendEvent(event);
+        //auto* newNode = m_privateScene->m_nodeGraph.addNode(std::move(node));
+        //
+        //EventData event;
+        //event.m_eventType = Event::Type::eAddedModel;
+        //event.m_eventData = newNode;
+        //EventSystem::sendEvent(event);
     }
 
     SceneContent Scene::getSceneContent() const

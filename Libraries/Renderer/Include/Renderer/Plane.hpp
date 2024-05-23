@@ -1,7 +1,8 @@
 #ifndef ST_GEOMETRY_PLANE_HPP
 #define ST_GEOMETRY_PLANE_HPP
 
-#include "Mesh.hpp"
+#include "Core//NodeGraph.hpp"
+#include "Core/Nodes/Node.hpp"
 #include <Eigen/Core>
 #include <vector>
 
@@ -41,6 +42,28 @@ namespace st::renderer
             {
                 return m_indices;
             }
+
+        private:
+            std::vector<geometry::Vertex> m_vertices;
+            std::vector<uint32_t> m_indices;
+
+    };
+
+    class Plane2 : public core::Node2
+    {
+        public:
+        Plane2()
+        {
+        }
+
+        ~Plane2() override
+        {
+        }
+
+       struct Inputs
+       {
+        
+       };
 
         private:
             std::vector<geometry::Vertex> m_vertices;
