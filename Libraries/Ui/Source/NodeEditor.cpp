@@ -5,10 +5,15 @@
 #include <QGraphicsScene>
 #include <QMouseEvent>
 #include <print>
+#include <QScrollArea>
+#include <QScrollBar>
 
 namespace st::ui
 {
 
+/*------------------------------------*/
+/*-----------NodeScene-----------------*/
+/*------------------------------------*/
 NodeScene::NodeScene(QObject* parent) : QGraphicsScene(parent)
 {
 }
@@ -18,39 +23,42 @@ void NodeScene::drawBackground(QPainter* painter, const QRectF& rect)
 {
     Q_UNUSED(rect);
 
-    painter->setTransform(m_view->viewportTransform());
+    
+    constexpr int32_t sceneWidth = 10000;
+    constexpr int32_t sceneHeight = 10000;
 
     //Draw grid lines
     painter->setPen(Qt::lightGray);
-    for(int x = -100;  x <= 100; x += 10)
+    for(int32_t x = -sceneWidth;  x <= sceneWidth; x += 10)
     {
-        painter->drawLine(x * 10, -1000, x * 10, 1000);
+        painter->drawLine(x * 10, -sceneHeight, x * 10, sceneHeight);
     }
 
-    for(int y = -100;  y <= 100; y += 10)
+    for(int32_t y = -sceneHeight;  y <= sceneHeight; y += 10)
     {
-        painter->drawLine(-1000, y * 10, 1000, y * 10);
+        painter->drawLine(-sceneWidth, y * 10, sceneWidth, y * 10);
     }
 
-    //Draw axes
-    painter->setPen(Qt::black);
-    painter->drawLine(0, -1000, 0, 1000);
-    painter->drawLine(-1000, 0, 1000, 0);
+
+    QPen axisPen(Qt::black);
+    axisPen.setWidth(2);
+    addLine(-sceneWidth, 0, sceneWidth, 0, axisPen);
+    addLine(0, -sceneHeight, 0, sceneHeight, axisPen);
 
 }
+
+/*------------------------------------*/
+/*-----------NodeEditor---------------*/
+/*------------------------------------*/
 
 
 NodeEditor::NodeEditor(core::ContentManager& contentManager, QWidget* parent):
     QGraphicsView(parent),
     m_scene(new NodeScene(this)),
     m_contentManager(contentManager),
-    m_lastPanPoint(QPoint(0, 0)),
-    m_yAxis(nullptr),
-    m_xAxis(nullptr)
+    m_panning(false),
+    m_lastPanPoint(QPoint(0, 0))
     {
-        setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-        setStyleSheet("border: none;");
-        setContentsMargins(0, 0, 0, 0);
 
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -62,43 +70,9 @@ NodeEditor::NodeEditor(core::ContentManager& contentManager, QWidget* parent):
     {
         m_scene->setView(this);
         setupScene();
-        m_xAxis = m_scene->addLine(0, 0, 100, 0);
-        m_yAxis = m_scene->addLine(0, 0, 0, 100);
-        drawAxes();
+        centerOn(0,0);
+
     }
-
-	void NodeEditor::drawAxes()
-	{
-		if (!m_scene)
-		{
-			std::println("Scene is null");
-			return;
-		}
-
-		// Get the viewport's rect in scene coordinates
-		QRectF viewportRect = mapToScene(viewport()->rect()).boundingRect();
-
-		// Style
-		QPen axisPen(Qt::black);
-		axisPen.setWidth(2);
-
-		// Remove existing axes if they exist
-		if (m_xAxis)
-		{
-			m_scene->removeItem(m_xAxis);
-		}
-
-		if (m_yAxis)
-		{
-			m_scene->removeItem(m_yAxis);
-		}
-
-		// Draw the x-axis
-		m_xAxis = m_scene->addLine(viewportRect.left(), 0, viewportRect.right(), 0, axisPen);
-
-		// Draw the y-axis
-		m_yAxis = m_scene->addLine(0, viewportRect.top(), 0, viewportRect.bottom(), axisPen);
-	}
 
 	void NodeEditor::setupScene()
     {
@@ -121,27 +95,25 @@ NodeEditor::NodeEditor(core::ContentManager& contentManager, QWidget* parent):
     {
        if (event->button() == Qt::MiddleButton) 
         {
-            m_lastPanPoint = event->pos();
+            m_panning = true;
+            m_lastPanPoint = event->position();
             setCursor(Qt::ClosedHandCursor);
         } 
-        else 
-        {
-            QGraphicsView::mousePressEvent(event);
-        }
+
+        QGraphicsView::mousePressEvent(event);
     }
 
     void NodeEditor::mouseMoveEvent(QMouseEvent* event)
     {
-         if (event->buttons() & Qt::MiddleButton) 
+         if (m_panning) 
          {
-            QPointF delta = mapToScene(m_lastPanPoint) - mapToScene(event->pos());
-            translate(delta.x(), delta.y());
-            m_lastPanPoint = event->pos();
+            QPointF delta = event->position() - m_lastPanPoint;
+            horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
+            verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
+        
+            m_lastPanPoint = event->position();
         } 
-        else 
-        {
-            QGraphicsView::mouseMoveEvent(event);
-        }
+
 
         QGraphicsView::mouseMoveEvent(event);
     }
@@ -150,20 +122,27 @@ NodeEditor::NodeEditor(core::ContentManager& contentManager, QWidget* parent):
     {
         if (event->button() == Qt::MiddleButton) 
         {
-            setCursor(Qt::ArrowCursor);
+            m_panning = false;
+            setCursor(Qt::ArrowCursor); 
         } 
-        else 
-        {
-            QGraphicsView::mouseReleaseEvent(event);
-        }
 
         QGraphicsView::mouseReleaseEvent(event);
     }
 
+	void NodeEditor::wheelEvent(QWheelEvent* event)
+	{
+        double angleDeltaY = event->angleDelta().y();
+
+        double factor = std::pow(1.0015, angleDeltaY);
+
+        scale(factor, factor);
+
+        QGraphicsView::wheelEvent(event);
+	}
+
 	void NodeEditor::resizeEvent(QResizeEvent* event)
 	{
         QGraphicsView::resizeEvent(event);
-        drawAxes();
 	}
 
 } // namespace st::ui

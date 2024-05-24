@@ -20,6 +20,7 @@ namespace st::ui
 		PrivateWindow()
 		{
 			setSurfaceType(QSurface::VulkanSurface);
+			setMinimumSize(QSize(1,1));
 		}
 
 		void showEvent(QShowEvent* event) override
@@ -96,9 +97,7 @@ namespace st::ui
 		m_window(new PrivateWindow)
 	{
 		QWidget* vulkanWidget = QWidget::createWindowContainer(m_window, this);
-		vulkanWidget->setContentsMargins(0, 0, 0, 0);
-		vulkanWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-
+		
 		QHBoxLayout* layout = new QHBoxLayout(this);
 		layout->setContentsMargins(0, 0, 0, 0);
 		layout->addWidget(vulkanWidget);

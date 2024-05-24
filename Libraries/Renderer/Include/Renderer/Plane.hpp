@@ -54,6 +54,7 @@ namespace st::renderer
         public:
         Plane2()
         {
+            defineNode("Plane");
         }
 
         ~Plane2() override

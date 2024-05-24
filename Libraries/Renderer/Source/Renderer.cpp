@@ -544,7 +544,11 @@ namespace st::renderer
 
 		vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities)
 		{
-			if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+
+			if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max() ||
+				capabilities.currentExtent.height != std::numeric_limits<uint32_t>::max() ||
+				capabilities.currentExtent.width != 0 ||
+				capabilities.currentExtent.height != 0)
 			{
 				return capabilities.currentExtent;
 			}
@@ -1025,8 +1029,15 @@ namespace st::renderer
 
 	void Renderer::changeSwapchainExtent(uint32_t width, uint32_t height)
 	{
-		m_privateRenderer->m_width = width;
-		m_privateRenderer->m_height = height;
+		if(width > 0)
+		{
+			m_privateRenderer->m_width = width;
+		}
+
+		if(height > 0)
+		{
+			m_privateRenderer->m_height = height;
+		}
 
 		m_privateRenderer->recreateSwapChain();
 	}

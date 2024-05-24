@@ -8,6 +8,8 @@
 #include "Core/Nodes/Node.hpp"
 #include "Core/NodeGraph.hpp"
 
+#include <print>
+
 namespace st
 {
 
@@ -23,8 +25,17 @@ namespace st
 		{
 		  public:
 			NodeItem(std::weak_ptr<core::Node2> node, QGraphicsItem* parent = nullptr) :
-				QGraphicsItem(parent)
+				QGraphicsItem(parent),
+				m_node(node),
+				m_isHovered(false)
 			{
+				setAcceptHoverEvents(true);
+
+				if(auto nodePtr = m_node.lock())
+				{
+					m_nodeName = QString::fromStdString(nodePtr->getName());
+					std::print("{}", nodePtr->getName());
+				}
 			}
 
             void setPosition(const QPointF& position)
@@ -39,8 +50,7 @@ namespace st
 
 			QRectF boundingRect() const override
 			{
-				qreal penWidth = 1;
-				return QRectF(-10 - penWidth / 2, -10 - penWidth / 2, 20 + penWidth, 20 + penWidth);
+				return QRectF(-10, -10, 100, 100);
 			}
 
 			void paint(QPainter* painter,
@@ -49,11 +59,53 @@ namespace st
 			{
 				// Draw black
 				painter->setPen(QPen(Qt::black, 1));
-				painter->drawRoundedRect(-10, -10, 20, 20, 5, 5);
+				painter->setBrush(Qt::black);
+				painter->drawRoundedRect(-10, -10, 100, 100, 5, 5);
+
+				painter->setPen(QPen(Qt::blue, 1));
+				painter->setBrush(Qt::blue);
+				painter->drawRoundedRect(-10, -10, 100, 20, 5, 5);
+				painter->drawRect(-10, 0, 100, 10);
+
+				// Draw text
+				painter->setPen(Qt::white);
+				painter->drawText(QRectF(-10, -10, 100, 20), Qt::AlignCenter, m_nodeName);
+
+
+				if(m_isHovered)
+				{
+					painter->setPen(QPen(Qt::red, 1));
+					painter->setBrush(Qt::transparent);
+					painter->drawRoundedRect(-10, -10, 100, 100, 5, 5);
+				}
 			}
+
+
+			void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override
+			{
+				std::println("Hovered");
+				m_isHovered = true;
+				update();
+				QGraphicsItem::hoverEnterEvent(event);
+			}
+
+			void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override
+			{
+				std::println("Not Hovered");
+				m_isHovered = false;
+				update();
+				QGraphicsItem::hoverLeaveEvent(event);
+			}
+
 
             private:
                 std::weak_ptr<core::Node2> m_node;
+				bool m_isHovered;
+				QPointF m_position;
+				QString m_nodeName;
+
+				static constexpr int32_t NnodeWidth = 100;
+				static constexpr int32_t NnodeHeight = 100;
 
 		};
 
@@ -100,18 +152,19 @@ namespace st
 			void mousePressEvent(QMouseEvent* event) override;
 			void mouseMoveEvent(QMouseEvent* event) override;
 			void mouseReleaseEvent(QMouseEvent* event) override;
+			void wheelEvent(QWheelEvent* event) override;
+
+
             void resizeEvent(QResizeEvent* event) override;
 
 		  private:
 			void setupScene();
-            void drawAxes();
 
 			NodeScene* m_scene;
 			core::ContentManager& m_contentManager;
 
-            QPoint m_lastPanPoint;
-            QGraphicsLineItem* m_yAxis;
-            QGraphicsLineItem* m_xAxis;
+			bool m_panning;
+            QPointF m_lastPanPoint;
 		};
 
 	} // namespace ui
