@@ -80,6 +80,7 @@ namespace st
             
 
             m_contentManager.add(plane);
+            plane->initialize(); //TODO clean up
             //m_contentManager.add(mesh);
             return std::weak_ptr<core::Node2>{plane};
 
