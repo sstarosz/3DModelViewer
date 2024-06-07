@@ -255,7 +255,7 @@ int main(int argc, char* argv[])
     /*--------------------------------------Add 
     ---------------------------------------------*/
     /*-----------------------------------------------------------------------------------------------*/
-    //TODO revert - auto standardMaterial = app.create().standardMaterial();
+    auto standardMaterial = app.create().standardMaterial();
 
     //Assign Material to Plane
     //TODO revert - app.modify(plane).material().assign(standardMaterial);

@@ -95,10 +95,56 @@ namespace ui
 
 			QRectF textRect(10, 0, 260, 25);
 			painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, QString::fromStdString(m_inputHandler.getName()));
+
+			//Draw Plug
+			painter->setPen(QPen(NodeBorderColor, 2));
+			painter->setBrush(NodeInputBarBorderColor);
+			painter->drawEllipse(-25, 0, 25, 25);
 		}
 
 		private:
 		core::InputHandler m_inputHandler;
+	};
+	
+	class NodeOutput : public QGraphicsItem
+	{
+	  public:
+		NodeOutput(const core::OutputHandler& outputHandler,
+				  QGraphicsItem* parent = nullptr) :
+			QGraphicsItem(parent),
+			m_outputHandler(outputHandler)
+		{
+		}
+
+		QRectF boundingRect() const override
+		{
+			return QRectF(0, 0, 280, 25);
+		}
+
+		void paint(QPainter* painter,
+					const QStyleOptionGraphicsItem* option,
+					QWidget* widget) override
+		{
+			// Draw bar
+			painter->setPen(QPen(NodeInputBarBorderColor, 2));
+			painter->setBrush(NodeBorderColor);
+			painter->drawRoundedRect(0, 0, 280, 25, 5, 5);
+
+			// Draw text
+			painter->setPen(Qt::white);
+			painter->setFont(QFont("Inter", 14));
+
+			QRectF textRect(10, 0, 260, 25);
+			painter->drawText(textRect, Qt::AlignRight | Qt::AlignVCenter, QString::fromStdString(m_outputHandler.getName()));
+
+			//Draw Plug
+			painter->setPen(QPen(NodeBorderColor, 2));
+			painter->setBrush(NodeInputBarBorderColor);
+			painter->drawEllipse(280, 0, 25, 25);
+		}
+
+		private:
+		core::OutputHandler m_outputHandler;
 	};
 
 	class NodeItem : public QGraphicsItem
@@ -118,9 +164,21 @@ namespace ui
 				std::println("Node: {}", nodePtr->getName());
 				NodeNameBase* NodeName = new NodeNameBase(m_nodeName, this);	
 
-				auto inputHandlers = nodePtr->getInputHandlers();
+
 				uint32_t inputYOffset = 55;
 				uint32_t inputXOffset = 10;
+				auto inputHandlers = nodePtr->getInputHandlers();
+				auto outputHandlers = nodePtr->getOutputHandlers();
+
+				for(auto& outputHandler : outputHandlers)
+				{
+					std::println("Output: {}", outputHandler.getName());
+
+					NodeOutput* output = new NodeOutput(outputHandler, this); //TODO change to output
+					output->setPos(inputXOffset, inputYOffset);
+					inputYOffset += 29;
+				}
+
 				for(auto& inputHandler : inputHandlers)
 				{
 					//auto& input = inputHandler.getInput();
@@ -161,9 +219,9 @@ namespace ui
 
 			if(m_isHovered)
 			{
-				painter->setPen(QPen(Qt::red, 1));
-				painter->setBrush(Qt::transparent);
-				painter->drawRoundedRect(-10, -10, 100, 100, 5, 5);
+				//painter->setPen(QPen(Qt::red, 1));
+				//painter->setBrush(Qt::transparent);
+				//painter->drawRoundedRect(-10, -10, 100, 100, 5, 5);
 			}
 		}
 

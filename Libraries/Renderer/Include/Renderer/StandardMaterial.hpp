@@ -3,6 +3,7 @@
 
 #include "GraphicsPiplineFactory.hpp"
 #include "Material.hpp"
+#include "Core/NodeGraph.hpp"
 
 #include <string_view>
 #include <string>
@@ -74,6 +75,39 @@ namespace st::renderer
 			};
 		};
 	};
+
+	class StandardMaterial2 : public core::Node2
+	{
+		public:
+		StandardMaterial2()
+		{
+		}
+
+		//TODO change return type to std::expected
+		bool initialize() override
+		{
+			defineNode("StandardMaterial");
+
+			return true;
+		}
+
+		bool compute() override
+		{
+			return true;
+		}
+
+		struct Inputs
+		{
+			core::Input<Material> material;
+		};
+
+		struct Outputs
+		{
+			core::Output<Material> material;
+		};
+
+	}
+
 } // namespace st::renderer
 
 #endif // ST_RENDERER_STANDARD_MATERIAL_HPP

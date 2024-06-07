@@ -97,6 +97,9 @@ namespace st::renderer
             m_inputs.subdivisionHeight.setSoftMaxValue(100);
             addInput(m_inputs.subdivisionHeight);
             
+
+            m_outputs.mesh.setName("Mesh");
+            addOutput(m_outputs.mesh);
             
             return true;
         }

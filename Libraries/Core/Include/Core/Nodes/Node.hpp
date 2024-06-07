@@ -7,6 +7,7 @@
 #include <optional>
 #include <cassert>
 
+#include "../Mesh.hpp" //TODO clean up
 
 /*
 Supported types:
@@ -25,7 +26,7 @@ Supported types:
 - Eigen::Matrix3f
 - Eigen::Matrix4f
 
-
+Arrays
 */
 
 
@@ -34,18 +35,19 @@ namespace st::core
 
     enum class Type
     {
+        Bool,
         Int,
         UInt,
         Float,
-        Double,
-        Bool,
-        String,
+        Double, 
         Vector2f,
         Vector3f,
         Vector4f,
         Matrix2f,
         Matrix3f,
-        Matrix4f
+        Matrix4f,
+
+        MeshData
     };
 
     //Function that convert Type to enum
@@ -72,9 +74,9 @@ namespace st::core
         {
             return Type::Bool;
         }
-        else if(std::is_same<T, std::string>::value)
+        else if(std::is_same<T, MeshData>::value)
         {
-            return Type::String;
+            return Type::MeshData;
         }
         //else if(std::is_same<T, Eigen::Vector2f>::value)
         //{
@@ -129,17 +131,27 @@ namespace st::core
     template<typename T>
     class Attribute : public AttributeBase
     {
-        public:
-        Attribute() : AttributeBase(convertTypeToEnum<T>()), m_value(T()), m_name("")
-        {
-        }
-        
+	  public:
+		Attribute() :
+			AttributeBase(convertTypeToEnum<T>()),
+			m_value(T()),
+			m_name("")
+		{
+		}
 
-        Attribute(const std::string& name) : m_name(name)
-        {
-        }
+		Attribute(T value) :
+			AttributeBase(convertTypeToEnum<T>()),
+			m_value(value),
+			m_name("")
+		{
+		}
 
-        void setName(const std::string& name)
+		Attribute(const std::string& name) :
+			m_name(name)
+		{
+		}
+
+		void setName(const std::string& name)
         {
             m_name = name;
         }
@@ -189,30 +201,19 @@ namespace st::core
 
 
     template<typename T>
-    class Output
+    class Output : public Attribute<T>
     {
         public:
-        Output() : m_value(T())
+        Output() : 
+            Attribute<T>(T())
         {
         }
 
-        Output(T value) : m_value(value)
+        Output(T value) :
+            Attribute<T>(value)
         {
         }
 
-        operator T() const
-        {
-            return m_value;
-        }
-
-        Output<T>& operator=(const T& value)
-        {
-            m_value = value;
-            return *this;
-        }
-
-    private:
-        T m_value;
     };
 
     template<typename T>
@@ -227,7 +228,6 @@ namespace st::core
             Attribute<T>(value)
         {
         }
-
 
     };
 
@@ -283,6 +283,54 @@ namespace st::core
         AttributeBase* m_input;
     };
 
+    class OutputHandler : public Handler
+    {
+        public:
+        template <typename T>
+        OutputHandler(Output<T>* output) :
+         Handler(),
+         m_output(output)
+        {
+        }
+
+        template<typename T>
+        const T& getOutput() const
+        {
+            Output<T>* output = dynamic_cast<Output<T>*>(m_output);
+            return *output;
+        }
+
+        std::string getName() const
+        {
+            //TODO overcomplicated
+            Type m_type = m_output->getType();
+
+            //Cast m_input to the correct type
+            if(m_type == Type::UInt)
+            {
+                Output<uint32_t>* output = dynamic_cast<Output<uint32_t>*>(m_output);
+                return output->getName();
+            }
+            else if(m_type == Type::Float)
+            {
+                Output<float>* output = dynamic_cast<Output<float>*>(m_output);
+                return output->getName();
+            }
+            else if(m_type == Type::MeshData)
+            {
+                Output<MeshData>* output = dynamic_cast<Output<MeshData>*>(m_output);
+                return output->getName();
+            }
+            else
+            {
+                assert(false && "Type not supported");
+            }
+        }
+
+        private:
+        AttributeBase* m_output;
+    };
+
 
 
     class Node2
@@ -301,6 +349,12 @@ namespace st::core
             m_inputHandlers.push_back(InputHandler(&input));
         }
 
+        template<typename T>
+        void addOutput(Output<T>& output)
+        {
+            m_outputHandlers.push_back(OutputHandler(&output));
+        }
+
         virtual bool initialize() = 0;
         virtual bool compute() = 0;
 
@@ -315,10 +369,16 @@ namespace st::core
             return m_inputHandlers;
         }
 
+        std::vector<OutputHandler> getOutputHandlers() const
+        {
+            return m_outputHandlers;
+        }
+
         private:
         std::string m_name;
 
         std::vector<InputHandler> m_inputHandlers;
+        std::vector<OutputHandler> m_outputHandlers;
     };
 
 
