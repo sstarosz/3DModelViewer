@@ -86,15 +86,22 @@ namespace st
 
         }
 
-        std::weak_ptr<core::Node> standardMaterial()
+        std::weak_ptr<renderer::StandardMaterial2> standardMaterial()
         {
-            return std::weak_ptr<core::Node>{};
+            std::shared_ptr<renderer::StandardMaterial2> standardMaterial = std::make_shared<renderer::StandardMaterial2>();
+            m_contentManager.add(standardMaterial);
+            standardMaterial->initialize();
+            
+            return std::weak_ptr<renderer::StandardMaterial2>{standardMaterial};
         }
 
-        std::weak_ptr<core::Node> renderer(std::weak_ptr<core::Node> camera)
+        std::weak_ptr<renderer::Renderer> renderer(std::weak_ptr<core::Node> camera)
         {
-            
-            return std::weak_ptr<core::Node>{};
+            std::shared_ptr<renderer::Renderer> renderer = std::make_shared<renderer::Renderer>();
+            m_contentManager.add(renderer);
+            renderer->initialize();
+
+            return std::weak_ptr<renderer::Renderer>{renderer};
         }
 
 
@@ -231,11 +238,11 @@ int main(int argc, char* argv[])
     Application app(argc, argv);
 
     //Add Camera
-	//auto camera = app.create()
-	//				  .camera(45.0f,
-	//						  35.0f,
-	//						  0.1f,
-	//						  10000.0f);
+	auto camera = app.create()
+					  .camera(45.0f,
+							  35.0f,
+							  0.1f,
+							  10000.0f);
 
 	//TODO revert -app.modify(camera).transform();
         //.translate(Eigen::Vector3f{0.0f, 0.0f, 6.0f})
@@ -263,7 +270,7 @@ int main(int argc, char* argv[])
     /*-----------------------------------------------------------------------------------------------*/
     /*-------------------------------------Setup renderer--------------------------------------------*/
     /*-----------------------------------------------------------------------------------------------*/
-    //TODO revert - auto renderer = app.create().renderer(camera);
+    auto renderer = app.create().renderer(camera);
     
     /*-----------------------------------------------------------------------------------------------*/
     /*-------------------------------------Setup Gui-------------------------------------------------*/

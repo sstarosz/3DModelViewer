@@ -24,26 +24,26 @@ void NodeScene::drawBackground(QPainter* painter, const QRectF& rect)
     Q_UNUSED(rect);
 
     
-    constexpr int32_t sceneWidth = 10000;
-    constexpr int32_t sceneHeight = 10000;
-
-    //Draw grid lines
-    painter->setPen(Qt::lightGray);
-    for(int32_t x = -sceneWidth;  x <= sceneWidth; x += 10)
-    {
-        painter->drawLine(x * 10, -sceneHeight, x * 10, sceneHeight);
-    }
-
-    for(int32_t y = -sceneHeight;  y <= sceneHeight; y += 10)
-    {
-        painter->drawLine(-sceneWidth, y * 10, sceneWidth, y * 10);
-    }
-
-
-    QPen axisPen(Qt::black);
-    axisPen.setWidth(2);
-    addLine(-sceneWidth, 0, sceneWidth, 0, axisPen);
-    addLine(0, -sceneHeight, 0, sceneHeight, axisPen);
+    //constexpr int32_t sceneWidth = 10000;
+    //constexpr int32_t sceneHeight = 10000;
+//
+    ////Draw grid lines
+    //painter->setPen(Qt::lightGray);
+    //for(int32_t x = -sceneWidth;  x <= sceneWidth; x += 10)
+    //{
+    //    painter->drawLine(x * 10, -sceneHeight, x * 10, sceneHeight);
+    //}
+//
+    //for(int32_t y = -sceneHeight;  y <= sceneHeight; y += 10)
+    //{
+    //    painter->drawLine(-sceneWidth, y * 10, sceneWidth, y * 10);
+    //}
+//
+//
+    //QPen axisPen(Qt::black);
+    //axisPen.setWidth(2);
+    //addLine(-sceneWidth, 0, sceneWidth, 0, axisPen);
+    //addLine(0, -sceneHeight, 0, sceneHeight, axisPen);
 
 }
 
@@ -80,14 +80,33 @@ NodeEditor::NodeEditor(core::ContentManager& contentManager, QWidget* parent):
         std::println("!!!NodeGraph size: {}", nodes.size());
 
         //Display one node for now
-        auto node = nodes.at(0);
+        //auto node = nodes.at(0);
+//
+        ////std::println("!!!!Node: {}", core::Node::toString(node->m_type));
+//
+        //NodeItem* nodeItem = new NodeItem(node);
+        //nodeItem->setPosition(QPointF(100, -100));
+//
+        //m_scene->addItem(nodeItem);
 
-        //std::println("!!!!Node: {}", core::Node::toString(node->m_type));
+        int32_t nodeXPosition = 100;
+        for(const auto& node : nodes)
+        {
+            NodeItem* nodeItem = new NodeItem(node);
+            nodeItem->setPos(nodeXPosition, -100);
+            m_scene->addItem(nodeItem);
 
-        NodeItem* nodeItem = new NodeItem(node);
-        nodeItem->setPosition(QPointF(100, -100));
-
-        m_scene->addItem(nodeItem);
+            //QList<NodePlug*> plugs = nodeItem->findChildren<NodePlug*>();
+            for(const auto& attribute : nodeItem->getAttributes())
+            {
+                for(const auto& plug : attribute->getPlugs())
+                {
+                   std::println("Test");
+                }
+            }
+            
+            nodeXPosition += 500;
+        }
 
     }
 

@@ -2,317 +2,469 @@
 #define ST_UI_NODEEDITOR_HPP
 
 #include <QGraphicsItem>
-#include <QGraphicsView>
 #include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QPainterPath>
+#include <QStyleOptionGraphicsItem>
+#include <QAbstractGraphicsShapeItem>
+#include <QGraphicsSceneMouseEvent>
 
-#include "Core/Nodes/Node.hpp"
 #include "Core/NodeGraph.hpp"
+#include "Core/Nodes/Node.hpp"
 
 #include <print>
+#include <algorithm>
+#include <ranges>
 
 namespace st
 {
 
-namespace core
-{
-	class ContentManager;
-} // namespace core
-
-namespace ui
-{
-	//#373B3E
-	constexpr QColor NodeColor = QColor(55, 59, 62);
-	//#5A676B
-	constexpr QColor NodeBorderColor = QColor(90, 103, 107);
-	//#55D1D0
-	constexpr QColor NodeInputBarBorderColor = QColor(85, 209, 208);
-
-
-	class NodeNameBase : public QGraphicsItem
+	namespace core
 	{
-		public:
-		NodeNameBase(const QString& name, QGraphicsItem* parent = nullptr) : QGraphicsItem(parent),
-			m_name(name)
-		{
+		class ContentManager;
+	} // namespace core
 
-		}
-
-		QRectF boundingRect() const override
-		{
-			return QRectF(0, 0, 300, 45);
-		}
-
-		void paint(QPainter* painter,
-					const QStyleOptionGraphicsItem* option,
-					QWidget* widget) override
-		{
-			// Draw black
-			painter->setPen(QPen(NodeBorderColor, 3));
-			painter->setBrush(NodeBorderColor);
-			painter->drawRoundedRect(0, 0, 300, 45, 20, 20);
-			painter->drawRect(0, 20, 300, 25);
-
-			// Draw text
-			painter->setPen(Qt::white);
-			painter->setFont(QFont("Inter", 24));
-
-			QRectF textRect(20, 10, 280, 35);
-			painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, m_name);
-		}
-
-		
-		private:
-		QString m_name;
-	};
-
-	class NodeInput : public QGraphicsItem
+	namespace ui
 	{
-	  public:
-		NodeInput(const core::InputHandler& inputHandler,
-				  QGraphicsItem* parent = nullptr) :
-			QGraphicsItem(parent),
-			m_inputHandler(inputHandler)
+		// #373B3E
+		constexpr QColor NodeColor = QColor(55, 59, 62);
+		// #5A676B
+		constexpr QColor NodeBorderColor = QColor(90, 103, 107);
+		// #55D1D0
+		constexpr QColor NodeInputBarBorderColor = QColor(85, 209, 208);
+
+		class NodeNameBase : public QAbstractGraphicsShapeItem
 		{
-		}
-
-		QRectF boundingRect() const override
-		{
-			return QRectF(0, 0, 280, 25);
-		}
-
-		void paint(QPainter* painter,
-					const QStyleOptionGraphicsItem* option,
-					QWidget* widget) override
-		{
-			// Draw black
-			painter->setPen(QPen(NodeInputBarBorderColor, 2));
-			painter->setBrush(NodeBorderColor);
-			painter->drawRoundedRect(0, 0, 280, 25, 5, 5);
-
-			// Draw text
-			painter->setPen(Qt::white);
-			painter->setFont(QFont("Inter", 14));
-
-			QRectF textRect(10, 0, 260, 25);
-			painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, QString::fromStdString(m_inputHandler.getName()));
-
-			//Draw Plug
-			painter->setPen(QPen(NodeBorderColor, 2));
-			painter->setBrush(NodeInputBarBorderColor);
-			painter->drawEllipse(-25, 0, 25, 25);
-		}
-
-		private:
-		core::InputHandler m_inputHandler;
-	};
-	
-	class NodeOutput : public QGraphicsItem
-	{
-	  public:
-		NodeOutput(const core::OutputHandler& outputHandler,
-				  QGraphicsItem* parent = nullptr) :
-			QGraphicsItem(parent),
-			m_outputHandler(outputHandler)
-		{
-		}
-
-		QRectF boundingRect() const override
-		{
-			return QRectF(0, 0, 280, 25);
-		}
-
-		void paint(QPainter* painter,
-					const QStyleOptionGraphicsItem* option,
-					QWidget* widget) override
-		{
-			// Draw bar
-			painter->setPen(QPen(NodeInputBarBorderColor, 2));
-			painter->setBrush(NodeBorderColor);
-			painter->drawRoundedRect(0, 0, 280, 25, 5, 5);
-
-			// Draw text
-			painter->setPen(Qt::white);
-			painter->setFont(QFont("Inter", 14));
-
-			QRectF textRect(10, 0, 260, 25);
-			painter->drawText(textRect, Qt::AlignRight | Qt::AlignVCenter, QString::fromStdString(m_outputHandler.getName()));
-
-			//Draw Plug
-			painter->setPen(QPen(NodeBorderColor, 2));
-			painter->setBrush(NodeInputBarBorderColor);
-			painter->drawEllipse(280, 0, 25, 25);
-		}
-
-		private:
-		core::OutputHandler m_outputHandler;
-	};
-
-	class NodeItem : public QGraphicsItem
-	{
-		public:
-		NodeItem(std::weak_ptr<core::Node2> node, 
-				QGraphicsItem* parent = nullptr) :
-			QGraphicsItem(parent),
-			m_node(node),
-			m_isHovered(false)
-		{
-			setAcceptHoverEvents(true);
-
-			if(auto nodePtr = m_node.lock())
+		  public:
+			NodeNameBase(const QString& name, QGraphicsItem* parent = nullptr) :
+				QAbstractGraphicsShapeItem(parent),
+				m_name(name)
 			{
-				m_nodeName = QString::fromStdString(nodePtr->getName());
-				std::println("Node: {}", nodePtr->getName());
-				NodeNameBase* NodeName = new NodeNameBase(m_nodeName, this);	
+			}
+
+			QRectF boundingRect() const override
+			{
+				return QRectF(0, 0, 300, 45);
+			}
+
+			void paint(QPainter* painter,
+					   const QStyleOptionGraphicsItem* option,
+					   QWidget* widget) override
+			{
+				// Draw black
+				painter->setPen(QPen(NodeBorderColor, 3));
+				painter->setBrush(NodeBorderColor);
+				painter->drawRoundedRect(0, 0, 300, 45, 20, 20);
+				painter->drawRect(0, 20, 300, 25);
+
+				// Draw text
+				painter->setPen(Qt::white);
+				painter->setFont(QFont("Inter", 24));
+
+				QRectF textRect(20, 10, 280, 35);
+				painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, m_name);
+			}
+
+		  private:
+			QString m_name;
+		};
+
+		class NodePlug : public QAbstractGraphicsShapeItem
+		{
+		  private:
+			static constexpr QColor nodeConnectionColor = QColor(85, 209, 208);
+			static constexpr QColor nodeConnectionHover = QColor(175, 233, 233);
+
+		  public:
+			NodePlug(QGraphicsItem* parent = nullptr) :
+				QAbstractGraphicsShapeItem(parent)
+			{
+				setAcceptHoverEvents(true);
+
+				setBrush(nodeConnectionColor);
+				setPen(Qt::NoPen);
+			}
+
+			QRectF boundingRect() const override
+			{
+				return QRectF(0.0F, 0.0F, 25.0F, 25.0F);
+			}
+
+			void paint(QPainter* painter,
+					   const QStyleOptionGraphicsItem* option,
+					   QWidget* widget) override
+			{
+				Q_UNUSED(option);
+				Q_UNUSED(widget);
+
+				painter->setPen(pen());
+				painter->setBrush(brush());
+				painter->drawRoundedRect(0, 0, 15, 25, 5, 5);
+
+				int32_t drawRect = m_isHovered ? 20 : 10;
+				painter->drawRect(5, 0, drawRect, 25);
+
+				painter->drawRect(20, 0, 5, 25);
+			}
+
+			void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override
+			{
+				m_isHovered = true;
+				update();
+				QAbstractGraphicsShapeItem::hoverEnterEvent(event);
+			}
+
+			void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override
+			{
+				m_isHovered = false;
+				update();
+				QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
+			}
+
+			void mousePressEvent(QGraphicsSceneMouseEvent* event) override
+			{
+				QAbstractGraphicsShapeItem::mousePressEvent(event);
+			}
+
+			void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override
+			{
+				QAbstractGraphicsShapeItem::mouseMoveEvent(event);
+			}
+
+			void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override
+			{
+				QAbstractGraphicsShapeItem::mouseReleaseEvent(event);
+			}
+
+		  private:
+			bool m_isHovered = false;
+		};
+
+		//--------------------------------------------------------------------------------------------------
+		// NodeAttribute
+		//--------------------------------------------------------------------------------------------------
+		class NodeAttribute : public QAbstractGraphicsShapeItem
+		{
+		  private:
+			// Size
+			// Main node size
+			static constexpr int32_t nodeWidth = 320;
+			static constexpr int32_t nodeHeight = 25;
+
+			// Node Laber
+			static constexpr int32_t nodeLabelMarginHorizontal = 25;
+			static constexpr int32_t nodeLabelMarginVertical = 0;
+			static constexpr int32_t nodeLabelWidth = 270;
+			static constexpr int32_t nodeLabelHeight = 25;
+
+			// Colors
+			//#585F63
+			static constexpr QColor nodeLabelColor = QColor(88, 95, 99);
+			//#87E5CF
+			static constexpr QColor nodeConnectionColor = QColor(135, 229, 207);
+
+		  public:
+			NodeAttribute(core::Handler handler, QGraphicsItem* parent = nullptr) :
+				QAbstractGraphicsShapeItem(parent),
+				m_handler(handler)
+			{
+				setAcceptHoverEvents(true);
+
+				setBrush(nodeLabelColor);
+				setPen(Qt::NoPen);
 
 
-				uint32_t inputYOffset = 55;
-				uint32_t inputXOffset = 10;
-				auto inputHandlers = nodePtr->getInputHandlers();
-				auto outputHandlers = nodePtr->getOutputHandlers();
-
-				for(auto& outputHandler : outputHandlers)
+				//Draw connection Input
+				if(m_handler.isWritable())
 				{
-					std::println("Output: {}", outputHandler.getName());
-
-					NodeOutput* output = new NodeOutput(outputHandler, this); //TODO change to output
-					output->setPos(inputXOffset, inputYOffset);
-					inputYOffset += 29;
+					NodePlug* nodePlug = new NodePlug(this);
+					nodePlug->setPos(0, 0);
+					m_nodePlugs.push_back(nodePlug);
 				}
 
-				for(auto& inputHandler : inputHandlers)
+				//Draw Connection Output
+				if(m_handler.isReadable())
 				{
-					//auto& input = inputHandler.getInput();
-					std::println("Input: {}", inputHandler.getName());
+					NodePlug* nodePlug = new NodePlug(this);
+					QTransform transform;
+					transform.translate(320, 0);
+					transform.scale(-1, 1);
+					nodePlug->setTransform(transform);
+					m_nodePlugs.push_back(nodePlug);
+				}
 
-					NodeInput* input = new NodeInput(inputHandler, this);
-					input->setPos(inputXOffset, inputYOffset);
-					inputYOffset += 29;
+			}
+
+			QRectF boundingRect() const override
+			{
+				return QRectF(0, 0, nodeWidth, nodeHeight);
+			}
+
+			void paint(QPainter* painter,
+					   [[maybe_unused]]const QStyleOptionGraphicsItem* option,
+					   [[maybe_unused]]QWidget* widget) override
+			{
+				//TODO color of connection that depend on type of the handler
+				//TODO connection and disconnection animation
+				
+
+				//Draw Label
+				painter->setPen(pen());
+				painter->setBrush(brush());
+				painter->drawRect(25,
+								  0,
+								  nodeLabelWidth,
+								  nodeLabelHeight);
+
+
+				// Draw text
+				painter->setPen(Qt::white);
+				painter->setFont(QFont("Inter", 12));
+				QRectF textRect{45, 5, 230, 15};
+				painter->drawText(textRect,
+								  Qt::AlignLeft | Qt::AlignVCenter,
+								  QString::fromStdString(m_handler.getName()));
+
+
+				//If int or float
+				//Create input bar
+
+
+
+				//If bool
+				//Create switch
+
+			}
+
+			void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override
+			{
+				update();
+				QAbstractGraphicsShapeItem::hoverEnterEvent(event);
+			}
+
+			void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override
+			{
+				update();
+				QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
+			}
+
+			std::vector<NodePlug*> getPlugs() const
+			{
+				return m_nodePlugs;
+			}
+
+		private:
+			core::Handler m_handler; // Handler to Attribute
+			std::vector<NodePlug*> m_nodePlugs;
+		};
+
+		class NodeItem : public QAbstractGraphicsShapeItem
+		{
+		  public:
+			NodeItem(std::weak_ptr<core::Node2> node,
+					 QGraphicsItem* parent = nullptr) :
+				QAbstractGraphicsShapeItem(parent),
+				m_node(node)
+			{
+				setAcceptHoverEvents(true);
+				setBrush(NodeColor);
+				setPen(QPen(NodeBorderColor, 4));
+
+				if (auto nodePtr = m_node.lock())
+				{
+					m_nodeName = QString::fromStdString(nodePtr->getName());
+					std::println("Node: {}", nodePtr->getName());
+					NodeNameBase* NodeName = new NodeNameBase(m_nodeName, this);
+					NodeName->setZValue(1);
+
+					uint32_t inputYOffset = 55;
+					auto attributes = nodePtr->getAttributes();
+					auto isOutput = [](core::Handler handler){ return handler.isReadable();};
+					auto isInput = [](core::Handler handler){ return handler.isWritable();};
+
+					for (auto outputAttribute : attributes | std::views::filter(isOutput))
+					{
+						NodeAttribute* attribute = new NodeAttribute(outputAttribute, this);
+						attribute->setZValue(1);
+						attribute->setPos(-10, inputYOffset);
+						m_attributes.push_back(attribute);
+						inputYOffset += 29;
+					}
+
+					for (auto inputAttribute : attributes | std::views::filter(isInput))
+					{
+						NodeAttribute* attribute = new NodeAttribute(inputAttribute, this);
+						attribute->setZValue(1);
+						attribute->setPos(-10, inputYOffset);
+						m_attributes.push_back(attribute);
+						inputYOffset += 29;
+					}
 				}
 			}
 
-		}
-
-		void setPosition(const QPointF& position)
-		{
-			setPos(position);
-		}
-
-		QPointF getPosition() const
-		{
-			return pos();
-		}
-
-		QRectF boundingRect() const override
-		{
-			return QRectF(0, 0, 300, 400);
-		}
-
-		void paint(QPainter* painter,
-					const QStyleOptionGraphicsItem* option,
-					QWidget* widget) override
-		{
-			// Draw black
-			painter->setPen(QPen(NodeBorderColor, 3));
-			painter->setBrush(NodeColor);
-			painter->drawRoundedRect(0, 0, 300, 400, 20, 20);
-
-
-			if(m_isHovered)
+			QRectF boundingRect() const override
 			{
-				//painter->setPen(QPen(Qt::red, 1));
-				//painter->setBrush(Qt::transparent);
-				//painter->drawRoundedRect(-10, -10, 100, 100, 5, 5);
+				return QRectF(0, 0, 320, 400);
 			}
-		}
 
+			void paint(QPainter* painter,
+					   const QStyleOptionGraphicsItem* option,
+					   QWidget* widget) override
+			{
+				Q_UNUSED(option);
+				Q_UNUSED(widget);
 
-		void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override
-		{
-			std::println("Hovered");
-			m_isHovered = true;
-			update();
-			QGraphicsItem::hoverEnterEvent(event);
-		}
+				// Draw black
+				painter->setPen(pen());
+				painter->setBrush(brush());
+				painter->drawRoundedRect(0, 0, 300, 400, 20, 20);
 
-		void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override
-		{
-			std::println("Not Hovered");
-			m_isHovered = false;
-			update();
-			QGraphicsItem::hoverLeaveEvent(event);
-		}
+			}
 
+			void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override
+			{
+				//setPen(QPen(Qt::red, 4));
+				//update();
+				QAbstractGraphicsShapeItem::hoverEnterEvent(event);
+			}
 
-		private:
+			void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override
+			{
+				//setPen(QPen(NodeBorderColor, 4));
+				//update();
+				QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
+			}
+
+			std::vector<NodeAttribute*> getAttributes() const
+			{
+				return m_attributes;
+			}
+
+		  private:
 			std::weak_ptr<core::Node2> m_node;
-			bool m_isHovered;
-			QPointF m_position;
+			std::vector<NodeAttribute*> m_attributes;
 			QString m_nodeName;
 
 			static constexpr int32_t NnodeWidth = 100;
 			static constexpr int32_t NnodeHeight = 100;
+		};
 
-	};
+		class NodeScene : public QGraphicsScene
+		{
+			Q_OBJECT
 
-	class NodeScene : public QGraphicsScene
-	{
-		Q_OBJECT
-
-		public:
+		  public:
 			explicit NodeScene(QObject* parent = nullptr);
 
 			void addNode(std::weak_ptr<core::Node2> node)
 			{
-				//auto nodeItem = new NodeItem(node);
-				//addItem(nodeItem);
+				// auto nodeItem = new NodeItem(node);
+				// addItem(nodeItem);
 			}
 
 			void removeNode(std::weak_ptr<core::Node2> node)
 			{
-
 			}
 
 			void drawBackground(QPainter* painter, const QRectF& rect) override;
+
+			void drawForeground(QPainter* painter, const QRectF& rect) override
+			{
+				Q_UNUSED(rect);
+				Q_UNUSED(painter);
+
+				if(m_drawConnection)
+				{
+					QColor connectionColor{85, 209, 208};
+					painter->setPen(QPen(connectionColor, 3));
+					painter->drawLine(currentLineStart, currentLineEnd);
+				}
+			}
 
 			void setView(QGraphicsView* view)
 			{
 				m_view = view;
 			}
 
-		private:
-		QGraphicsView* m_view;
-	};
+			void mousePressEvent(QGraphicsSceneMouseEvent* event) override
+			{
+				QGraphicsItem* item = itemAt(event->scenePos(), QTransform());
+				if(item)
+				{
+					if(auto nodePlug = dynamic_cast<NodePlug*>(item))
+					{
+						m_drawConnection = true;
+						currentLineStart = nodePlug->scenePos() + QPointF(0.0f, 12.5f);
+						std::println("Draw Connection at {}, {}", currentLineStart.x(), currentLineStart.y());
+						currentLineEnd = nodePlug->scenePos() + QPointF(0.0f, 12.5f);
+						update();
+					}
+				}
 
 
-	class NodeEditor : public QGraphicsView
-	{
-		Q_OBJECT
+				QGraphicsScene::mousePressEvent(event);
+			}
 
-		public:
-		explicit NodeEditor(core::ContentManager& contentManager, QWidget* parent = nullptr);
+			void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override
+			{
+				if(m_drawConnection)
+				{
+					std::println("Draw Connection");
+					currentLineEnd = event->scenePos();
+					update();
+				}
 
-		void initialize();
+				QGraphicsScene::mouseMoveEvent(event);
+			}
 
-		protected:
-		void mousePressEvent(QMouseEvent* event) override;
-		void mouseMoveEvent(QMouseEvent* event) override;
-		void mouseReleaseEvent(QMouseEvent* event) override;
-		void wheelEvent(QWheelEvent* event) override;
+			void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override
+			{
+				if(m_drawConnection)
+				{
+					std::println("Stop Drawing Connection at {}, {}", currentLineEnd.x(), currentLineEnd.y());
+					m_drawConnection = false;
+					
+					update();
+				}
+				QGraphicsScene::mouseReleaseEvent(event);
+			}
 
+		  private:
+			QGraphicsView* m_view;
 
-		void resizeEvent(QResizeEvent* event) override;
+			QPointF currentLineStart;
+			QPointF currentLineEnd;
+			bool m_drawConnection = false;
+		};
 
-		private:
-		void setupScene();
+		class NodeEditor : public QGraphicsView
+		{
+			Q_OBJECT
 
-		NodeScene* m_scene;
-		core::ContentManager& m_contentManager;
+		  public:
+			explicit NodeEditor(core::ContentManager& contentManager, QWidget* parent = nullptr);
 
-		bool m_panning;
-		QPointF m_lastPanPoint;
-	};
+			void initialize();
 
-} // namespace ui
+		  protected:
+			void mousePressEvent(QMouseEvent* event) override;
+			void mouseMoveEvent(QMouseEvent* event) override;
+			void mouseReleaseEvent(QMouseEvent* event) override;
+			void wheelEvent(QWheelEvent* event) override;
+
+			void resizeEvent(QResizeEvent* event) override;
+
+		  private:
+			void setupScene();
+
+			NodeScene* m_scene;
+			core::ContentManager& m_contentManager;
+
+			bool m_panning;
+			QPointF m_lastPanPoint;
+		};
+
+	} // namespace ui
 } // namespace st
 
 #endif // ST_UI_NODEEDITOR_HPP

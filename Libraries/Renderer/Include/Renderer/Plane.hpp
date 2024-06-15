@@ -1,7 +1,7 @@
 #ifndef ST_GEOMETRY_PLANE_HPP
 #define ST_GEOMETRY_PLANE_HPP
 
-#include "Core//NodeGraph.hpp"
+#include "Core/NodeGraph.hpp"
 #include "Core/Nodes/Node.hpp"
 #include "Core/Mesh.hpp"
 #include <Eigen/Core>
@@ -66,35 +66,35 @@ namespace st::renderer
             defineNode("Plane");
 
             m_inputs.width.setName("Width");
-            m_inputs.width.setDefault(1.0F);
-            m_inputs.width.setMin(0.001F);
-            m_inputs.width.setMax(100000.0F);
-            m_inputs.width.setSoftMinValue(0.001F);
-            m_inputs.width.setSoftMaxValue(100.0F);
+            //m_inputs.width.setDefault(1.0F);
+            //m_inputs.width.setMin(0.001F);
+            //m_inputs.width.setMax(100000.0F);
+            //m_inputs.width.setSoftMinValue(0.001F);
+            //m_inputs.width.setSoftMaxValue(100.0F);
             addInput(m_inputs.width);
 
             m_inputs.height.setName("Height");
-            m_inputs.height.setDefault(1.0F);
-            m_inputs.height.setMin(0.001F);
-            m_inputs.height.setMax(100000.0F);
-            m_inputs.height.setSoftMinValue(0.001F);
-            m_inputs.height.setSoftMaxValue(100.0F);
+            //m_inputs.height.setDefault(1.0F);
+            //m_inputs.height.setMin(0.001F);
+            //m_inputs.height.setMax(100000.0F);
+            //m_inputs.height.setSoftMinValue(0.001F);
+            //m_inputs.height.setSoftMaxValue(100.0F);
             addInput(m_inputs.height);
 
             m_inputs.subdivisionWidth.setName("Subdivision Width");
-            m_inputs.subdivisionWidth.setDefault(1);
-            m_inputs.subdivisionWidth.setMin(1);
-            m_inputs.subdivisionWidth.setMax(100000);
-            m_inputs.subdivisionWidth.setSoftMinValue(1);
-            m_inputs.subdivisionWidth.setSoftMaxValue(100);
+            //m_inputs.subdivisionWidth.setDefault(1);
+            //m_inputs.subdivisionWidth.setMin(1);
+            //m_inputs.subdivisionWidth.setMax(100000);
+            //m_inputs.subdivisionWidth.setSoftMinValue(1);
+            //m_inputs.subdivisionWidth.setSoftMaxValue(100);
             addInput(m_inputs.subdivisionWidth);
 
             m_inputs.subdivisionHeight.setName("Subdivision Height");
-            m_inputs.subdivisionHeight.setDefault(1);
-            m_inputs.subdivisionHeight.setMin(1);
-            m_inputs.subdivisionHeight.setMax(100000);
-            m_inputs.subdivisionHeight.setSoftMinValue(1);
-            m_inputs.subdivisionHeight.setSoftMaxValue(100);
+           //m_inputs.subdivisionHeight.setDefault(1);
+           //m_inputs.subdivisionHeight.setMin(1);
+           //m_inputs.subdivisionHeight.setMax(100000);
+           //m_inputs.subdivisionHeight.setSoftMinValue(1);
+           //m_inputs.subdivisionHeight.setSoftMaxValue(100);
             addInput(m_inputs.subdivisionHeight);
             
 

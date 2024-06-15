@@ -35,6 +35,7 @@ namespace st::core
 
     enum class Type
     {
+        Unknown = 0,
         Bool,
         Int,
         UInt,
@@ -108,41 +109,73 @@ namespace st::core
         }
     }
 
+	class AttributeBase
+	{
+	  public:
+		AttributeBase() = default;
 
-    class AttributeBase
-    {
-        public:
-        AttributeBase() = default;
-        AttributeBase(Type type) : m_type(type)
-        {
-        }
-        virtual ~AttributeBase() = default;
+		AttributeBase(Type type) :
+			m_type(type)
+		{
+		}
 
-        Type getType() const
-        {
-            return m_type;
-        }
+		virtual ~AttributeBase() = default;
 
-        private:
-        Type m_type;
-    };
+		Type getType() const
+		{
+			return m_type;
+		}
 
+		const std::string& getName() const
+		{
+			return m_name;
+		}
 
-    template<typename T>
+		void setName(const std::string& name)
+		{
+			m_name = name;
+		}
+
+		bool isReadable()
+		{
+			return m_readable;
+		}
+
+		bool isWritable()
+		{
+			return m_writable;
+		}
+
+		void setReadable(bool state)
+		{
+			m_readable = state;
+		}
+
+		void setWritable(bool state)
+		{
+			m_writable = state;
+		}
+
+	  private:
+		Type m_type;
+		std::string m_name;
+		bool m_readable;
+		bool m_writable;
+	};
+
+	template<typename T>
     class Attribute : public AttributeBase
     {
 	  public:
 		Attribute() :
-			AttributeBase(convertTypeToEnum<T>()),
-			m_value(T()),
-			m_name("")
+			AttributeBase(Type::Unknown),
+			m_value(T())
 		{
 		}
 
 		Attribute(T value) :
-			AttributeBase(convertTypeToEnum<T>()),
-			m_value(value),
-			m_name("")
+			AttributeBase(Type::Unknown),
+			m_value(value)
 		{
 		}
 
@@ -151,54 +184,10 @@ namespace st::core
 		{
 		}
 
-		void setName(const std::string& name)
-        {
-            m_name = name;
-        }
-
-        void setDefault(const T& value)
-        {
-            m_value = value;
-        }
-
-        void setMin(const T& value)
-        {
-            m_minValue = value;
-        }
-
-        void setMax(const T& value)
-        {
-            m_maxValue = value;
-        }
-
-        void setSoftMinValue(const T& value)
-        {
-            m_softMinValue = value;
-        }
-
-        void setSoftMaxValue(const T& value)
-        {
-            m_softMaxValue = value;
-        }
-
-
-        const std::string& getName() const
-        {
-            return m_name;
-        }
 
         private:
         T m_value;
-
-        std::string m_name;
-        std::optional<T> m_defaultValue;
-        std::optional<T> m_minValue;
-        std::optional<T> m_maxValue;
-        std::optional<T> m_softMinValue;
-        std::optional<T> m_softMaxValue;
     };
-
-
 
     template<typename T>
     class Output : public Attribute<T>
@@ -207,6 +196,8 @@ namespace st::core
         Output() : 
             Attribute<T>(T())
         {
+            this->setWritable(false);
+            this->setReadable(true);
         }
 
         Output(T value) :
@@ -222,6 +213,8 @@ namespace st::core
         public:
         Input() : Attribute<T>()
         {
+            this->setWritable(true);
+            this->setReadable(false);
         }
 
         Input(T value) :
@@ -236,51 +229,50 @@ namespace st::core
     class Handler
     {
         public:
-        Handler() = default;
+        Handler(AttributeBase* attribute) :
+            m_attribute(attribute)
+        {
+        }
         virtual ~Handler() = default;
+
+        std::string getName() const
+        {
+            return m_attribute->getName();
+        }
+
+        bool isReadable()
+        {
+            return m_attribute->isReadable();
+        }
+
+        bool isWritable()
+        {
+            return m_attribute->isWritable();
+        }
+
+
+    protected:  //TODO refactor to private?
+         AttributeBase* m_attribute;
     };
+
+
+
 
     class InputHandler : public Handler
     {
         public:
         template <typename T>
         InputHandler(Input<T>* input) :
-         Handler(),
-         m_input(input)
+         Handler(input)
         {
         }
 
         template<typename T>
         const T& getInput() const
         {
-            Input<T>* input = dynamic_cast<Input<T>*>(m_input);
+            Input<T>* input = dynamic_cast<Input<T>*>(m_attribute);
             return *input;
         }
-
-        std::string getName() const
-        {
-            Type m_type = m_input->getType();
-
-            //Cast m_input to the correct type
-            if(m_type == Type::UInt)
-            {
-                Input<uint32_t>* input = dynamic_cast<Input<uint32_t>*>(m_input);
-                return input->getName();
-            }
-            else if(m_type == Type::Float)
-            {
-                Input<float>* input = dynamic_cast<Input<float>*>(m_input);
-                return input->getName();
-            }
-            else
-            {
-                assert(false && "Type not supported");
-            }
-        }
-
-
-        private:
-        AttributeBase* m_input;
     };
 
     class OutputHandler : public Handler
@@ -288,47 +280,16 @@ namespace st::core
         public:
         template <typename T>
         OutputHandler(Output<T>* output) :
-         Handler(),
-         m_output(output)
+         Handler(output)
         {
         }
 
         template<typename T>
         const T& getOutput() const
         {
-            Output<T>* output = dynamic_cast<Output<T>*>(m_output);
+            Output<T>* output = dynamic_cast<Output<T>*>(m_attribute);
             return *output;
         }
-
-        std::string getName() const
-        {
-            //TODO overcomplicated
-            Type m_type = m_output->getType();
-
-            //Cast m_input to the correct type
-            if(m_type == Type::UInt)
-            {
-                Output<uint32_t>* output = dynamic_cast<Output<uint32_t>*>(m_output);
-                return output->getName();
-            }
-            else if(m_type == Type::Float)
-            {
-                Output<float>* output = dynamic_cast<Output<float>*>(m_output);
-                return output->getName();
-            }
-            else if(m_type == Type::MeshData)
-            {
-                Output<MeshData>* output = dynamic_cast<Output<MeshData>*>(m_output);
-                return output->getName();
-            }
-            else
-            {
-                assert(false && "Type not supported");
-            }
-        }
-
-        private:
-        AttributeBase* m_output;
     };
 
 
@@ -343,16 +304,19 @@ namespace st::core
             m_name = name;
         }
 
+
+
+
         template<typename T>
         void addInput(Input<T>& input)
         {
-            m_inputHandlers.push_back(InputHandler(&input));
+            m_attributes.push_back(Handler(&input)); //TODO refactor
         }
 
         template<typename T>
         void addOutput(Output<T>& output)
         {
-            m_outputHandlers.push_back(OutputHandler(&output));
+            m_attributes.push_back(Handler(&output)); //TODO refactor
         }
 
         virtual bool initialize() = 0;
@@ -364,23 +328,30 @@ namespace st::core
             return m_name;
         }
 
-        std::vector<InputHandler> getInputHandlers() const
+        std::vector<Handler> getAttributes() const
         {
-            return m_inputHandlers;
-        }
-
-        std::vector<OutputHandler> getOutputHandlers() const
-        {
-            return m_outputHandlers;
+            return m_attributes;
         }
 
         private:
         std::string m_name;
 
-        std::vector<InputHandler> m_inputHandlers;
-        std::vector<OutputHandler> m_outputHandlers;
+        std::vector<Handler> m_attributes;
     };
 
+
+    class Connection
+    {
+
+    };
+
+    class NodeGraph
+    {
+
+
+        std::vector<std::shared_ptr<Node2>> m_nodes;
+
+    };
 
     template<typename NodeType>
     class RegisterNode

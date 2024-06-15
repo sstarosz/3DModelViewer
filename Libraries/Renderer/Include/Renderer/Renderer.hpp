@@ -2,6 +2,8 @@
 #define ST_RENDERER_RENDERER_HPP
 
 #include "Core/NodeGraph.hpp"
+#include "Core/Nodes/Node.hpp"
+#include "Renderable.hpp"
 #include "MaterialManager.hpp"
 
 #include <memory>
@@ -15,7 +17,7 @@ namespace st::core
 namespace st::renderer
 {
 
-	class Renderer
+	class Renderer : public core::Node2
 	{
 	  public:
 		Renderer();
@@ -25,6 +27,25 @@ namespace st::renderer
 		
 		Renderer& operator=(const Renderer&) = delete;
 		Renderer& operator=(Renderer&&) noexcept;
+
+		bool initialize() override
+		{
+			//TODO cleanup
+			defineNode("Renderer");
+			m_input.renderable.setName("Renderable");
+			//m_input.renderable.setArray(true);
+			addInput(m_input.renderable);
+			
+
+			return true;
+		}
+
+        bool compute() override
+		{
+			//TODO cleanup
+			return true;
+		}
+
 
 
 		void init();
@@ -38,6 +59,14 @@ namespace st::renderer
 		void changeSwapchainExtent(uint32_t width, uint32_t height);
 
 		const MaterialManager& getMaterialManager() const;
+
+
+		struct Input
+		{
+			core::Input<Renderable> renderable;
+		};
+
+		Input m_input; 
 
 	  private:
 		class PrivateRenderer;

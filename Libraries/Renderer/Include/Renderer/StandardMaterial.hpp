@@ -3,7 +3,10 @@
 
 #include "GraphicsPiplineFactory.hpp"
 #include "Material.hpp"
+#include "Renderable.hpp"
 #include "Core/NodeGraph.hpp"
+#include "Core/Nodes/Node.hpp"
+#include "Core/Mesh.hpp"
 
 #include <string_view>
 #include <string>
@@ -86,7 +89,17 @@ namespace st::renderer
 		//TODO change return type to std::expected
 		bool initialize() override
 		{
-			defineNode("StandardMaterial");
+			defineNode("Standard Material");
+
+
+			m_inputs.meshData.setName("Mesh Data");
+			//m_inputs.meshData.setArray(true);	
+			addInput(m_inputs.meshData);
+
+			m_outputs.renderable.setName("Renderable");
+			//m_outputs.renderable.setArray(true);
+			addOutput(m_outputs.renderable);
+
 
 			return true;
 		}
@@ -98,15 +111,18 @@ namespace st::renderer
 
 		struct Inputs
 		{
-			core::Input<Material> material;
+			core::Input<core::MeshData> meshData;
 		};
 
 		struct Outputs
 		{
-			core::Output<Material> material;
+			core::Output<Renderable> renderable;
 		};
 
-	}
+		Inputs m_inputs;
+		Outputs m_outputs;
+
+	};
 
 } // namespace st::renderer
 
