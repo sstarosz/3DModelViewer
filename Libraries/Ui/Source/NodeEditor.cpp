@@ -14,36 +14,43 @@ namespace st::ui
 /*------------------------------------*/
 /*-----------NodeScene-----------------*/
 /*------------------------------------*/
-NodeScene::NodeScene(QObject* parent) : QGraphicsScene(parent)
+NodeScene::NodeScene(QObject* parent) :
+	QGraphicsScene(parent),
+	m_view(nullptr),
+	lastHoveredPlug(nullptr),
+	plugDurningConnection(nullptr),
+	currentLineStart(),
+	currentLineEnd(),
+	m_state(State::eIdle)
 {
+	setSceneRect(-10000, -10000, 20000, 20000);
 }
-
 
 void NodeScene::drawBackground(QPainter* painter, const QRectF& rect) 
 {
     Q_UNUSED(rect);
 
     
-    //constexpr int32_t sceneWidth = 10000;
-    //constexpr int32_t sceneHeight = 10000;
-//
-    ////Draw grid lines
-    //painter->setPen(Qt::lightGray);
-    //for(int32_t x = -sceneWidth;  x <= sceneWidth; x += 10)
-    //{
-    //    painter->drawLine(x * 10, -sceneHeight, x * 10, sceneHeight);
-    //}
-//
-    //for(int32_t y = -sceneHeight;  y <= sceneHeight; y += 10)
-    //{
-    //    painter->drawLine(-sceneWidth, y * 10, sceneWidth, y * 10);
-    //}
-//
-//
-    //QPen axisPen(Qt::black);
-    //axisPen.setWidth(2);
-    //addLine(-sceneWidth, 0, sceneWidth, 0, axisPen);
-    //addLine(0, -sceneHeight, 0, sceneHeight, axisPen);
+    constexpr int32_t sceneWidth = 10000;
+    constexpr int32_t sceneHeight = 10000;
+
+    //Draw grid lines
+    painter->setPen(Qt::lightGray);
+    for(int32_t x = -sceneWidth;  x <= sceneWidth; x += 10)
+    {
+       painter->drawLine(x * 10, -sceneHeight, x * 10, sceneHeight);
+    }
+
+    for(int32_t y = -sceneHeight;  y <= sceneHeight; y += 10)
+    {
+       painter->drawLine(-sceneWidth, y * 10, sceneWidth, y * 10);
+    }
+
+
+    //Draw axis
+    painter->setPen(QPen(Qt::black, 2));
+    painter->drawLine(-sceneWidth, 0, sceneWidth, 0);
+    painter->drawLine(0, -sceneHeight, 0, sceneHeight);
 
 }
 
