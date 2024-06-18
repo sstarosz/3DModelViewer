@@ -17,8 +17,6 @@ namespace st::ui
 NodeScene::NodeScene(QObject* parent) :
 	QGraphicsScene(parent),
 	m_view(nullptr),
-	lastHoveredPlug(nullptr),
-	plugDurningConnection(nullptr),
 	currentLineStart(),
 	currentLineEnd(),
 	m_state(State::eIdle)

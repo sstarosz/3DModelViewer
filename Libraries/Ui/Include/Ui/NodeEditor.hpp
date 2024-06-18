@@ -83,6 +83,39 @@ namespace st
 
 				setBrush(nodeConnectionColor);
 				setPen(Qt::NoPen);
+
+
+				QPainterPath connectionPlugPath;
+				connectionPlugPath.moveTo(0, 0);
+				connectionPlugPath.lineTo(5, 0);
+
+			}
+
+			QPainterPath createConnectionPath()
+			{
+				QPainterPath path;
+				// Start at the first point
+				path.moveTo(-19, 10);
+
+				QPointF controlPoint1(-16, 10);
+				QPointF controlPoint2(-2, 0);
+				//path.lineTo(4, 0);
+				path.cubicTo(controlPoint1, controlPoint2, QPointF(5, 0));
+				path.lineTo(5, 0);
+
+				//Line down
+				path.lineTo(5, 25);
+				path.lineTo(4, 25);
+
+				QPointF controlPoint3(-2, 25);
+				QPointF controlPoint4(-16, 15);
+				//path.lineTo(4, 25);
+				path.cubicTo(controlPoint3, controlPoint4, QPointF(-19, 15));
+				path.lineTo(-19, 10);
+
+				path.closeSubpath();
+				
+				return path;
 			}
 
 			QRectF boundingRect() const override
@@ -102,9 +135,17 @@ namespace st
 				painter->drawRoundedRect(0, 0, 15, 25, 5, 5);
 
 				int32_t drawRect = isUnderMouse() ? 20 : 10;
+				drawRect = isConnected() ? 20 : drawRect;
 				painter->drawRect(5, 0, drawRect, 25);
 
 				painter->drawRect(20, 0, 5, 25);
+
+				if(isConnected())
+				{
+					QPainterPath path = createConnectionPath();
+					path.moveTo(0, 0);
+					painter->drawPath(path);
+				}
 			}
 
 			void setConnected(bool state)
@@ -335,37 +376,64 @@ namespace st
 		{
 			static constexpr QColor nodeConnectionColor = QColor(85, 209, 208);
 			
+			//Position of the plug
+			static constexpr QPointF plugPosition = QPointF(0.0f, 12.5f);
+			
 		public:
+		  explicit PlugConnection(NodePlug* startPlug,
+								  NodePlug* endPlug,
+								  QGraphicsItem* parent = nullptr) :
+			  QAbstractGraphicsShapeItem(parent),
+			  m_startPos(startPlug->scenePos() + plugPosition),
+			  m_endPos(endPlug->scenePos() + plugPosition),
+			  m_startPlug(startPlug),
+			  m_endPlug(endPlug)
+		  {
+			  setAcceptHoverEvents(true);
+		  }
 
-			explicit PlugConnection(NodePlug* startPlug, NodePlug* endPlug, QGraphicsItem* parent = nullptr) :
-				QAbstractGraphicsShapeItem(parent),
-				m_startPlug(startPlug),
-				m_endPlug(endPlug)
-			{
-				setAcceptHoverEvents(true);
-			}
+		  QRectF boundingRect() const override
+		  {
+			  return QRectF(m_startPos, m_endPos);
+		  }
 
-			QRectF boundingRect() const override
-			{
-				return QRectF(0, 0, 0, 0);
-			}
+		  void paint(QPainter* painter,
+					 const QStyleOptionGraphicsItem* option,
+					 QWidget* widget) override
+		  {
+			  Q_UNUSED(option);
+			  Q_UNUSED(widget);
 
-			void paint(QPainter* painter,
-					   const QStyleOptionGraphicsItem* option,
-					   QWidget* widget) override
-			{
-				Q_UNUSED(option);
-				Q_UNUSED(widget);
+			  // TODO change line to bezier curve
+			  painter->setPen(QPen(nodeConnectionColor, 3));
+			  painter->drawLine(m_startPos, m_endPos);
+		  }
 
-				//TODO change line to bezier curve
-				painter->setPen(QPen(nodeConnectionColor, 3));
-				painter->drawLine(m_startPlug->scenePos() + QPointF(0.0f, 12.5f), m_endPlug->scenePos() + QPointF(0.0f, 12.5f));
-			}
+		  void updatePosition(QPointF endPos)
+		  {
+			  m_endPos = endPos;
+
+			  prepareGeometryChange();
+		  }
+
+		  void finalizeConnection(NodePlug* endPlug)
+		  {
+			  m_endPos = endPlug->scenePos() + plugPosition;
+			  m_endPlug = endPlug;
+
+			  m_startPlug->setConnected(true);
+			  m_endPlug->setConnected(true);
+		  }
 
 
-			private:
-			NodePlug* m_startPlug;
-			NodePlug* m_endPlug;
+
+		  
+
+		private:
+		  QPointF m_startPos;
+		  QPointF m_endPos;
+		  NodePlug* m_startPlug;
+		  NodePlug* m_endPlug;
 		};
 
 		class NodeScene : public QGraphicsScene
@@ -414,78 +482,79 @@ namespace st
 				m_view = view;
 			}
 
+			void onConnectionStart(NodePlug* plug)
+			{
+				m_state = State::eConnecting;
+				m_pTempConnection = new PlugConnection(plug, plug);
+
+			}
+
+
 			void mousePressEvent(QGraphicsSceneMouseEvent* event) override
 			{
 				if (QGraphicsItem* item = itemAt(event->scenePos(), QTransform()))
 				{
-					if (auto nodePlug = dynamic_cast<NodePlug*>(item))
+					if (auto nodePlug = dynamic_cast<NodePlug*>(item)) //TODO limit to only left click
 					{
-						m_state = State::eConnecting;
-						
-
-						currentLineStart = nodePlug->scenePos() + QPointF(0.0f, 12.5f);
-						currentLineEnd = currentLineStart; // Initialize end point
-						plugDurningConnection = nodePlug;
+						onConnectionStart(nodePlug);
 					}
+				
+					update();
 				}
 
-				update();
 				QGraphicsScene::mousePressEvent(event);
 			}
 
 			void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override
 			{
-				//if (m_drawConnection)
-				//{
-				//	currentLineEnd = event->scenePos();
-				//	update();
-				//}
-				//else
-				//{
-				//	QGraphicsItem* item = itemAt(event->scenePos(), QTransform());
-				//	if (item && dynamic_cast<NodePlug*>(item))
-				//	{
-				//		// Hover logic can be implemented here if needed
-				//	}
-				//}
-				update();
+				if(m_state == State::eConnecting)
+				{
+					currentLineEnd = event->scenePos();
+					m_pTempConnection->updatePosition(currentLineEnd);
+
+					if(!items().contains(m_pTempConnection)) //TODO check if it is needed
+					{
+						addItem(m_pTempConnection);
+					}
+
+					update();
+				}
+
+
 				QGraphicsScene::mouseMoveEvent(event);
 			}
 
 			void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override
 			{
-				// if (m_drawConnection)
-				// {
-				// 	NodePlug* endPlug = nullptr;
-				// 	QGraphicsItem* item = itemAt(event->scenePos(), QTransform());
-				// 	if (item)
-				// 	{
-				// 		endPlug = dynamic_cast<NodePlug*>(item);
-				// 	}
+				if(m_state == State::eConnecting)
+				{
+					QGraphicsItem* item = itemAt(event->scenePos(), QTransform());
+					if(auto nodePlug = dynamic_cast<NodePlug*>(item))
+					{
+						m_pTempConnection->finalizeConnection(nodePlug);
 
-				// 	if (plugDurningConnection && endPlug)
-				// 	{
-				// 		// Create and add the connection
-				// 		PlugConnection* connection = new PlugConnection(plugDurningConnection, endPlug);
-				// 		addItem(connection);
+						m_connections.push_back(m_pTempConnection);
+						update();
+					}
+					else
+					{
+						removeItem(m_pTempConnection);
+						delete m_pTempConnection;
+						m_pTempConnection = nullptr;
+						update();
+					}
 
-				// 		plugDurningConnection->setConnected(true);
-				// 		endPlug->setConnected(true);
-				// 	}
+					m_state = State::eIdle;
+				}
 
-				// 	m_drawConnection = false;
-				// 	update();
-				// }
-
-				update();
 				QGraphicsScene::mouseReleaseEvent(event);
 			}
 
 		  private:
 			QGraphicsView* m_view;
 
-			NodePlug* lastHoveredPlug = nullptr;
-			NodePlug* plugDurningConnection = nullptr;
+			PlugConnection* m_pTempConnection = nullptr;
+			std::vector<PlugConnection*> m_connections;
 
 			QPointF currentLineStart;
 			QPointF currentLineEnd;
