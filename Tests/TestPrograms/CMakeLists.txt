@@ -55,3 +55,9 @@ target_link_libraries(InputPrototype PRIVATE
                                             Ui
                                             Qt6::Widgets
                                             )
+
+
+set(Sources4 "NodeGraphPrototype2.cpp")
+add_executable(NodeGraphPrototype2 ${Sources4})
+target_link_libraries(NodeGraphPrototype2 PRIVATE Eigen3::Eigen)
+target_compile_features(NodeGraphPrototype2 PRIVATE cxx_std_20)

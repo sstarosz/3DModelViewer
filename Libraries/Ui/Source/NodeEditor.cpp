@@ -81,39 +81,16 @@ NodeEditor::NodeEditor(core::ContentManager& contentManager, QWidget* parent):
 
 	void NodeEditor::setupScene()
     {
-        auto nodes = m_contentManager.getNodes();
+        auto nodeGraph = m_contentManager.getMainNodeGraph();
+        auto nodes = nodeGraph.getNodes();
         std::println("!!!NodeGraph size: {}", nodes.size());
 
-        //Display one node for now
-        //auto node = nodes.at(0);
-//
-        ////std::println("!!!!Node: {}", core::Node::toString(node->m_type));
-//
-        //NodeItem* nodeItem = new NodeItem(node);
-        //nodeItem->setPosition(QPointF(100, -100));
-//
-        //m_scene->addItem(nodeItem);
-
-        int32_t nodeXPosition = 100;
-        for(const auto& node : nodes)
-        {
-            NodeItem* nodeItem = new NodeItem(node);
-            nodeItem->setPos(nodeXPosition, -100);
-            m_scene->addItem(nodeItem);
-
-            //QList<NodePlug*> plugs = nodeItem->findChildren<NodePlug*>();
-            for(const auto& attribute : nodeItem->getAttributes())
-            {
-                for(const auto& plug : attribute->getPlugs())
-                {
-                   std::println("Test");
-                }
-            }
-            
-            nodeXPosition += 500;
-        }
-
+        m_scene->setNodeGraph(nodeGraph);
     }
+
+    /*-----------------------------------------------------------------------------------------------*/
+    /*--------------------------------------Event Handlers-------------------------------------------*/
+    /*-----------------------------------------------------------------------------------------------*/
 
 	void NodeEditor::mousePressEvent(QMouseEvent* event)
     {

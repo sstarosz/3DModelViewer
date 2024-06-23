@@ -1,6 +1,5 @@
 {
     "files.associations": {
-        "core": "cpp",
         "algorithm": "cpp",
         "any": "cpp",
         "array": "cpp",
@@ -47,6 +46,7 @@
         "numeric": "cpp",
         "optional": "cpp",
         "ostream": "cpp",
+        "print": "cpp",
         "queue": "cpp",
         "ranges": "cpp",
         "ratio": "cpp",
@@ -82,17 +82,6 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp",
-        "print": "cpp",
-        "qgraphicsview": "cpp"
-    },
-    "cSpell.words": [
-        "Eigen",
-        "Framebuffer",
-        "Sfloat",
-        "SUBPASS",
-        "Subresource",
-        "SWAPCHAIN",
-        "VKAPI"
-    ]
+        "xutility": "cpp"
+    }
 }

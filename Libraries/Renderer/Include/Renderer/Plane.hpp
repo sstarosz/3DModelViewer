@@ -139,6 +139,7 @@ namespace st::renderer
        struct Inputs
        {
          core::Input<float> width;
+         
          core::Input<float> height;
          core::Input<uint32_t> subdivisionWidth;
          core::Input<uint32_t> subdivisionHeight;

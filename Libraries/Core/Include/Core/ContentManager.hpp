@@ -14,21 +14,16 @@ class ContentManager
     public:
     void add(std::weak_ptr<core::Node2> node)
     {
-        m_nodes.push_back(node.lock());
+        m_nodeGraph.addNode(node.lock());
     }
 
-    void addToCurrentContext(std::shared_ptr<core::Node> node, std::weak_ptr<core::Node2> context)
+    NodeGraph getMainNodeGraph() const
     {
-
-    }
-
-    std::vector<std::shared_ptr<core::Node2>> getNodes() const
-    {
-        return m_nodes;
+        return m_nodeGraph;
     }
 
     private:
-    std::vector<std::shared_ptr<core::Node2>> m_nodes;
+    core::NodeGraph m_nodeGraph;
 };
 
 } // namespace st::core

@@ -109,6 +109,8 @@ namespace st::core
         }
     }
 
+    class AttributeDescriptor;
+
 	class AttributeBase
 	{
 	  public:
@@ -184,10 +186,22 @@ namespace st::core
 		{
 		}
 
+        std::variant<T, Attribute<T>*> getValue() const
+        {
+            return m_value;
+        }
+
 
         private:
+        std::variant<T, Attribute<T>*> m_value2;
         T m_value;
     };
+
+    class MeshDataVisitor
+    {
+        private:
+    };
+
 
     template<typename T>
     class Output : public Attribute<T>
@@ -207,6 +221,8 @@ namespace st::core
 
     };
 
+
+    //TODO Input is hanlde to attribute not attribute itself
     template<typename T>
     class Input : public Attribute<T>
     {
@@ -224,6 +240,8 @@ namespace st::core
 
     };
 
+
+    class Input2;
 
 
     class Handler
@@ -252,7 +270,7 @@ namespace st::core
 
 
     protected:  //TODO refactor to private?
-         AttributeBase* m_attribute;
+        AttributeBase* m_attribute;
     };
 
 
@@ -293,6 +311,12 @@ namespace st::core
     };
 
 
+    template<typename Type>
+    class NumericHandle
+    {
+
+    };
+
 
     class Node2
     {
@@ -310,13 +334,13 @@ namespace st::core
         template<typename T>
         void addInput(Input<T>& input)
         {
-            m_attributes.push_back(Handler(&input)); //TODO refactor
+            //m_attributes.push_back(input); //TODO refactor
         }
 
         template<typename T>
         void addOutput(Output<T>& output)
         {
-            m_attributes.push_back(Handler(&output)); //TODO refactor
+            //m_attributes.push_back(output); //TODO refactor
         }
 
         virtual bool initialize() = 0;
@@ -328,29 +352,81 @@ namespace st::core
             return m_name;
         }
 
-        std::vector<Handler> getAttributes() const
+        std::vector<std::shared_ptr<AttributeBase>> getAttributes() const
         {
             return m_attributes;
         }
 
+        
         private:
         std::string m_name;
-
-        std::vector<Handler> m_attributes;
+        std::vector<std::shared_ptr<AttributeBase>> m_attributes;
     };
 
 
     class Connection
     {
+        public:
+        Connection(std::shared_ptr<Node2> sourceNode, 
+                   std::shared_ptr<AttributeBase> sourceAttrName,
+                   std::shared_ptr<Node2> targetNode,
+                   std::shared_ptr<AttributeBase> targetAttrName) :
+            sourceNode(sourceNode),
+            sourceAttrName(sourceAttrName),
+            targetNode(targetNode),
+            targetAttrName(targetAttrName)
+        {
+        }
+
+        std::shared_ptr<Node2> sourceNode;
+        std::shared_ptr<AttributeBase> sourceAttrName;
+
+        std::shared_ptr<Node2> targetNode;
+        std::shared_ptr<AttributeBase> targetAttrName;
 
     };
 
     class NodeGraph
     {
+    public:
+        void addNode(std::shared_ptr<Node2> node)
+        {
+            m_nodes.push_back(node);
+        }
+        
+        void addConnection(std::shared_ptr<Node2> sourceNode, 
+                           std::shared_ptr<AttributeBase> sourceAttrName,
+                           std::shared_ptr<Node2> targetNode,
+                           std::shared_ptr<AttributeBase> targetAttrName)
+        {
+            //TODO
+
+            //Check if sourceAttribute is readable
+            //Check if destinationAttribute is writable
+            //Check if sourceAttribute and destinationAttribute are compatible (type)
+            //Check if sourceAttribute and destinationAttribute are compatible (dimension)
+
+            m_connections.emplace_back(sourceNode, sourceAttrName, targetNode, targetAttrName);
+        }
+
+        void evaluate()
+        {
+
+        }
+
+        std::vector<std::shared_ptr<Node2>> getNodes() const
+        {
+            return m_nodes;
+        }
+
+        std::vector<Connection> getConnections() const
+        {
+            return m_connections;
+        }
 
 
         std::vector<std::shared_ptr<Node2>> m_nodes;
-
+        std::vector<Connection> m_connections;
     };
 
     template<typename NodeType>
