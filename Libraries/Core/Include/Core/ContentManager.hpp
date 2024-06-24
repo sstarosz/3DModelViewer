@@ -17,7 +17,7 @@ class ContentManager
         m_nodeGraph.addNode(node.lock());
     }
 
-    NodeGraph getMainNodeGraph() const
+    NodeGraph& getMainNodeGraph()
     {
         return m_nodeGraph;
     }

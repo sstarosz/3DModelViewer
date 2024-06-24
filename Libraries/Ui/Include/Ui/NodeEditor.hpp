@@ -557,6 +557,8 @@ namespace st
 					addNode(node);
 				}
 
+				//TODO
+				std::println("Connections: {}", m_nodeGraph.getConnections().size());
 				for(auto connection : m_nodeGraph.getConnections())
 				{
 					//TODO

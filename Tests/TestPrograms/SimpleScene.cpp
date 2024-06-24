@@ -122,13 +122,15 @@ namespace st
 	class ModifyContext
 	{
 	  public:
-		core::ContentManager m_contentManager;
-		std::weak_ptr<core::Node2> node;
+		core::ContentManager* m_contentManager;
+		std::weak_ptr<core::Node2> selectedNode;
 	};
+
 	class MaterialModifier
 	{
 	  public:
-		MaterialModifier(ModifyContext context)
+		MaterialModifier(ModifyContext context):
+			m_context(context)
 		{
 		}
 
@@ -140,7 +142,7 @@ namespace st
 			// Check if mesh node has MeshData output
 
 			std::shared_ptr<renderer::StandardMaterial2> targetMaterial = material.lock();
-			std::shared_ptr<core::Node2> sourceNode = m_context.node.lock();
+			std::shared_ptr<core::Node2> sourceNode = m_context.selectedNode.lock();
 
 			std::shared_ptr<core::AttributeBase> sourceAttribute = nullptr;
 			std::shared_ptr<core::AttributeBase> targetAttribute = nullptr;
@@ -174,7 +176,7 @@ namespace st
 			}
 
 			// Add connection
-			m_context.m_contentManager.getMainNodeGraph().addConnection(sourceNode,
+			m_context.m_contentManager->getMainNodeGraph().addConnection(sourceNode,
 																		sourceAttribute,
 																		targetMaterial,
 																		targetAttribute);
@@ -193,7 +195,8 @@ namespace st
 	class Modifier
 	{
 	  public:
-		Modifier(ModifyContext context)
+		Modifier(ModifyContext context):
+			m_context(context)
 		{
 		}
 
@@ -208,6 +211,18 @@ namespace st
 
 		MaterialModifier material()
 		{
+			//TODO refactor
+			// Throw exception if node can't have material
+			if(auto node = m_context.selectedNode.lock())
+			{
+				//Throw if node is not of type plane
+				if(!std::dynamic_pointer_cast<renderer::Plane2>(node))
+				{
+					throw std::runtime_error("Node is not of type Plane");
+				}
+			}
+
+
 			MaterialModifier materialManager{m_context};
 			return materialManager;
 		}
@@ -244,22 +259,14 @@ namespace st
 		Modifier modify(std::weak_ptr<core::Node2> node)
 		{
 			ModifyContext context;
-            context.m_contentManager = m_contentManager;
-			context.node = node;
+            context.m_contentManager = &m_contentManager;
+			context.selectedNode = node;
 
 
 			Modifier modifier{context};
 			return modifier;
 		}
 
-		Modifier modify()
-		{
-            ModifyContext context;
-            context.m_contentManager = m_contentManager;
-
-            Modifier modifier{context};
-			return modifier;
-		}
 
 	  private:
 		QApplication m_app;

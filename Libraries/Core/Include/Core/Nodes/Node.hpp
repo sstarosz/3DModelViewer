@@ -6,6 +6,8 @@
 #include <vector>
 #include <optional>
 #include <cassert>
+#include <memory>
+#include <print>
 
 #include "../Mesh.hpp" //TODO clean up
 
@@ -404,8 +406,9 @@ namespace st::core
             //Check if sourceAttribute is readable
             //Check if destinationAttribute is writable
             //Check if sourceAttribute and destinationAttribute are compatible (type)
-            //Check if sourceAttribute and destinationAttribute are compatible (dimension)
+            //Check if sourceAttribute and destinationAttribute are compatible (dimension) 
 
+            std::println("Adding connection");
             m_connections.emplace_back(sourceNode, sourceAttrName, targetNode, targetAttrName);
         }
 
