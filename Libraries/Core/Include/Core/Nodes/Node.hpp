@@ -422,14 +422,14 @@ namespace st::core
             return m_nodes;
         }
 
-        std::vector<Connection> getConnections() const
+        std::vector<std::shared_ptr<Connection>> getConnections() const
         {
             return m_connections;
         }
 
 
         std::vector<std::shared_ptr<Node2>> m_nodes;
-        std::vector<Connection> m_connections;
+        std::vector<std::shared_ptr<Connection>> m_connections;
     };
 
     template<typename NodeType>

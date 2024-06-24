@@ -513,6 +513,31 @@ namespace st
 		  NodePlug* m_endPlug;
 		};
 
+		class NodeConnection : public QAbstractGraphicsShapeItem
+		{
+		  public:
+			NodeConnection(std::weak_ptr<core::Connection> connection, QGraphicsItem* parent = nullptr) :
+				QAbstractGraphicsShapeItem(parent)
+			{
+			}
+
+			QRectF boundingRect() const override
+			{
+				return QRectF(0, 0, 100, 100);
+			}
+
+			void paint(QPainter* painter,
+					   const QStyleOptionGraphicsItem* option,
+					   QWidget* widget) override
+			{
+				Q_UNUSED(option);
+				Q_UNUSED(widget);
+
+				painter->setPen(QPen(Qt::black, 3));
+				painter->drawLine(0, 0, 100, 100);
+			}
+		};
+
 
 		/**
 		 * @brief Represent node graph in the scene
@@ -587,6 +612,8 @@ namespace st
 				//PlugConnection* connectionItem = new PlugConnection(connection.getSourceNode(), connection.getTargetNode());
 				//TODO
 				// }
+
+				ConnectionItem* connectionItem = new ConnectionItem(connection);
 			}
 
 
