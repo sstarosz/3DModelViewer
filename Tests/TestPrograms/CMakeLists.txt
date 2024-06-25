@@ -61,3 +61,9 @@ set(Sources4 "NodeGraphPrototype2.cpp")
 add_executable(NodeGraphPrototype2 ${Sources4})
 target_link_libraries(NodeGraphPrototype2 PRIVATE Eigen3::Eigen)
 target_compile_features(NodeGraphPrototype2 PRIVATE cxx_std_20)
+
+
+set(Sources4 "NodeGraphPrototype3.cpp")
+add_executable(NodeGraphPrototype3 ${Sources4})
+target_link_libraries(NodeGraphPrototype3 PRIVATE Eigen3::Eigen Core)
+target_compile_features(NodeGraphPrototype3 PRIVATE cxx_std_20)

@@ -165,6 +165,12 @@ namespace st
 				return m_pParentAttribute;
 			}
 
+			QPointF getPlugCenterPosition() const
+			{
+				//TODO refactor
+				return scenePos() + QPointF(12.5, 12.5);
+			}
+
 		  private:
 		  	NodeAttribute* m_pParentAttribute;
 			bool m_isHovered = false;
@@ -196,9 +202,13 @@ namespace st
 			static constexpr QColor nodeConnectionColor = QColor(85, 209, 208);;
 
 		  public:
-			NodeAttribute(core::Handler handler, QGraphicsItem* parent = nullptr) :
+			NodeAttribute(std::shared_ptr<core::AttributeBase> attribute,
+				QGraphicsItem* parent = nullptr) :
 				QAbstractGraphicsShapeItem(parent),
-				m_handler(handler)
+				m_attribute(attribute),
+				m_pParentNode(nullptr),
+				m_pInputPlug(nullptr),
+				m_pOutputPlug(nullptr)
 			{
 				setAcceptHoverEvents(true);
 
@@ -207,22 +217,22 @@ namespace st
 
 
 				//Draw connection Input
-				if(m_handler.isWritable())
+				if(m_attribute->isWritable())
 				{
 					NodePlug* nodePlug = new NodePlug(this);
 					nodePlug->setPos(0, 0);
-					m_nodePlugs.push_back(nodePlug);
+					m_pInputPlug = nodePlug;
 				}
 
 				//Draw Connection Output
-				if(m_handler.isReadable())
+				if(m_attribute->isReadable())
 				{
 					NodePlug* nodePlug = new NodePlug(this);
 					QTransform transform;
 					transform.translate(320, 0);
 					transform.scale(-1, 1);
 					nodePlug->setTransform(transform);
-					m_nodePlugs.push_back(nodePlug);
+					m_pOutputPlug = nodePlug;
 				}
 
 			}
@@ -265,7 +275,7 @@ namespace st
 				QRectF textRect{45, 5, 230, 15};
 				painter->drawText(textRect,
 								  Qt::AlignLeft | Qt::AlignVCenter,
-								  QString::fromStdString(m_handler.getName()));
+								  QString::fromStdString(m_attribute->getName()));
 
 
 				//If int or float
@@ -290,9 +300,15 @@ namespace st
 				QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
 			}
 
-			std::vector<NodePlug*> getPlugs() const
+
+			NodePlug* getInputPlug() const
 			{
-				return m_nodePlugs;
+				return m_pInputPlug;
+			}
+
+			NodePlug* getOutputPlug() const
+			{
+				return m_pOutputPlug;
 			}
 
 			NodeItem* getParentNode() const
@@ -300,10 +316,16 @@ namespace st
 				return m_pParentNode;
 			}
 
+			std::shared_ptr<core::AttributeBase> getAttribute() const
+			{
+				return m_attribute;
+			}
+
 		private:
 			NodeItem* m_pParentNode;
-			core::Handler m_handler; // Handler to Attribute
-			std::vector<NodePlug*> m_nodePlugs;
+			std::shared_ptr<core::AttributeBase> m_attribute; // Handler to Attribute
+			NodePlug* m_pInputPlug;
+			NodePlug* m_pOutputPlug;
 		};
 
 		class NodeItem : public QAbstractGraphicsShapeItem
@@ -328,7 +350,7 @@ namespace st
 					uint32_t inputYOffset = 55;
 					auto attributes = nodePtr->getAttributes();
 					auto isOutput = [](core::Handler handler){ return handler.isReadable();};
-					auto isInput = [](core::Handler handler){ return handler.isWritable();};
+					auto isInput = [](std::shared_ptr<core::AttributeBase> attribute){ return attribute->isWritable();};
 
 					// for (auto outputAttribute : attributes | std::views::filter(isOutput))
 					// {
@@ -339,14 +361,14 @@ namespace st
 					// 	inputYOffset += 29;
 					// }
 
-					// for (auto inputAttribute : attributes | std::views::filter(isInput))
-					// {
-					// 	NodeAttribute* attribute = new NodeAttribute(inputAttribute, this);
-					// 	attribute->setZValue(1);
-					// 	attribute->setPos(-10, inputYOffset);
-					// 	m_attributes.push_back(attribute);
-					// 	inputYOffset += 29;
-					// }
+					for (auto inputAttribute : attributes | std::views::filter(isInput))
+					{
+						NodeAttribute* attribute = new NodeAttribute(inputAttribute, this);
+						attribute->setZValue(1);
+						attribute->setPos(-10, inputYOffset);
+						m_attributes.push_back(attribute);
+						inputYOffset += 29;
+					}
 				}
 			}
 
@@ -516,9 +538,57 @@ namespace st
 		class NodeConnection : public QAbstractGraphicsShapeItem
 		{
 		  public:
-			NodeConnection(std::weak_ptr<core::Connection> connection, QGraphicsItem* parent = nullptr) :
-				QAbstractGraphicsShapeItem(parent)
+			NodeConnection(std::weak_ptr<core::Connection> connection,
+						   QGraphicsItem* parent = nullptr) :
+				QAbstractGraphicsShapeItem(parent),
+				m_connection(connection)
 			{
+			}
+
+			void initialize()
+			{
+				if (!scene())
+				{
+					std::println("No scene");
+				}
+
+				for (auto item : scene()->items())
+				{
+					if (auto nodeItem = dynamic_cast<NodeItem*>(item))
+					{
+						// Find Output node
+						if (auto node = nodeItem->getNode().lock())
+						{
+							// Find Source node
+							if (node == m_connection.lock()->sourceNode) //
+							{
+								// Find source attribute
+								auto attributes = nodeItem->getAttributes();
+								for (auto attribute : attributes)
+								{
+									if (attribute->getAttribute() == m_connection.lock()->sourceAttrName)
+									{
+										m_startPos = attribute->getOutputPlug()->getPlugCenterPosition();
+									}
+								}
+							}
+
+							// Find Target node
+							if (node == m_connection.lock()->targetNode)
+							{
+								// Find target attribute
+								auto attributes = nodeItem->getAttributes();
+								for (auto attribute : attributes)
+								{
+									if (attribute->getAttribute() == m_connection.lock()->targetAttrName)
+									{
+										m_endPos = attribute->getInputPlug()->getPlugCenterPosition();
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 
 			QRectF boundingRect() const override
@@ -534,8 +604,13 @@ namespace st
 				Q_UNUSED(widget);
 
 				painter->setPen(QPen(Qt::black, 3));
-				painter->drawLine(0, 0, 100, 100);
+				painter->drawLine(m_startPos, m_endPos);
 			}
+
+			private:
+			std::weak_ptr<core::Connection> m_connection;
+			QPointF m_startPos;
+			QPointF m_endPos;
 		};
 
 
@@ -606,14 +681,11 @@ namespace st
 				nodeXPosition += 500;
 			}
 
-			void addConnection(core::Connection connection)
+			void addConnection(std::weak_ptr<core::Connection> connection)
 			{
-				// if(auto sourceNode = connection.getSourceNode()
-				//PlugConnection* connectionItem = new PlugConnection(connection.getSourceNode(), connection.getTargetNode());
-				//TODO
-				// }
-
-				ConnectionItem* connectionItem = new ConnectionItem(connection);
+				NodeConnection* connectionItem = new NodeConnection(connection);
+				addItem(connectionItem);
+				connectionItem->initialize();
 			}
 
 

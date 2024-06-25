@@ -1,167 +1,188 @@
 #ifndef ST_GEOMETRY_PLANE_HPP
 #define ST_GEOMETRY_PLANE_HPP
 
+#include "Core/Mesh.hpp"
 #include "Core/NodeGraph.hpp"
 #include "Core/Nodes/Node.hpp"
-#include "Core/Mesh.hpp"
 #include <Eigen/Core>
 #include <vector>
 
 namespace st::renderer
 {
 
-    /**
-     * @brief 
-     * 
-     */
-    class Plane : public core::Node
-    {
-        public:
-            Plane()
-            {
-                
-                m_vertices.push_back(geometry::Vertex(Eigen::Vector3f(-0.5F, 0.0F, -0.5F)));
-                m_vertices.push_back(geometry::Vertex(Eigen::Vector3f(0.5F, 0.0F, -0.5F)));
-                m_vertices.push_back(geometry::Vertex(Eigen::Vector3f(0.5F, 0.0F, 0.5F)));
-                m_vertices.push_back(geometry::Vertex(Eigen::Vector3f(-0.5F, 0.0F, 0.5F)));
+	/**
+	 * @brief
+	 *
+	 */
+	class Plane : public core::Node
+	{
+	  public:
+		Plane()
+		{
 
-                m_indices.push_back(0);
-                m_indices.push_back(1);
-                m_indices.push_back(2);
+			m_vertices.push_back(geometry::Vertex(Eigen::Vector3f(-0.5F, 0.0F, -0.5F)));
+			m_vertices.push_back(geometry::Vertex(Eigen::Vector3f(0.5F, 0.0F, -0.5F)));
+			m_vertices.push_back(geometry::Vertex(Eigen::Vector3f(0.5F, 0.0F, 0.5F)));
+			m_vertices.push_back(geometry::Vertex(Eigen::Vector3f(-0.5F, 0.0F, 0.5F)));
 
-                m_indices.push_back(2);
-                m_indices.push_back(3);
-                m_indices.push_back(0);
-            }
- 
-            const std::vector<geometry::Vertex> getVertices() const
-            {
-                return m_vertices;
-            }
+			m_indices.push_back(0);
+			m_indices.push_back(1);
+			m_indices.push_back(2);
 
-            const std::vector<uint32_t> getIndices() const
-            {
-                return m_indices;
-            }
+			m_indices.push_back(2);
+			m_indices.push_back(3);
+			m_indices.push_back(0);
+		}
 
-        private:
-            std::vector<geometry::Vertex> m_vertices;
-            std::vector<uint32_t> m_indices;
+		const std::vector<geometry::Vertex> getVertices() const
+		{
+			return m_vertices;
+		}
 
-    };
+		const std::vector<uint32_t> getIndices() const
+		{
+			return m_indices;
+		}
 
+	  private:
+		std::vector<geometry::Vertex> m_vertices;
+		std::vector<uint32_t> m_indices;
+	};
 
+	class Plane2 : public core::Node2
+	{
+	  public:
+		Plane2()
+		{
+		}
 
-    class Plane2 : public core::Node2
-    {
-        public:
-        Plane2()
-        {
-        }
+		// TODO change return type to std::expected
+		bool initialize() override
+		{
+			defineNode("Plane");
 
-
-        //TODO change return type to std::expected
-        bool initialize() override
-        {
-            defineNode("Plane");
-
-            m_inputs.width.setName("Width");
-            //m_inputs.width.setDefault(1.0F);
-            //m_inputs.width.setMin(0.001F);
-            //m_inputs.width.setMax(100000.0F);
-            //m_inputs.width.setSoftMinValue(0.001F);
-            //m_inputs.width.setSoftMaxValue(100.0F);
-            addInput(m_inputs.width);
-
-            m_inputs.height.setName("Height");
-            //m_inputs.height.setDefault(1.0F);
-            //m_inputs.height.setMin(0.001F);
-            //m_inputs.height.setMax(100000.0F);
-            //m_inputs.height.setSoftMinValue(0.001F);
-            //m_inputs.height.setSoftMaxValue(100.0F);
-            addInput(m_inputs.height);
-
-            m_inputs.subdivisionWidth.setName("Subdivision Width");
-            //m_inputs.subdivisionWidth.setDefault(1);
-            //m_inputs.subdivisionWidth.setMin(1);
-            //m_inputs.subdivisionWidth.setMax(100000);
-            //m_inputs.subdivisionWidth.setSoftMinValue(1);
-            //m_inputs.subdivisionWidth.setSoftMaxValue(100);
-            addInput(m_inputs.subdivisionWidth);
-
-            m_inputs.subdivisionHeight.setName("Subdivision Height");
-           //m_inputs.subdivisionHeight.setDefault(1);
-           //m_inputs.subdivisionHeight.setMin(1);
-           //m_inputs.subdivisionHeight.setMax(100000);
-           //m_inputs.subdivisionHeight.setSoftMinValue(1);
-           //m_inputs.subdivisionHeight.setSoftMaxValue(100);
-            addInput(m_inputs.subdivisionHeight);
-            
-
-            m_outputs.mesh.setName("Mesh");
-            addOutput(m_outputs.mesh);
-            
-            return true;
-        }
-
-        bool compute() override
-        {
-            //TODO implement
-            //for(int i = 0; i < m_inputs.subdivisionWidth; i++)
-            //{
-            //    for(int j = 0; j < m_inputs.subdivisionHeight; j++)
-            //    {
-                    core::FloatPointVector vertices;
-                    core::IntVector indices;
-
-                    vertices.push_back(Eigen::Vector3f(-0.5F, 0.0F, -0.5F));
-                    vertices.push_back(Eigen::Vector3f(0.5F, 0.0F, -0.5F));
-                    vertices.push_back(Eigen::Vector3f(0.5F, 0.0F, 0.5F));
-                    vertices.push_back(Eigen::Vector3f(-0.5F, 0.0F, 0.5F));
-
-                    indices.push_back(0);
-                    indices.push_back(1);
-                    indices.push_back(2);
-
-                    indices.push_back(2);
-                    indices.push_back(3);
-                    indices.push_back(0);
-           //    }
-           //}
-
-            m_outputs.mesh = core::MeshData(vertices, indices); 
+			auto width = core::AttributeBuilder("Width")
+							 .setReadable(true)
+							 .setWritable(true)
+                             //TODO add limits
+							 .build();
 
 
-            return true;
-        }
+			//width->setDefault(1.0F);
+			//width->setMin(0.001F);
+			//width->setMax(100000.0F);
+			//width->setSoftMinValue(0.001F);
+			//width->setSoftMaxValue(100.0F);
+			addAttribute(width);
 
 
-       struct Inputs
-       {
-         core::Input<float> width;
-         
-         core::Input<float> height;
-         core::Input<uint32_t> subdivisionWidth;
-         core::Input<uint32_t> subdivisionHeight;
-       };
-
-        struct Outputs
-        {
-            core::Output<core::MeshData> mesh;
-        };
-
-        private:
-            //std::vector<geometry::Vertex> m_vertices;
-            //std::vector<uint32_t> m_indices;
-
-        Inputs m_inputs;
-        Outputs m_outputs;
-
-    };
+            auto height = core::AttributeBuilder("Height")
+                              .setReadable(true)
+                              .setWritable(true)
+                              .build();
+			// m_inputs.height.setName("Height");
+			// m_inputs.height.setDefault(1.0F);
+			// m_inputs.height.setMin(0.001F);
+			// m_inputs.height.setMax(100000.0F);
+			// m_inputs.height.setSoftMinValue(0.001F);
+			// m_inputs.height.setSoftMaxValue(100.0F);
+			// addInput(m_inputs.height);
+            addAttribute(height);
 
 
-    //RegisterNode<Plane2> plane2("Plane2");
+            auto subdivisionWidth = core::AttributeBuilder("Subdivision Width")
+                                      .setReadable(true)
+                                      .setWritable(true)
+                                      .build();
+			// m_inputs.subdivisionWidth.setName("Subdivision Width");
+			// m_inputs.subdivisionWidth.setDefault(1);
+			// m_inputs.subdivisionWidth.setMin(1);
+			// m_inputs.subdivisionWidth.setMax(100000);
+			// m_inputs.subdivisionWidth.setSoftMinValue(1);
+			// m_inputs.subdivisionWidth.setSoftMaxValue(100);
+			// addInput(m_inputs.subdivisionWidth);
+            addAttribute(subdivisionWidth);
 
+
+            auto subdivisionHeight = core::AttributeBuilder("Subdivision Height")
+                                      .setReadable(true)
+                                      .setWritable(true)
+                                      .build();
+			// m_inputs.subdivisionHeight.setName("Subdivision Height");
+			// m_inputs.subdivisionHeight.setDefault(1);
+			// m_inputs.subdivisionHeight.setMin(1);
+			// m_inputs.subdivisionHeight.setMax(100000);
+			// m_inputs.subdivisionHeight.setSoftMinValue(1);
+			// m_inputs.subdivisionHeight.setSoftMaxValue(100);
+			// addInput(m_inputs.subdivisionHeight);
+            addAttribute(subdivisionHeight);
+
+
+            auto mesh = core::AttributeBuilder("Mesh")
+                        .setReadable(true)
+                        .setWritable(false)
+                        .build();
+			// m_outputs.mesh.setName("Mesh");
+			// addOutput(m_outputs.mesh);
+            addAttribute(mesh);
+
+			return true;
+		}
+
+		bool compute() override
+		{
+			// TODO implement
+			// for(int i = 0; i < m_inputs.subdivisionWidth; i++)
+			//{
+			//     for(int j = 0; j < m_inputs.subdivisionHeight; j++)
+			//     {
+			core::FloatPointVector vertices;
+			core::IntVector indices;
+
+			vertices.push_back(Eigen::Vector3f(-0.5F, 0.0F, -0.5F));
+			vertices.push_back(Eigen::Vector3f(0.5F, 0.0F, -0.5F));
+			vertices.push_back(Eigen::Vector3f(0.5F, 0.0F, 0.5F));
+			vertices.push_back(Eigen::Vector3f(-0.5F, 0.0F, 0.5F));
+
+			indices.push_back(0);
+			indices.push_back(1);
+			indices.push_back(2);
+
+			indices.push_back(2);
+			indices.push_back(3);
+			indices.push_back(0);
+			//    }
+			//}
+
+			m_outputs.mesh = core::MeshData(vertices, indices);
+
+			return true;
+		}
+
+		struct Inputs
+		{
+			// core::Input<float> width;
+			core::NumericInputHandler<float> width;
+
+			core::Input<float> height;
+			core::Input<uint32_t> subdivisionWidth;
+			core::Input<uint32_t> subdivisionHeight;
+		};
+
+		struct Outputs
+		{
+			core::Output<core::MeshData> mesh;
+		};
+
+	  private:
+		// std::vector<geometry::Vertex> m_vertices;
+		// std::vector<uint32_t> m_indices;
+
+		Inputs m_inputs;
+		Outputs m_outputs;
+	};
+
+	// RegisterNode<Plane2> plane2("Plane2");
 
 } // namespace st::renderer
 
