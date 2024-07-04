@@ -569,12 +569,9 @@ namespace st
 								{
 									if (attribute->getAttribute() == m_connection.lock()->sourceAttrName)
 									{
-										if(attribute->getOutputPlug() == nullptr)
-										{
-											std::println("Output plug is null");
-										}
-
-										m_startPos = attribute->getOutputPlug()->getPlugCenterPosition();
+										NodePlug* plug = attribute->getOutputPlug();
+										plug->setConnected(true);
+										m_startPos = plug->getPlugCenterPosition();
 									}
 								}
 							}
@@ -587,12 +584,9 @@ namespace st
 								{
 									if (attribute->getAttribute() == m_connection.lock()->targetAttrName)
 									{
-										if(attribute->getInputPlug() == nullptr)
-										{
-											std::println("Input plug is null");
-										}
-
-										m_endPos = attribute->getInputPlug()->getPlugCenterPosition();
+										NodePlug* plug = attribute->getInputPlug();
+										plug->setConnected(true);
+										m_endPos = plug->getPlugCenterPosition();
 									}
 								}
 							}

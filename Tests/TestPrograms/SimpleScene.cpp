@@ -91,8 +91,39 @@ namespace st
 		std::weak_ptr<renderer::Renderer> renderer(std::weak_ptr<core::Node> camera)
 		{
 			std::shared_ptr<renderer::Renderer> renderer = std::make_shared<renderer::Renderer>();
-			m_contentManager.add(renderer);
 			renderer->initialize();
+			m_contentManager.add(renderer);
+
+			//Make material nodes automatically connect to renderer
+			core::NodeGraph& nodeGraph = m_contentManager.getMainNodeGraph();
+
+			std::shared_ptr<core::Attribute> targetAttribute = nullptr;
+			for(auto& attribute : renderer->getAttributes())
+			{
+				if (std::shared_ptr<core::TypedAttribute<renderer::Renderable>> renderable = std::dynamic_pointer_cast<core::TypedAttribute<renderer::Renderable>>(attribute))
+				{
+					std::println("Found Renderable");
+					targetAttribute = attribute;
+				}
+			}
+
+
+
+			for(auto& node : nodeGraph.getNodes())
+			{
+				if(std::dynamic_pointer_cast<renderer::StandardMaterial2>(node))
+				{
+					for(auto& attribute : node->getAttributes())
+					{
+						if (std::shared_ptr<core::TypedAttribute<renderer::Renderable>> renderable = std::dynamic_pointer_cast<core::TypedAttribute<renderer::Renderable>>(attribute))
+						{
+							std::println("Found Renderable");
+							nodeGraph.addConnection(node, renderable, renderer, targetAttribute);
+						}
+					}
+				}
+			}
+
 
 			return std::weak_ptr<renderer::Renderer>{renderer};
 		}
