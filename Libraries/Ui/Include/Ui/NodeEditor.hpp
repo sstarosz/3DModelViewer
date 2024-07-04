@@ -160,19 +160,15 @@ namespace st
 				m_isConnecting = false;
 			}
 
-			NodeAttribute* getParentAttribute() const
-			{
-				return m_pParentAttribute;
-			}
+			NodeAttribute* getParentAttribute() const;
 
 			QPointF getPlugCenterPosition() const
 			{
 				//TODO refactor
-				return scenePos() + QPointF(12.5, 12.5);
+				return scenePos() + QPointF(0, 12.5);
 			}
 
 		  private:
-		  	NodeAttribute* m_pParentAttribute;
 			bool m_isHovered = false;
 			bool m_isConnected = false;
 			bool m_isConnecting = false;
@@ -202,11 +198,10 @@ namespace st
 			static constexpr QColor nodeConnectionColor = QColor(85, 209, 208);;
 
 		  public:
-			NodeAttribute(std::shared_ptr<core::AttributeBase> attribute,
+			NodeAttribute(std::shared_ptr<core::Attribute> attribute,
 				QGraphicsItem* parent = nullptr) :
 				QAbstractGraphicsShapeItem(parent),
 				m_attribute(attribute),
-				m_pParentNode(nullptr),
 				m_pInputPlug(nullptr),
 				m_pOutputPlug(nullptr)
 			{
@@ -236,6 +231,8 @@ namespace st
 				}
 
 			}
+
+			virtual ~NodeAttribute() override {};
 
 			QRectF boundingRect() const override
 			{
@@ -311,19 +308,15 @@ namespace st
 				return m_pOutputPlug;
 			}
 
-			NodeItem* getParentNode() const
-			{
-				return m_pParentNode;
-			}
+			NodeItem* getParentNode() const;
 
-			std::shared_ptr<core::AttributeBase> getAttribute() const
+			std::shared_ptr<core::Attribute> getAttribute() const
 			{
 				return m_attribute;
 			}
 
 		private:
-			NodeItem* m_pParentNode;
-			std::shared_ptr<core::AttributeBase> m_attribute; // Handler to Attribute
+			std::shared_ptr<core::Attribute> m_attribute; // Handler to Attribute
 			NodePlug* m_pInputPlug;
 			NodePlug* m_pOutputPlug;
 		};
@@ -349,19 +342,21 @@ namespace st
 
 					uint32_t inputYOffset = 55;
 					auto attributes = nodePtr->getAttributes();
-					auto isOutput = [](core::Handler handler){ return handler.isReadable();};
-					auto isInput = [](std::shared_ptr<core::AttributeBase> attribute){ return attribute->isWritable();};
+					auto isOutput = [](std::shared_ptr<core::Attribute> attribute){ return attribute->isReadable();};
+					auto isInput = [](std::shared_ptr<core::Attribute> attribute){ return attribute->isWritable();};
 
-					// for (auto outputAttribute : attributes | std::views::filter(isOutput))
-					// {
-					// 	NodeAttribute* attribute = new NodeAttribute(outputAttribute, this);
-					// 	attribute->setZValue(1);
-					// 	attribute->setPos(-10, inputYOffset);
-					// 	m_attributes.push_back(attribute);
-					// 	inputYOffset += 29;
-					// }
+					//for (auto outputAttribute : attributes | std::views::filter(isOutput))
+					//{
+					//	NodeAttribute* attribute = new NodeAttribute(outputAttribute, this);
+					//	attribute->setZValue(1);
+					//	attribute->setPos(-10, inputYOffset);
+					//	m_attributes.push_back(attribute);
+					//	inputYOffset += 29;
+					//}
 
-					for (auto inputAttribute : attributes | std::views::filter(isInput))
+					//TODO output should be added first
+
+					for (auto inputAttribute : attributes)
 					{
 						NodeAttribute* attribute = new NodeAttribute(inputAttribute, this);
 						attribute->setZValue(1);
@@ -372,12 +367,14 @@ namespace st
 				}
 			}
 
-			QRectF boundingRect() const override
+			virtual ~NodeItem() override {};
+
+			virtual QRectF boundingRect() const override
 			{
 				return QRectF(0, 0, 320, 400);
 			}
 
-			void paint(QPainter* painter,
+			virtual void paint(QPainter* painter,
 					   const QStyleOptionGraphicsItem* option,
 					   QWidget* widget) override
 			{
@@ -537,6 +534,11 @@ namespace st
 
 		class NodeConnection : public QAbstractGraphicsShapeItem
 		{
+			static constexpr QColor nodeConnectionColor = QColor(85, 209, 208);
+			
+			//Position of the plug
+			static constexpr QPointF plugPosition = QPointF(0.0f, 12.5f);
+
 		  public:
 			NodeConnection(std::weak_ptr<core::Connection> connection,
 						   QGraphicsItem* parent = nullptr) :
@@ -563,11 +565,15 @@ namespace st
 							if (node == m_connection.lock()->sourceNode) //
 							{
 								// Find source attribute
-								auto attributes = nodeItem->getAttributes();
-								for (auto attribute : attributes)
+								for (auto attribute : nodeItem->getAttributes())
 								{
 									if (attribute->getAttribute() == m_connection.lock()->sourceAttrName)
 									{
+										if(attribute->getOutputPlug() == nullptr)
+										{
+											std::println("Output plug is null");
+										}
+
 										m_startPos = attribute->getOutputPlug()->getPlugCenterPosition();
 									}
 								}
@@ -577,11 +583,15 @@ namespace st
 							if (node == m_connection.lock()->targetNode)
 							{
 								// Find target attribute
-								auto attributes = nodeItem->getAttributes();
-								for (auto attribute : attributes)
+								for (auto attribute : nodeItem->getAttributes())
 								{
 									if (attribute->getAttribute() == m_connection.lock()->targetAttrName)
 									{
+										if(attribute->getInputPlug() == nullptr)
+										{
+											std::println("Input plug is null");
+										}
+
 										m_endPos = attribute->getInputPlug()->getPlugCenterPosition();
 									}
 								}
@@ -603,8 +613,31 @@ namespace st
 				Q_UNUSED(option);
 				Q_UNUSED(widget);
 
-				painter->setPen(QPen(Qt::black, 3));
-				painter->drawLine(m_startPos, m_endPos);
+				painter->setPen(QPen(nodeConnectionColor, 3));
+
+				// Create a QPainterPath starting at m_startPos
+			  	QPainterPath path(m_startPos);
+
+				// Calculate midpoints for control points
+				QPointF midPoint1 = QPointF((m_startPos.x() + m_endPos.x()) / 2, m_startPos.y());
+				QPointF midPoint2 = QPointF((m_startPos.x() + m_endPos.x()) / 2, m_endPos.y());
+
+				// Depending on the relative position of start and end, adjust the control points
+				if (m_startPos.y() < m_endPos.y())
+				{
+					// For a downward "S" shape
+					path.cubicTo(midPoint1, QPointF(midPoint1.x(), midPoint1.y() + (m_endPos.y() - m_startPos.y()) / 3), QPointF((m_startPos.x() + m_endPos.x()) / 2, (m_startPos.y() + m_endPos.y()) / 2));
+					path.cubicTo(QPointF(midPoint2.x(), midPoint2.y() - (m_endPos.y() - m_startPos.y()) / 3), midPoint2, m_endPos);
+				}
+				else
+				{
+					// For an upward "S" shape
+					path.cubicTo(midPoint1, QPointF(midPoint1.x(), midPoint1.y() - (m_startPos.y() - m_endPos.y()) / 3), QPointF((m_startPos.x() + m_endPos.x()) / 2, (m_startPos.y() + m_endPos.y()) / 2));
+					path.cubicTo(QPointF(midPoint2.x(), midPoint2.y() + (m_startPos.y() - m_endPos.y()) / 3), midPoint2, m_endPos);
+				}
+
+				// Draw the path
+				painter->drawPath(path);
 			}
 
 			private:
@@ -613,6 +646,17 @@ namespace st
 			QPointF m_endPos;
 		};
 
+
+		inline NodeItem* NodeAttribute::getParentNode() const
+		{
+			return dynamic_cast<NodeItem*>(parentItem());
+		}
+
+		
+		inline NodeAttribute* NodePlug::getParentAttribute() const
+		{
+			return dynamic_cast<NodeAttribute*>(parentItem());
+		}
 
 		/**
 		 * @brief Represent node graph in the scene

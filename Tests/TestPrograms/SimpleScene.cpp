@@ -144,8 +144,8 @@ namespace st
 			std::shared_ptr<renderer::StandardMaterial2> targetMaterial = material.lock();
 			std::shared_ptr<core::Node2> sourceNode = m_context.selectedNode.lock();
 
-			std::shared_ptr<core::AttributeBase> sourceAttribute = nullptr;
-			std::shared_ptr<core::AttributeBase> targetAttribute = nullptr;
+			std::shared_ptr<core::Attribute> sourceAttribute = nullptr;
+			std::shared_ptr<core::Attribute> targetAttribute = nullptr;
 
 			// Check if mesh node has MeshData output
 			if (sourceNode)
@@ -153,7 +153,8 @@ namespace st
 				auto attributes = sourceNode->getAttributes();
 				for (auto& attribute : attributes)
 				{
-					if(core::MeshData* meshData = dynamic_cast<core::MeshData*>(attribute.get()))
+					//Check if attribute is a TypedAttribute
+					if(std::shared_ptr<core::TypedAttribute<core::MeshData>> meshData = std::dynamic_pointer_cast<core::TypedAttribute<core::MeshData>>(attribute))
 					{
 						std::println("Found MeshData");
 					    sourceAttribute = attribute;
@@ -161,15 +162,15 @@ namespace st
 				}
 			}
 
-			// Check if material has Material output
+			// Check if material has input for meshData
 			if (auto materialNode = material.lock())
 			{
 				auto attributes = materialNode->getAttributes();
 				for (auto& attribute : attributes)
 				{
-					if (renderer::Renderable* materialData = dynamic_cast<renderer::Renderable*>(attribute.get()))
+					if (std::shared_ptr<core::TypedAttribute<core::MeshData>> meshData = std::dynamic_pointer_cast<core::TypedAttribute<core::MeshData>>(attribute))
 					{
-						std::println("Found Material");
+						std::println("Found MeshData");
 						targetAttribute = attribute;
 					}
 				}

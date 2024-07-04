@@ -1,4 +1,4 @@
-#include "NodeGraph.hpp"
+#include "Nodes/Node.hpp"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -8,28 +8,62 @@ namespace st::core::test
     
     class NodeGraphTest : public ::testing::Test
     {
+        public:
+
+        class TestableNode : public Node2
+        {
+            public:
+            TestableNode() = default;
+            ~TestableNode() = default;
+
+            bool initialize() override
+            {
+                // Do nothing
+                return true;
+            }
+
+            bool compute() override
+            {
+                // Do nothing
+                return true;
+            }
+
+        };
+
+
 
     };
 
 
-    TEST_F(NodeGraphTest, CameraConstructor)
+
+
+
+    TEST_F(NodeGraphTest, NodeGraphConstructor)
+    {
+        NodeGraph nodeGraph;
+        ASSERT_TRUE(true);
+    }
+
+
+
+    TEST_F(NodeGraphTest, NodeGraphAddNode)
     {
         NodeGraph nodeGraph;
 
-        Node testNode(Node::Type::eUnknown);
-        Node testNode1(Node::Type::eCamera);
-        Node testNode2(Node::Type::eLight);
-        Node testNode3(Node::Type::eMaterial);
+
+
+        std::shared_ptr<Node2> testNodePtr = std::make_shared<TestableNode>();
+        std::shared_ptr<Node2> testNodePtr1 = std::make_shared<TestableNode>();
+        std::shared_ptr<Node2> testNodePtr2 = std::make_shared<TestableNode>();
+        std::shared_ptr<Node2> testNodePtr3 = std::make_shared<TestableNode>();
 
 
 
-        nodeGraph.addNode(std::move(testNode));
-        nodeGraph.addNode(std::move(testNode1));
-        nodeGraph.addNode(std::move(testNode2));
-        nodeGraph.addNode(std::move(testNode3));
-        
-
-        nodeGraph.dumpNodeGraph();
+        nodeGraph.addNode(std::move(testNodePtr));
+        nodeGraph.addNode(std::move(testNodePtr1));
+        nodeGraph.addNode(std::move(testNodePtr2));
+        nodeGraph.addNode(std::move(testNodePtr3));
+        ASSERT_TRUE(true);
     }
 
 }

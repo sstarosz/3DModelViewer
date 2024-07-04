@@ -91,15 +91,20 @@ namespace st::renderer
 		{
 			defineNode("Standard Material");
 
+			m_inputs.meshData = core::TypedAttribute<core::MeshData>::Builder("Mesh Data")
+									.setReadable(false)
+									.setWritable(true)
+									.build();
 
-			m_inputs.meshData.setName("Mesh Data");
-			//m_inputs.meshData.setArray(true);	
-			addInput(m_inputs.meshData);
 
-			m_outputs.renderable.setName("Renderable");
-			//m_outputs.renderable.setArray(true);
-			addOutput(m_outputs.renderable);
+			addAttribute(m_inputs.meshData);
 
+			m_outputs.renderable = core::TypedAttribute<Renderable>::Builder("Renderable")
+									   .setReadable(true)
+									   .setWritable(false)
+									   .build();
+
+			addAttribute(m_outputs.renderable);
 
 			return true;
 		}
@@ -111,17 +116,16 @@ namespace st::renderer
 
 		struct Inputs
 		{
-			core::Input<core::MeshData> meshData;
+			core::TypedInputHandler<core::MeshData> meshData;
 		};
 
 		struct Outputs
 		{
-			core::Output<Renderable> renderable;
+			core::TypedOutputHandler<Renderable> renderable;
 		};
 
 		Inputs m_inputs;
 		Outputs m_outputs;
-
 	};
 
 } // namespace st::renderer

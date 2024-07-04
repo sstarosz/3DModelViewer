@@ -32,11 +32,16 @@ namespace st::renderer
 		{
 			//TODO cleanup
 			defineNode("Renderer");
-			m_input.renderable.setName("Renderable");
-			//m_input.renderable.setArray(true);
-			addInput(m_input.renderable);
-			
 
+
+			m_input.renderable = core::TypedAttribute<Renderable>::Builder("Renderable")
+									  .setReadable(false)
+									  .setWritable(true)
+									  .build();
+
+
+			addAttribute(m_input.renderable);
+			
 			return true;
 		}
 
@@ -63,7 +68,7 @@ namespace st::renderer
 
 		struct Input
 		{
-			core::Input<Renderable> renderable;
+			core::TypedInputHandler<Renderable> renderable;
 		};
 
 		Input m_input; 

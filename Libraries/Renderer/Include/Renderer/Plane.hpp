@@ -61,70 +61,50 @@ namespace st::renderer
 		{
 			defineNode("Plane");
 
-			auto width = core::AttributeBuilder("Width")
-							 .setReadable(true)
-							 .setWritable(true)
-                             //TODO add limits
-							 .build();
+			m_inputs.width = core::NumericAttribute<float>::Builder("Width", 1.0F)
+								 .setReadable(true)
+								 .setWritable(true)
+								 .setLimits(0.001F, 100000.0F)
+								 .setSoftLimits(0.001F, 100.0F)
+								 .build();
+
+			addAttribute(m_inputs.width);
+
+			m_inputs.height = core::NumericAttribute<float>::Builder("Height", 1.0F)
+								  .setReadable(true)
+								  .setWritable(true)
+								  .setLimits(0.001F, 100000.0F)
+								  .setSoftLimits(0.001F, 100.0F)
+								  .build();
+
+			addAttribute(m_inputs.height);
+
+			m_inputs.subdivisionWidth = core::NumericAttribute<uint32_t>::Builder("Subdivision Width", 1)
+											.setReadable(true)
+											.setWritable(true)
+											.setLimits(1, 100000)
+											.setSoftLimits(1, 100)
+											.build();
+
+			addAttribute(m_inputs.subdivisionWidth);
+
+			m_inputs.subdivisionHeight = core::NumericAttribute<uint32_t>::Builder("Subdivision Height", 1)
+											 .setReadable(true)
+											 .setWritable(true)
+											 .setLimits(1, 100000)
+											 .setSoftLimits(1, 100)
+											 .build();
+
+			addAttribute(m_inputs.subdivisionHeight);
 
 
-			//width->setDefault(1.0F);
-			//width->setMin(0.001F);
-			//width->setMax(100000.0F);
-			//width->setSoftMinValue(0.001F);
-			//width->setSoftMaxValue(100.0F);
-			addAttribute(width);
+			m_outputs.mesh = core::TypedAttribute<core::MeshData>::Builder("Mesh")
+								 .setReadable(true)
+								 .setWritable(false)
+								 .build();
 
 
-            auto height = core::AttributeBuilder("Height")
-                              .setReadable(true)
-                              .setWritable(true)
-                              .build();
-			// m_inputs.height.setName("Height");
-			// m_inputs.height.setDefault(1.0F);
-			// m_inputs.height.setMin(0.001F);
-			// m_inputs.height.setMax(100000.0F);
-			// m_inputs.height.setSoftMinValue(0.001F);
-			// m_inputs.height.setSoftMaxValue(100.0F);
-			// addInput(m_inputs.height);
-            addAttribute(height);
-
-
-            auto subdivisionWidth = core::AttributeBuilder("Subdivision Width")
-                                      .setReadable(true)
-                                      .setWritable(true)
-                                      .build();
-			// m_inputs.subdivisionWidth.setName("Subdivision Width");
-			// m_inputs.subdivisionWidth.setDefault(1);
-			// m_inputs.subdivisionWidth.setMin(1);
-			// m_inputs.subdivisionWidth.setMax(100000);
-			// m_inputs.subdivisionWidth.setSoftMinValue(1);
-			// m_inputs.subdivisionWidth.setSoftMaxValue(100);
-			// addInput(m_inputs.subdivisionWidth);
-            addAttribute(subdivisionWidth);
-
-
-            auto subdivisionHeight = core::AttributeBuilder("Subdivision Height")
-                                      .setReadable(true)
-                                      .setWritable(true)
-                                      .build();
-			// m_inputs.subdivisionHeight.setName("Subdivision Height");
-			// m_inputs.subdivisionHeight.setDefault(1);
-			// m_inputs.subdivisionHeight.setMin(1);
-			// m_inputs.subdivisionHeight.setMax(100000);
-			// m_inputs.subdivisionHeight.setSoftMinValue(1);
-			// m_inputs.subdivisionHeight.setSoftMaxValue(100);
-			// addInput(m_inputs.subdivisionHeight);
-            addAttribute(subdivisionHeight);
-
-
-            auto mesh = core::AttributeBuilder("Mesh")
-                        .setReadable(true)
-                        .setWritable(false)
-                        .build();
-			// m_outputs.mesh.setName("Mesh");
-			// addOutput(m_outputs.mesh);
-            addAttribute(mesh);
+            addAttribute(m_outputs.mesh);
 
 			return true;
 		}
@@ -163,21 +143,18 @@ namespace st::renderer
 		{
 			// core::Input<float> width;
 			core::NumericInputHandler<float> width;
+			core::NumericInputHandler<float> height;
 
-			core::Input<float> height;
-			core::Input<uint32_t> subdivisionWidth;
-			core::Input<uint32_t> subdivisionHeight;
+			core::NumericInputHandler<uint32_t> subdivisionWidth;
+			core::NumericInputHandler<uint32_t> subdivisionHeight;
 		};
 
 		struct Outputs
 		{
-			core::Output<core::MeshData> mesh;
+			core::TypedOutputHandler<core::MeshData> mesh;
 		};
 
 	  private:
-		// std::vector<geometry::Vertex> m_vertices;
-		// std::vector<uint32_t> m_indices;
-
 		Inputs m_inputs;
 		Outputs m_outputs;
 	};
