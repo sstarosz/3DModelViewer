@@ -10,7 +10,7 @@ namespace st::core::test
     {
         public:
 
-        class TestableNode : public Node2
+        class TestableNode : public Node
         {
             public:
             TestableNode() = default;
@@ -52,10 +52,10 @@ namespace st::core::test
 
 
 
-        std::shared_ptr<Node2> testNodePtr = std::make_shared<TestableNode>();
-        std::shared_ptr<Node2> testNodePtr1 = std::make_shared<TestableNode>();
-        std::shared_ptr<Node2> testNodePtr2 = std::make_shared<TestableNode>();
-        std::shared_ptr<Node2> testNodePtr3 = std::make_shared<TestableNode>();
+        std::shared_ptr<Node> testNodePtr = std::make_shared<TestableNode>();
+        std::shared_ptr<Node> testNodePtr1 = std::make_shared<TestableNode>();
+        std::shared_ptr<Node> testNodePtr2 = std::make_shared<TestableNode>();
+        std::shared_ptr<Node> testNodePtr3 = std::make_shared<TestableNode>();
 
 
 

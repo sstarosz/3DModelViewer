@@ -2,7 +2,6 @@
 #define ST_EVENT_SYSTEM_HPP
 
 #include "StObject.hpp"
-#include "NodeGraph.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -29,7 +28,7 @@ namespace st::core
     {
 
     public:
-       Node* m_eventData;
+       uint32_t m_eventData;
     };
 
 
@@ -62,35 +61,13 @@ namespace st::core
     class EventSystem 
     {
     public:
-        static EventSystem& getInstance()
-        {
-            static EventSystem instance;
-            return instance;
-        }
-
-        template<typename Listener>
-        static void registerEvent(Event::Type eventType, Listener listener)
-        {
-            getInstance().registerEventPrivate(eventType, listener);
-        }
-
-
-        //Send event to all listeners
-        static void sendEvent(Event event)
-        {
-            getInstance().sendEventPrivate(event);
-        }
-
-
-    private:
         EventSystem()
         {
 
         }
-        
 
         template<typename Listener>
-        void registerEventPrivate(Event::Type eventType, Listener listener)
+        void registerEvent(Event::Type eventType, Listener listener)
         {
             m_eventListeners.emplace(eventType, std::make_unique<FunctionWrapperImpl<Listener>>(std::move(listener)));
         }

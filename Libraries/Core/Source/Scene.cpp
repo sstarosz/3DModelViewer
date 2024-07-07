@@ -2,7 +2,7 @@
 #include "Camera.hpp"
 #include "StObject.hpp"
 #include "EventSystem.hpp"
-#include "NodeGraph.hpp"
+#include "Nodes/NodeGraph.hpp"
 
 #include <vector>
 #include <memory>

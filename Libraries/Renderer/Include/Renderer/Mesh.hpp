@@ -2,7 +2,7 @@
 #define ST_RENDERER_MESH_HPP
 
 #include "Core/StObject.hpp"
-#include "Core/NodeGraph.hpp"
+#include "Core/Nodes/Node.hpp"
 #include "Geometry/Geometry.hpp"
 
 #include <Eigen/Core>

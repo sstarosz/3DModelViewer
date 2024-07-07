@@ -14,6 +14,7 @@ set(Sources
     "Source/StObject.cpp"
     "Source/EventSystem.cpp"
     "Source/ContentManager.cpp"
+    "Source/Nodes/NodeGraph.cpp"
     )
 
 set(Public_Headers
@@ -23,6 +24,8 @@ set(Public_Headers
     "Include/Core/StObject.hpp"
     "Include/Core/EventSystem.hpp"
     "Include/Core/ContentManager.hpp"
+    "Include/Core/Nodes/Node.hpp"
+    "Include/Core/Nodes/NodeGraph.hpp"
     )
 
 set(Private_Headers
@@ -34,6 +37,7 @@ add_library(${PROJECT_NAME} ${Sources} ${Public_Headers} ${Private_Headers})
 target_include_directories(${PROJECT_NAME} PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/Include/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include/${PROJECT_NAME})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include/${PROJECT_NAME}/Nodes)
 
 
 

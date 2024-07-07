@@ -905,20 +905,20 @@ namespace st::renderer
 		//TODO - Missing error handling
 		void onNewMeshAdded(const core::Event* event)
 		{
-			//TODO - Implement adding model to the scene
-			auto* eventData = dynamic_cast<const core::EventData*>(event);
-			if(eventData)
-			{
-				if(core::Node* node = eventData->m_eventData)
-				{
-					//TODO - Implement adding model to the scene
-					//if(node->isOfType(core::Node::Type::eMesh))
-					//{
-					//	//Add renderable object to the scene
-					//	std::cout << "New object added to the scene" << std::endl;
-					//}
-				}
-			}
+			////TODO - Implement adding model to the scene
+			//auto* eventData = dynamic_cast<const core::EventData*>(event);
+			//if(eventData)
+			//{
+			//	if(core::Node* node = eventData->m_eventData)
+			//	{
+			//		//TODO - Implement adding model to the scene
+			//		//if(node->isOfType(core::Node::Type::eMesh))
+			//		//{
+			//		//	//Add renderable object to the scene
+			//		//	std::cout << "New object added to the scene" << std::endl;
+			//		//}
+			//	}
+			//}
 
 			
 		}
@@ -942,7 +942,7 @@ namespace st::renderer
 			}
 
 			//Register to the event system
-			core::EventSystem::registerEvent(core::Event::Type::eAddedModel, [this](const core::Event* event) { onNewMeshAdded(event); });
+			//core::EventSystem::registerEvent(core::Event::Type::eAddedModel, [this](const core::Event* event) { onNewMeshAdded(event); });
 
 		}
 

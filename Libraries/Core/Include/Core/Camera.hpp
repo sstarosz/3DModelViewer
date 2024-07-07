@@ -2,7 +2,6 @@
 #define ST_CORE_CAMERA_HPP
 
 #include "Nodes/Node.hpp"
-#include "NodeGraph.hpp"
 #include "StObject.hpp"
 #include <memory>
 
@@ -31,6 +30,18 @@ namespace st::core
         float getNearClippingPlane() const;
         float getFarClippingPlane() const;
 
+        
+        virtual bool initialize()
+        {
+            return true;
+        }
+
+		virtual bool compute() 
+        {
+            return true;
+        }
+
+
         std::weak_ptr<StObject> create() {return std::weak_ptr<StObject>();}; //TODO clean this up
 
     private:
@@ -50,7 +61,15 @@ namespace st::core
             {
             }
 
+        virtual bool initialize()
+        {
+            return true;
+        }
 
+		virtual bool compute() 
+        {
+            return true;
+        }
 
 
         private:

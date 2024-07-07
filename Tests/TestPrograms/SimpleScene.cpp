@@ -2,6 +2,7 @@
 #include "Core/ContentManager.hpp"
 #include "Core/Scene.hpp"
 #include "Core/Transform.hpp"
+#include "Core/EventSystem.hpp"
 
 #include "Renderer/Grid.hpp"
 #include "Renderer/MaterialManager.hpp"
@@ -18,6 +19,78 @@ using namespace st;
 
 namespace st
 {
+
+	class Command
+	{
+	  public:
+		virtual ~Command() = default;
+		virtual void execute() = 0;
+		virtual void undo() = 0;
+	};
+
+	class CommandManager
+	{
+		public:
+		CommandManager() = default;
+
+		void execute(std::unique_ptr<Command> command)
+		{
+			command->execute();
+			m_undoStack.push_back(std::move(command));
+			m_redoStack.clear();
+		}
+
+		void undo()
+		{
+			if(!m_undoStack.empty())
+			{
+				std::unique_ptr<Command> command = std::move(m_undoStack.back());
+				m_undoStack.pop_back();
+				command->undo();
+				m_redoStack.push_back(std::move(command));
+			}
+		}
+
+		void redo()
+		{
+			if(m_redoStack.empty())
+			{
+				std::unique_ptr<Command> command = std::move(m_redoStack.back());
+				m_redoStack.pop_back();
+				command->execute();
+				m_undoStack.push_back(std::move(command));
+			}
+		}
+
+	  private:
+		std::vector<std::unique_ptr<Command>> m_undoStack;
+		std::vector<std::unique_ptr<Command>> m_redoStack;
+
+	};
+	class CreatePlaneCommand : public Command
+	{
+		public:
+		CreatePlaneCommand(core::ContentManagerHandler contentManager) :
+			m_contentManager(contentManager)
+		{
+		}
+
+		void execute() override
+		{
+			std::shared_ptr<renderer::Plane2> plane = std::make_shared<renderer::Plane2>();
+			plane->initialize();
+			m_contentManager->add(plane);
+		}
+
+		void undo() override
+		{
+			//TODO implement
+			//m_contentManager.remove(m
+		}
+
+	  private:
+		core::ContentManagerHandler m_contentManager;
+	};
 
 	class GuiManager
 	{
@@ -45,7 +118,7 @@ namespace st
 	class Creator
 	{
 	  public:
-		Creator(core::ContentManager& contentManager) :
+		Creator(core::ContentManagerHandler contentManager) :
 			m_contentManager(contentManager)
 		{
 		}
@@ -66,24 +139,22 @@ namespace st
 			return std::weak_ptr<core::Node>{camera};
 		}
 
-		std::weak_ptr<core::Node2> plane(
+		std::weak_ptr<core::Node> plane(
 			[[mayby_unused]] const float width = 1.0f,
 			[[mayby_unused]] const float height = 1.0f)
 		{
-			std::shared_ptr<renderer::Plane2> plane = std::make_shared<renderer::Plane2>();
-			// std::shared_ptr<renderer::Mesh> mesh = std::make_shared<renderer::Mesh>();
+			//Create Plane command
+			std::unique_ptr<CreatePlaneCommand> command = std::make_unique<CreatePlaneCommand>(m_contentManager);
 
-			m_contentManager.add(plane);
-			plane->initialize(); // TODO clean up
-			// m_contentManager.add(mesh);
-			return std::weak_ptr<core::Node2>{plane};
+			//return std::weak_ptr<core::Node>{plane};
+			return std::weak_ptr<core::Node>{};
+
 		}
 
 		std::weak_ptr<renderer::StandardMaterial2> standardMaterial()
 		{
 			std::shared_ptr<renderer::StandardMaterial2> standardMaterial = std::make_shared<renderer::StandardMaterial2>();
 			m_contentManager.add(standardMaterial);
-			standardMaterial->initialize();
 
 			return std::weak_ptr<renderer::StandardMaterial2>{standardMaterial};
 		}
@@ -91,11 +162,10 @@ namespace st
 		std::weak_ptr<renderer::Renderer> renderer(std::weak_ptr<core::Node> camera)
 		{
 			std::shared_ptr<renderer::Renderer> renderer = std::make_shared<renderer::Renderer>();
-			renderer->initialize();
 			m_contentManager.add(renderer);
 
 			//Make material nodes automatically connect to renderer
-			core::NodeGraph& nodeGraph = m_contentManager.getMainNodeGraph();
+			core::NodeGraphHandler nodeGraph = m_contentManager.getMainNodeGraph();
 
 			std::shared_ptr<core::Attribute> targetAttribute = nullptr;
 			for(auto& attribute : renderer->getAttributes())
@@ -129,7 +199,7 @@ namespace st
 		}
 
 	  private:
-		core::ContentManager& m_contentManager;
+		core::ContentManagerHandler m_contentManager;
 	};
 
 	class Transformer
@@ -154,7 +224,7 @@ namespace st
 	{
 	  public:
 		core::ContentManager* m_contentManager;
-		std::weak_ptr<core::Node2> selectedNode;
+		std::weak_ptr<core::Node> selectedNode;
 	};
 
 	class MaterialModifier
@@ -173,7 +243,7 @@ namespace st
 			// Check if mesh node has MeshData output
 
 			std::shared_ptr<renderer::StandardMaterial2> targetMaterial = material.lock();
-			std::shared_ptr<core::Node2> sourceNode = m_context.selectedNode.lock();
+			std::shared_ptr<core::Node> sourceNode = m_context.selectedNode.lock();
 
 			std::shared_ptr<core::Attribute> sourceAttribute = nullptr;
 			std::shared_ptr<core::Attribute> targetAttribute = nullptr;
@@ -268,16 +338,27 @@ namespace st
 	  public:
 		Application(int argc, char* argv[]) :
 			m_app(argc, argv),
-			m_contentManager(),
+			m_eventSystem(),
+			m_contentManager(m_eventSystem),
 			m_guiManager(m_contentManager),
-			m_creator(m_contentManager)
+			m_creator(core::ContentManagerHandler(&m_contentManager))
 		{
 		}
 
+		int init()
+		{
+			m_contentManager.initialize();
+			m_guiManager.initialize();
+
+			return 0;
+		}
+
+
 		int run()
 		{
+
+			
 			// Show all created gui elements if any
-			m_guiManager.initialize();
 			m_guiManager.show();
 
 			return m_app.exec();
@@ -288,7 +369,7 @@ namespace st
 			return m_creator;
 		}
 
-		Modifier modify(std::weak_ptr<core::Node2> node)
+		Modifier modify(std::weak_ptr<core::Node> node)
 		{
 			ModifyContext context;
             context.m_contentManager = &m_contentManager;
@@ -303,6 +384,9 @@ namespace st
 	  private:
 		QApplication m_app;
 
+
+		CommandManager m_commandManager;
+		core::EventSystem m_eventSystem;
 		core::ContentManager m_contentManager;
 		GuiManager m_guiManager;
 
@@ -315,6 +399,7 @@ namespace st
 int main(int argc, char* argv[])
 {
 	Application app(argc, argv);
+	app.init();
 
 	// Add Camera
 	auto camera = app.create()

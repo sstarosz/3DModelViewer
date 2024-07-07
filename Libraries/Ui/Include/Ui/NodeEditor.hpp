@@ -9,7 +9,7 @@
 #include <QAbstractGraphicsShapeItem>
 #include <QGraphicsSceneMouseEvent>
 
-#include "Core/NodeGraph.hpp"
+#include "Core/Nodes/NodeGraph.hpp"
 #include "Core/Nodes/Node.hpp"
 
 #include <print>
@@ -324,7 +324,7 @@ namespace st
 		class NodeItem : public QAbstractGraphicsShapeItem
 		{
 		  public:
-			NodeItem(std::weak_ptr<core::Node2> node,
+			NodeItem(std::weak_ptr<core::Node> node,
 					 QGraphicsItem* parent = nullptr) :
 				QAbstractGraphicsShapeItem(parent),
 				m_node(node)
@@ -407,13 +407,13 @@ namespace st
 				return m_attributes;
 			}
 
-			std::weak_ptr<core::Node2> getNode() const
+			std::weak_ptr<core::Node> getNode() const
 			{
 				return m_node;
 			}
 
 		  private:
-			std::weak_ptr<core::Node2> m_node;
+			std::weak_ptr<core::Node> m_node;
 			std::vector<NodeAttribute*> m_attributes;
 			QString m_nodeName;
 
@@ -672,7 +672,7 @@ namespace st
 		  public:
 			explicit NodeScene(QObject* parent = nullptr);
 
-			void setNodeGraph(core::NodeGraph nodeGraph)
+			void setNodeGraph(core::NodeGraphHandler nodeGraph)
 			{
 				m_nodeGraph = nodeGraph;
 
@@ -706,7 +706,7 @@ namespace st
 			}
 
 
-			void addNode(std::weak_ptr<core::Node2> node)
+			void addNode(std::weak_ptr<core::Node> node)
 			{
 				//TODO refactor
 				static int32_t nodeXPosition = 100;
@@ -727,7 +727,7 @@ namespace st
 			}
 
 
-			void removeNode(std::weak_ptr<core::Node2> node)
+			void removeNode(std::weak_ptr<core::Node> node)
 			{
 			}
 
@@ -818,7 +818,7 @@ namespace st
 
 		  private:
 			QGraphicsView* m_view;
-			core::NodeGraph m_nodeGraph;
+			core::NodeGraphHandler m_nodeGraph;
 
 			PlugConnection* m_pTempConnection = nullptr;
 			std::vector<PlugConnection*> m_connections;

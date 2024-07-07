@@ -1,7 +1,7 @@
 #ifndef ST_RENDERER_MATERIAL_HPP
 #define ST_RENDERER_MATERIAL_HPP
 
-#include "Core/NodeGraph.hpp"
+#include "Core/Nodes/Node.hpp"
 
 #include <vulkan/vulkan.hpp>
 #include <vector>

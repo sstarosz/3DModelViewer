@@ -1,7 +1,7 @@
 #ifndef ST_CORE_TRANSFORM_HPP
 #define ST_CORE_TRANSFORM_HPP
 
-#include "Core/NodeGraph.hpp"
+#include "Core/Nodes/Node.hpp"
 
 #include <memory>
 #include <Eigen/Core>
@@ -26,6 +26,15 @@ namespace st::core
         Transform& operator=(const Transform&) = delete;
         Transform& operator=(Transform&&);
 
+        bool initialize() override
+        {
+            return true;
+        }
+
+		bool compute() override
+		{
+			return true;
+		}
 
         Eigen::Vector3f getTranslation() const;
         void setTranslation(const Eigen::Vector3f& translation);

@@ -1,7 +1,7 @@
 #include "NodeEditor.hpp"
 #include "Core/ContentManager.hpp"
 #include "Core/Nodes/Node.hpp"
-#include "Core/NodeGraph.hpp"
+#include "Core/Nodes/NodeGraph.hpp"
 #include <QGraphicsScene>
 #include <QMouseEvent>
 #include <print>
@@ -81,10 +81,7 @@ NodeEditor::NodeEditor(core::ContentManager& contentManager, QWidget* parent):
 
 	void NodeEditor::setupScene()
     {
-        auto nodeGraph = m_contentManager.getMainNodeGraph();
-        auto nodes = nodeGraph.getNodes();
-        std::println("!!!NodeGraph size: {}", nodes.size());
-
+        core::NodeGraphHandler nodeGraph = m_contentManager.getMainNodeGraph();
         m_scene->setNodeGraph(nodeGraph);
     }
 

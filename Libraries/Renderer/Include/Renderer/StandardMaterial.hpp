@@ -4,7 +4,6 @@
 #include "GraphicsPiplineFactory.hpp"
 #include "Material.hpp"
 #include "Renderable.hpp"
-#include "Core/NodeGraph.hpp"
 #include "Core/Nodes/Node.hpp"
 #include "Core/Mesh.hpp"
 
@@ -79,7 +78,7 @@ namespace st::renderer
 		};
 	};
 
-	class StandardMaterial2 : public core::Node2
+	class StandardMaterial2 : public core::Node
 	{
 		public:
 		StandardMaterial2()

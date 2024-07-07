@@ -2,7 +2,6 @@
 #define ST_GEOMETRY_PLANE_HPP
 
 #include "Core/Mesh.hpp"
-#include "Core/NodeGraph.hpp"
 #include "Core/Nodes/Node.hpp"
 #include <Eigen/Core>
 #include <vector>
@@ -49,7 +48,7 @@ namespace st::renderer
 		std::vector<uint32_t> m_indices;
 	};
 
-	class Plane2 : public core::Node2
+	class Plane2 : public core::Node
 	{
 	  public:
 		Plane2()
