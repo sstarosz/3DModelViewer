@@ -5,6 +5,9 @@
 
 #include <memory>
 #include <unordered_map>
+#include <functional>
+
+#include <spdlog/spdlog.h>
 
 namespace st::core
 {
@@ -63,7 +66,7 @@ namespace st::core
     public:
         EventSystem()
         {
-
+			spdlog::info("EventSystem::EventSystem()");
         }
 
         template<typename Listener>
@@ -87,6 +90,28 @@ namespace st::core
         //class PrivateEventSystem;
         //std::unique_ptr<PrivateEventSystem> m_privateEventSystem;
     };
+
+	class EventSystemHandler
+	{
+	  public:
+		EventSystemHandler() :
+			m_eventSystem(nullptr)
+		{
+		}
+
+		EventSystemHandler(EventSystem* eventSystem) :
+			m_eventSystem(eventSystem)
+		{
+		}
+
+        EventSystem& operator->()
+        {
+            return *m_eventSystem;
+        }
+
+	  private:
+		EventSystem* m_eventSystem;
+	};
 
 } // namespace st::core
 

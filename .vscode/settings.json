@@ -84,6 +84,8 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "qgraphicsscene": "cpp",
-        "qscrollbar": "cpp"
+        "qscrollbar": "cpp",
+        "bitset": "cpp",
+        "source_location": "cpp"
     }
 }

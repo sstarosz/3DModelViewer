@@ -46,6 +46,7 @@ namespace st::renderer
 
         bool compute() override
 		{
+			spdlog::info("Renderer::compute()");
 			//TODO cleanup
 			return true;
 		}

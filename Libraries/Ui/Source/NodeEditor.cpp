@@ -8,6 +8,8 @@
 #include <QScrollArea>
 #include <QScrollBar>
 
+#include <spdlog/spdlog.h>
+
 namespace st::ui
 {
 
@@ -16,7 +18,6 @@ namespace st::ui
 /*------------------------------------*/
 NodeScene::NodeScene(QObject* parent) :
 	QGraphicsScene(parent),
-	m_view(nullptr),
 	currentLineStart(),
 	currentLineEnd(),
 	m_state(State::eIdle)
@@ -53,10 +54,8 @@ void NodeScene::drawBackground(QPainter* painter, const QRectF& rect)
 }
 
 /*------------------------------------*/
-/*-----------NodeEditor---------------*/
+/*---------MARK:NodeEditor------------*/
 /*------------------------------------*/
-
-
 NodeEditor::NodeEditor(core::ContentManager& contentManager, QWidget* parent):
     QGraphicsView(parent),
     m_scene(new NodeScene(this)),
@@ -69,14 +68,13 @@ NodeEditor::NodeEditor(core::ContentManager& contentManager, QWidget* parent):
         setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
         setScene(m_scene);
+        centerOn(0,0);
     }
 
     void NodeEditor::initialize()
     {
-        m_scene->setView(this);
+        //If we have a node graph, display it
         setupScene();
-        centerOn(0,0);
-
     }
 
 	void NodeEditor::setupScene()
@@ -142,5 +140,12 @@ NodeEditor::NodeEditor(core::ContentManager& contentManager, QWidget* parent):
 	{
         QGraphicsView::resizeEvent(event);
 	}
+
+    void NodeEditor::showEvent(QShowEvent* event)
+    {
+        spdlog::info("NodeEditor::showEvent()");
+        m_scene->updateScene();
+        QGraphicsView::showEvent(event);
+    }
 
 } // namespace st::ui

@@ -23,6 +23,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
                                             Renderer
                                             Ui
                                             Qt6::Widgets
+                                            spdlog::spdlog
                                             )
 
 Deploy_QT(${PROJECT_NAME})

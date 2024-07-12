@@ -8,6 +8,8 @@
 #include <print>
 #include <vector>
 
+#include <spdlog/spdlog.h>
+
 namespace st::core
 {
 
@@ -18,18 +20,19 @@ namespace st::core
 			m_eventSystem(eventSystem),
 			m_nodeGraph(eventSystem)
 		{
+			spdlog::info("ContentManager::ContentManager()");
 		}
 
 		void initialize()
 		{
 			// m_nodeGraph.initialize();
-			std::println("ContentManager::initialize()");
-			std::println("Size of m_nodeGraph.getNodes(): {}", m_nodeGraph.getNodes().size());
+			spdlog::info("ContentManager::initialize()");
 
-			for (auto& node : m_nodeGraph.getNodes())
-			{
-				node->initialize();
-			}
+			//At this time all nodes that are registered with the content manager should be initialized
+			spdlog::info("ContentManager::initialize() - Number of registered nodes: {}", NodeRegistry::getInstance().getNodeInitializers().size());
+
+
+			spdlog::info("ContentManager::initialize() - Done");
 		}
 
 		void add(std::weak_ptr<core::Node> node)
@@ -45,6 +48,7 @@ namespace st::core
 	  private:
 		EventSystem& m_eventSystem;
 		NodeGraph m_nodeGraph;
+		//NodeRegistry m_nodeRegistry;
 	};
 
 

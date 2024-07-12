@@ -110,6 +110,8 @@ namespace st::renderer
 
 		bool compute() override
 		{
+			spdlog::info("StandardMaterial2::compute()");
+
 			return true;
 		}
 

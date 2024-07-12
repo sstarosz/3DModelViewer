@@ -1,19 +1,20 @@
 #ifndef ST_UI_NODEEDITOR_HPP
 #define ST_UI_NODEEDITOR_HPP
 
+#include <QAbstractGraphicsShapeItem>
 #include <QGraphicsItem>
 #include <QGraphicsScene>
+#include <QGraphicsSceneMouseEvent>
 #include <QGraphicsView>
 #include <QPainterPath>
 #include <QStyleOptionGraphicsItem>
-#include <QAbstractGraphicsShapeItem>
-#include <QGraphicsSceneMouseEvent>
+#include <QShowEvent>
 
-#include "Core/Nodes/NodeGraph.hpp"
 #include "Core/Nodes/Node.hpp"
+#include "Core/Nodes/NodeGraph.hpp"
 
-#include <print>
 #include <algorithm>
+#include <print>
 #include <ranges>
 
 namespace st
@@ -26,11 +27,32 @@ namespace st
 
 	namespace ui
 	{
+		/*------------------------------------*/
+		/*------------Utility-----------------*/
+		/*------------------------------------*/
+		struct WeakPtrHash
+		{
+			template <typename T>
+			std::size_t operator() (std::weak_ptr<T> const& wp) const
+			{
+				auto sp = wp.lock(); // Convert to shared_ptr and use its standard hasher
+				return std::hash<std::shared_ptr<T>>{}(sp);
+			}
+		};
+
+		struct WeakPtrEqual
+		{
+			template <typename T>
+			bool operator() (std::weak_ptr<T> const& lhs, std::weak_ptr<T> const& rhs) const
+			{
+				return lhs.lock() == rhs.lock(); // Compare underlying shared_ptr objects
+			}
+		};
+
 		class NodePlug;
 		class NodeAttribute;
 		class NodeItem;
 		class NodeScene;
-
 
 		// #373B3E
 		constexpr QColor NodeColor = QColor(55, 59, 62);
@@ -89,7 +111,6 @@ namespace st
 
 				setBrush(nodeConnectionColor);
 				setPen(Qt::NoPen);
-
 			}
 
 			QPainterPath createConnectionPath()
@@ -98,23 +119,22 @@ namespace st
 				// Start at the first point
 				path.moveTo(0, 12);
 
-				//Smoth curve
+				// Smoth curve
 				path.cubicTo(QPointF(0.0F, 9.0F), QPointF(3.0F, 2.0F), QPointF(15, 0));
 
-				if(isConnected() || isUnderMouse() || m_isConnecting)
+				if (isConnected() || isUnderMouse() || m_isConnecting)
 				{
 					path.lineTo(21, 0);
 					path.lineTo(21, 25);
 				}
 
-				//Line down
+				// Line down
 				path.lineTo(15, 25);
 
-
-				//Smoth curve
+				// Smoth curve
 				path.cubicTo(QPointF(3.0F, 22.0F), QPointF(0.0F, 17.0F), QPointF(0, 14));
 
-				//Line close
+				// Line close
 				path.lineTo(0, 12);
 
 				path.closeSubpath();
@@ -164,7 +184,7 @@ namespace st
 
 			QPointF getPlugCenterPosition() const
 			{
-				//TODO refactor
+				// TODO refactor
 				return scenePos() + QPointF(0, 12.5);
 			}
 
@@ -192,14 +212,15 @@ namespace st
 			static constexpr int32_t nodeLabelHeight = 25;
 
 			// Colors
-			//#585F63
+			// #585F63
 			static constexpr QColor nodeLabelColor = QColor(88, 95, 99);
-			//#87E5CF
-			static constexpr QColor nodeConnectionColor = QColor(85, 209, 208);;
+			// #87E5CF
+			static constexpr QColor nodeConnectionColor = QColor(85, 209, 208);
+			;
 
 		  public:
 			NodeAttribute(std::shared_ptr<core::Attribute> attribute,
-				QGraphicsItem* parent = nullptr) :
+						  QGraphicsItem* parent = nullptr) :
 				QAbstractGraphicsShapeItem(parent),
 				m_attribute(attribute),
 				m_pInputPlug(nullptr),
@@ -210,17 +231,16 @@ namespace st
 				setBrush(nodeLabelColor);
 				setPen(Qt::NoPen);
 
-
-				//Draw connection Input
-				if(m_attribute->isWritable())
+				// Draw connection Input
+				if (m_attribute->isWritable())
 				{
 					NodePlug* nodePlug = new NodePlug(this);
 					nodePlug->setPos(0, 0);
 					m_pInputPlug = nodePlug;
 				}
 
-				//Draw Connection Output
-				if(m_attribute->isReadable())
+				// Draw Connection Output
+				if (m_attribute->isReadable())
 				{
 					NodePlug* nodePlug = new NodePlug(this);
 					QTransform transform;
@@ -229,10 +249,9 @@ namespace st
 					nodePlug->setTransform(transform);
 					m_pOutputPlug = nodePlug;
 				}
-
 			}
 
-			virtual ~NodeAttribute() override {};
+			virtual ~NodeAttribute() override{};
 
 			QRectF boundingRect() const override
 			{
@@ -240,14 +259,13 @@ namespace st
 			}
 
 			void paint(QPainter* painter,
-					   [[maybe_unused]]const QStyleOptionGraphicsItem* option,
-					   [[maybe_unused]]QWidget* widget) override
+					   [[maybe_unused]] const QStyleOptionGraphicsItem* option,
+					   [[maybe_unused]] QWidget* widget) override
 			{
-				//TODO color of connection that depend on type of the handler
-				//TODO connection and disconnection animation
-				
+				// TODO color of connection that depend on type of the handler
+				// TODO connection and disconnection animation
 
-				//Draw Label
+				// Draw Label
 				painter->setPen(pen());
 				painter->setBrush(brush());
 				painter->drawRect(20,
@@ -255,7 +273,7 @@ namespace st
 								  nodeLabelWidth,
 								  nodeLabelHeight);
 
-				//Draw connection end
+				// Draw connection end
 				painter->setBrush(nodeConnectionColor);
 
 				// Draw connection input
@@ -263,8 +281,6 @@ namespace st
 
 				// Draw connection output
 				painter->drawRect(295, 0, 5, 25);
-
-
 
 				// Draw text
 				painter->setPen(Qt::white);
@@ -274,15 +290,11 @@ namespace st
 								  Qt::AlignLeft | Qt::AlignVCenter,
 								  QString::fromStdString(m_attribute->getName()));
 
+				// If int or float
+				// Create input bar
 
-				//If int or float
-				//Create input bar
-
-
-
-				//If bool
-				//Create switch
-
+				// If bool
+				// Create switch
 			}
 
 			void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override
@@ -296,7 +308,6 @@ namespace st
 				update();
 				QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
 			}
-
 
 			NodePlug* getInputPlug() const
 			{
@@ -315,7 +326,7 @@ namespace st
 				return m_attribute;
 			}
 
-		private:
+		  private:
 			std::shared_ptr<core::Attribute> m_attribute; // Handler to Attribute
 			NodePlug* m_pInputPlug;
 			NodePlug* m_pOutputPlug;
@@ -342,19 +353,19 @@ namespace st
 
 					uint32_t inputYOffset = 55;
 					auto attributes = nodePtr->getAttributes();
-					auto isOutput = [](std::shared_ptr<core::Attribute> attribute){ return attribute->isReadable();};
-					auto isInput = [](std::shared_ptr<core::Attribute> attribute){ return attribute->isWritable();};
+					auto isOutput = [](std::shared_ptr<core::Attribute> attribute) { return attribute->isReadable(); };
+					auto isInput = [](std::shared_ptr<core::Attribute> attribute) { return attribute->isWritable(); };
 
-					//for (auto outputAttribute : attributes | std::views::filter(isOutput))
+					// for (auto outputAttribute : attributes | std::views::filter(isOutput))
 					//{
 					//	NodeAttribute* attribute = new NodeAttribute(outputAttribute, this);
 					//	attribute->setZValue(1);
 					//	attribute->setPos(-10, inputYOffset);
 					//	m_attributes.push_back(attribute);
 					//	inputYOffset += 29;
-					//}
+					// }
 
-					//TODO output should be added first
+					// TODO output should be added first
 
 					for (auto inputAttribute : attributes)
 					{
@@ -367,7 +378,7 @@ namespace st
 				}
 			}
 
-			virtual ~NodeItem() override {};
+			virtual ~NodeItem() override{};
 
 			virtual QRectF boundingRect() const override
 			{
@@ -375,8 +386,8 @@ namespace st
 			}
 
 			virtual void paint(QPainter* painter,
-					   const QStyleOptionGraphicsItem* option,
-					   QWidget* widget) override
+							   const QStyleOptionGraphicsItem* option,
+							   QWidget* widget) override
 			{
 				Q_UNUSED(option);
 				Q_UNUSED(widget);
@@ -385,20 +396,19 @@ namespace st
 				painter->setPen(pen());
 				painter->setBrush(brush());
 				painter->drawRoundedRect(0, 0, 300, 400, 20, 20);
-
 			}
 
 			void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override
 			{
-				//setPen(QPen(Qt::red, 4));
-				//update();
+				// setPen(QPen(Qt::red, 4));
+				// update();
 				QAbstractGraphicsShapeItem::hoverEnterEvent(event);
 			}
 
 			void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override
 			{
-				//setPen(QPen(NodeBorderColor, 4));
-				//update();
+				// setPen(QPen(NodeBorderColor, 4));
+				// update();
 				QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
 			}
 
@@ -424,119 +434,116 @@ namespace st
 		class PlugConnection : public QAbstractGraphicsShapeItem
 		{
 			static constexpr QColor nodeConnectionColor = QColor(85, 209, 208);
-			
-			//Position of the plug
+
+			// Position of the plug
 			static constexpr QPointF plugPosition = QPointF(0.0f, 12.5f);
-			
-		public:
-		  explicit PlugConnection(NodePlug* startPlug,
-								  QGraphicsItem* parent = nullptr) :
-			  QAbstractGraphicsShapeItem(parent),
-			  m_startPos(startPlug->scenePos() + plugPosition),
-			  m_endPos(startPlug->scenePos() + plugPosition),
-			  m_startPlug(startPlug),
-			  m_endPlug(nullptr)
-		  {
-			  setAcceptHoverEvents(true);
-		  }
 
-		  PlugConnection(NodePlug* startPlug,
-		  				 NodePlug* endPlug,
-						 QGraphicsItem* parent = nullptr) :
-			  QAbstractGraphicsShapeItem(parent),
-			  m_startPos(startPlug->scenePos() + plugPosition),
-			  m_endPos(startPlug->scenePos() + plugPosition),
-			  m_startPlug(startPlug),
-			  m_endPlug(endPlug)
-		  {
-			  setAcceptHoverEvents(true);
-			  finalizeConnection(endPlug);
-		  }
+		  public:
+			explicit PlugConnection(NodePlug* startPlug,
+									QGraphicsItem* parent = nullptr) :
+				QAbstractGraphicsShapeItem(parent),
+				m_startPos(startPlug->scenePos() + plugPosition),
+				m_endPos(startPlug->scenePos() + plugPosition),
+				m_startPlug(startPlug),
+				m_endPlug(nullptr)
+			{
+				setAcceptHoverEvents(true);
+			}
 
-		  QRectF boundingRect() const override
-		  {
-			  return QRectF(m_startPos, m_endPos);
-		  }
+			PlugConnection(NodePlug* startPlug,
+						   NodePlug* endPlug,
+						   QGraphicsItem* parent = nullptr) :
+				QAbstractGraphicsShapeItem(parent),
+				m_startPos(startPlug->scenePos() + plugPosition),
+				m_endPos(startPlug->scenePos() + plugPosition),
+				m_startPlug(startPlug),
+				m_endPlug(endPlug)
+			{
+				setAcceptHoverEvents(true);
+				finalizeConnection(endPlug);
+			}
 
-		  void paint(QPainter* painter,
-					 const QStyleOptionGraphicsItem* option,
-					 QWidget* widget) override
-		  {
-			  Q_UNUSED(option);
-			  Q_UNUSED(widget);
+			QRectF boundingRect() const override
+			{
+				return QRectF(m_startPos, m_endPos);
+			}
 
-			  // TODO change line to bezier curve
-			  painter->setPen(QPen(nodeConnectionColor, 3));
+			void paint(QPainter* painter,
+					   const QStyleOptionGraphicsItem* option,
+					   QWidget* widget) override
+			{
+				Q_UNUSED(option);
+				Q_UNUSED(widget);
 
-			  // Create a QPainterPath starting at m_startPos
-			  QPainterPath path(m_startPos);
+				// TODO change line to bezier curve
+				painter->setPen(QPen(nodeConnectionColor, 3));
 
-			  // Calculate midpoints for control points
-			  QPointF midPoint1 = QPointF((m_startPos.x() + m_endPos.x()) / 2, m_startPos.y());
-			  QPointF midPoint2 = QPointF((m_startPos.x() + m_endPos.x()) / 2, m_endPos.y());
+				// Create a QPainterPath starting at m_startPos
+				QPainterPath path(m_startPos);
 
-			  // Depending on the relative position of start and end, adjust the control points
-			  if (m_startPos.y() < m_endPos.y())
-			  {
-				  // For a downward "S" shape
-				  path.cubicTo(midPoint1, QPointF(midPoint1.x(), midPoint1.y() + (m_endPos.y() - m_startPos.y()) / 3), QPointF((m_startPos.x() + m_endPos.x()) / 2, (m_startPos.y() + m_endPos.y()) / 2));
-				  path.cubicTo(QPointF(midPoint2.x(), midPoint2.y() - (m_endPos.y() - m_startPos.y()) / 3), midPoint2, m_endPos);
-			  }
-			  else
-			  {
-				  // For an upward "S" shape
-				  path.cubicTo(midPoint1, QPointF(midPoint1.x(), midPoint1.y() - (m_startPos.y() - m_endPos.y()) / 3), QPointF((m_startPos.x() + m_endPos.x()) / 2, (m_startPos.y() + m_endPos.y()) / 2));
-				  path.cubicTo(QPointF(midPoint2.x(), midPoint2.y() + (m_startPos.y() - m_endPos.y()) / 3), midPoint2, m_endPos);
-			  }
+				// Calculate midpoints for control points
+				QPointF midPoint1 = QPointF((m_startPos.x() + m_endPos.x()) / 2, m_startPos.y());
+				QPointF midPoint2 = QPointF((m_startPos.x() + m_endPos.x()) / 2, m_endPos.y());
 
-			  // Draw the path
-			  painter->drawPath(path);
-		  }
+				// Depending on the relative position of start and end, adjust the control points
+				if (m_startPos.y() < m_endPos.y())
+				{
+					// For a downward "S" shape
+					path.cubicTo(midPoint1, QPointF(midPoint1.x(), midPoint1.y() + (m_endPos.y() - m_startPos.y()) / 3), QPointF((m_startPos.x() + m_endPos.x()) / 2, (m_startPos.y() + m_endPos.y()) / 2));
+					path.cubicTo(QPointF(midPoint2.x(), midPoint2.y() - (m_endPos.y() - m_startPos.y()) / 3), midPoint2, m_endPos);
+				}
+				else
+				{
+					// For an upward "S" shape
+					path.cubicTo(midPoint1, QPointF(midPoint1.x(), midPoint1.y() - (m_startPos.y() - m_endPos.y()) / 3), QPointF((m_startPos.x() + m_endPos.x()) / 2, (m_startPos.y() + m_endPos.y()) / 2));
+					path.cubicTo(QPointF(midPoint2.x(), midPoint2.y() + (m_startPos.y() - m_endPos.y()) / 3), midPoint2, m_endPos);
+				}
 
-		  void updatePosition(QPointF endPos)
-		  {
-			  m_endPos = endPos;
+				// Draw the path
+				painter->drawPath(path);
+			}
 
-			  prepareGeometryChange();
-		  }
+			void updatePosition(QPointF endPos)
+			{
+				m_endPos = endPos;
 
-		  void finalizeConnection(NodePlug* endPlug)
-		  {
-			  m_endPos = endPlug->scenePos() + plugPosition;
-			  m_endPlug = endPlug;
+				prepareGeometryChange();
+			}
 
-			  m_startPlug->endConnection();
-			  m_endPlug->endConnection();
+			void finalizeConnection(NodePlug* endPlug)
+			{
+				m_endPos = endPlug->scenePos() + plugPosition;
+				m_endPlug = endPlug;
 
-			  m_startPlug->setConnected(true);
-			  m_endPlug->setConnected(true);
-		  }
+				m_startPlug->endConnection();
+				m_endPlug->endConnection();
 
-		  NodePlug* getSourcePlug() const
-		  {
-			  return m_startPlug;
-		  }
+				m_startPlug->setConnected(true);
+				m_endPlug->setConnected(true);
+			}
 
-		  NodePlug* getTargetPlug() const
-		  {
-			  return m_endPlug;
-		  }
+			NodePlug* getSourcePlug() const
+			{
+				return m_startPlug;
+			}
 
+			NodePlug* getTargetPlug() const
+			{
+				return m_endPlug;
+			}
 
-		  
-
-		private:
-		  QPointF m_startPos;
-		  QPointF m_endPos;
-		  NodePlug* m_startPlug;
-		  NodePlug* m_endPlug;
+		  private:
+			QPointF m_startPos;
+			QPointF m_endPos;
+			NodePlug* m_startPlug;
+			NodePlug* m_endPlug;
 		};
 
 		class NodeConnection : public QAbstractGraphicsShapeItem
 		{
 			static constexpr QColor nodeConnectionColor = QColor(85, 209, 208);
-			
-			//Position of the plug
+
+			// Position of the plug
 			static constexpr QPointF plugPosition = QPointF(0.0f, 12.5f);
 
 		  public:
@@ -610,7 +617,7 @@ namespace st
 				painter->setPen(QPen(nodeConnectionColor, 3));
 
 				// Create a QPainterPath starting at m_startPos
-			  	QPainterPath path(m_startPos);
+				QPainterPath path(m_startPos);
 
 				// Calculate midpoints for control points
 				QPointF midPoint1 = QPointF((m_startPos.x() + m_endPos.x()) / 2, m_startPos.y());
@@ -634,19 +641,17 @@ namespace st
 				painter->drawPath(path);
 			}
 
-			private:
+		  private:
 			std::weak_ptr<core::Connection> m_connection;
 			QPointF m_startPos;
 			QPointF m_endPos;
 		};
-
 
 		inline NodeItem* NodeAttribute::getParentNode() const
 		{
 			return dynamic_cast<NodeItem*>(parentItem());
 		}
 
-		
 		inline NodeAttribute* NodePlug::getParentAttribute() const
 		{
 			return dynamic_cast<NodeAttribute*>(parentItem());
@@ -654,7 +659,7 @@ namespace st
 
 		/**
 		 * @brief Represent node graph in the scene
-		 * 
+		 *
 		 */
 		class NodeScene : public QGraphicsScene
 		{
@@ -668,53 +673,51 @@ namespace st
 				eNrOfStates
 			};
 
-
 		  public:
 			explicit NodeScene(QObject* parent = nullptr);
 
 			void setNodeGraph(core::NodeGraphHandler nodeGraph)
 			{
 				m_nodeGraph = nodeGraph;
-
-				updateScene();
-				
-			}
-
-			void setView(QGraphicsView* view)
-			{
-				m_view = view;
 			}
 
 			void updateScene()
 			{
-				//TODO
-				//Check if the node is already in the scene
-				//If not add it
-				for(auto node : m_nodeGraph.getNodes())
+				// TODO
+				// Check if the node is already in the scene
+				// If not add it
+				for (auto node : m_nodeGraph.getNodes())
 				{
 					addNode(node);
 				}
 
-				//TODO
+				// TODO
 				std::println("Connections: {}", m_nodeGraph.getConnections().size());
-				for(auto connection : m_nodeGraph.getConnections())
+				for (auto connection : m_nodeGraph.getConnections())
 				{
-					//TODO
+					// TODO
 					addConnection(connection);
 				}
-
 			}
-
 
 			void addNode(std::weak_ptr<core::Node> node)
 			{
-				//TODO refactor
+				// Check if the node is already in the scene
+				if(m_nodes.find(node) != m_nodes.end())
+				{
+					return;
+				}
+				
+				
+				// TODO refactor
 				static int32_t nodeXPosition = 100;
 				// auto nodeItem = new NodeItem(node);
 				// addItem(nodeItem);
 				NodeItem* nodeItem = new NodeItem(node);
-            	nodeItem->setPos(nodeXPosition, -100);
+				nodeItem->setPos(nodeXPosition, -100);
 				addItem(nodeItem);
+
+				m_nodes[node] = nodeItem;
 
 				nodeXPosition += 500;
 			}
@@ -726,32 +729,28 @@ namespace st
 				connectionItem->initialize();
 			}
 
-
 			void removeNode(std::weak_ptr<core::Node> node)
 			{
 			}
 
 			void drawBackground(QPainter* painter, const QRectF& rect) override;
 
-
-
 			void onConnectionStart(NodePlug* plug)
 			{
 				m_state = State::eConnecting;
 				plug->beginConnection();
 				m_pTempConnection = new PlugConnection(plug, plug);
-
 			}
 
 			void mousePressEvent(QGraphicsSceneMouseEvent* event) override
 			{
 				if (QGraphicsItem* item = itemAt(event->scenePos(), QTransform()))
 				{
-					if (auto nodePlug = dynamic_cast<NodePlug*>(item)) //TODO limit to only left click
+					if (auto nodePlug = dynamic_cast<NodePlug*>(item)) // TODO limit to only left click
 					{
 						onConnectionStart(nodePlug);
 					}
-				
+
 					update();
 				}
 
@@ -760,12 +759,12 @@ namespace st
 
 			void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override
 			{
-				if(m_state == State::eConnecting)
+				if (m_state == State::eConnecting)
 				{
 					currentLineEnd = event->scenePos();
 					m_pTempConnection->updatePosition(currentLineEnd);
 
-					if(!items().contains(m_pTempConnection)) //TODO check if it is needed
+					if (!items().contains(m_pTempConnection)) // TODO check if it is needed
 					{
 						addItem(m_pTempConnection);
 					}
@@ -773,16 +772,15 @@ namespace st
 					update();
 				}
 
-
 				QGraphicsScene::mouseMoveEvent(event);
 			}
 
 			void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override
 			{
-				if(m_state == State::eConnecting)
+				if (m_state == State::eConnecting)
 				{
 					QGraphicsItem* item = itemAt(event->scenePos(), QTransform());
-					if(auto nodePlug = dynamic_cast<NodePlug*>(item))
+					if (auto nodePlug = dynamic_cast<NodePlug*>(item))
 					{
 						m_pTempConnection->finalizeConnection(nodePlug);
 
@@ -791,15 +789,15 @@ namespace st
 						NodeItem* sourceNode = sourcePlug->getParentAttribute()->getParentNode();
 						NodeItem* targetNode = targetPlug->getParentAttribute()->getParentNode();
 
-						//m_nodeGraph.addConnection(
+						// m_nodeGraph.addConnection(
 						//	sourceNode->getNode(),
 						//	sourcePlug->getParentAttribute()->getHandler(),
 						//	targetNode->getNode(),
 						//	targetPlug->getParentAttribute()->getHandler()
 						//)
-//
-//
-						//m_connections.push_back(m_pTempConnection);
+						//
+						//
+						// m_connections.push_back(m_pTempConnection);
 						update();
 					}
 					else
@@ -817,8 +815,8 @@ namespace st
 			}
 
 		  private:
-			QGraphicsView* m_view;
 			core::NodeGraphHandler m_nodeGraph;
+			std::unordered_map<std::weak_ptr<core::Node>, NodeItem*, WeakPtrHash, WeakPtrEqual> m_nodes;
 
 			PlugConnection* m_pTempConnection = nullptr;
 			std::vector<PlugConnection*> m_connections;
@@ -844,6 +842,7 @@ namespace st
 			void wheelEvent(QWheelEvent* event) override;
 
 			void resizeEvent(QResizeEvent* event) override;
+			void showEvent(QShowEvent* event) override;
 
 		  private:
 			void setupScene();

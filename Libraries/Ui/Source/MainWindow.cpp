@@ -8,12 +8,16 @@
 #include "NodeEditor.hpp"
 #include "Core/ContentManager.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace st::ui
 {
 	MainWindow::MainWindow(st::core::ContentManager& contentManager, QWidget* parent, Qt::WindowFlags flags):
 		QMainWindow(parent, flags),
 		m_contentManager(contentManager)
 	{
+		spdlog::info("MainWindow::MainWindow()");
+
 		setWindowTitle("StModelViewer");
 		setContentsMargins(0, 0, 0, 0);
 
@@ -40,11 +44,12 @@ namespace st::ui
 		centralLayout->addWidget(new QLabel("Hello World!"));
 
 		setCentralWidget(centralWidget);
-		showMaximized();
+		setWindowState(Qt::WindowMaximized);
 	}
 
 	void MainWindow::initialize()
 	{
+		spdlog::info("MainWindow::initialize()");
 		m_nodeEditor->initialize();
 	}
 

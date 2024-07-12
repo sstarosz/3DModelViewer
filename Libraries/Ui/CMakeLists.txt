@@ -46,6 +46,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
                         Renderer
                         Core 
                         Vulkan::Vulkan
+                        spdlog::spdlog
                      )
 
 
