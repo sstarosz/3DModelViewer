@@ -14,6 +14,8 @@
 #include <unordered_map>
 #include <functional>
 
+#include <spdlog/spdlog.h>
+
 namespace st::core
 {
 	template <typename Type>
@@ -514,7 +516,12 @@ namespace st::core
 
 		};
 
-		Node() = default;
+		Node():
+			m_name(""),
+			m_state(NodeState::eUninitialized)
+		{
+		}
+		
 		virtual ~Node() = default;
 
 		void defineNode(const std::string& name)
@@ -568,6 +575,16 @@ namespace st::core
 		NodeState getState() const
 		{
 			return m_state;
+		}
+
+		bool isDirty() const
+		{
+			return m_state == NodeState::eDirty;
+		}
+
+		bool isUninitialized() const
+		{
+			return m_state == NodeState::eUninitialized;
 		}
 
 	  private:

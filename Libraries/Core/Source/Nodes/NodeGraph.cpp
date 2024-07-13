@@ -35,6 +35,14 @@ namespace st::core
     void NodeGraph::evaluate()
     {
         // TODO
+        for(auto& node : m_nodes)
+        {
+            if(node->isUninitialized() || node->isDirty())
+            {
+                node->compute();
+            }
+        }
+
     }
 
 	std::vector<std::shared_ptr<Node>> NodeGraph::getNodes() const

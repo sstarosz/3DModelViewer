@@ -35,9 +35,10 @@ namespace st::core
 			spdlog::info("ContentManager::initialize() - Done");
 		}
 
-		void add(std::weak_ptr<core::Node> node)
+		void run()
 		{
-			m_nodeGraph.addNode(node.lock());
+			spdlog::info("ContentManager::run()");
+			m_nodeGraph.evaluate();
 		}
 
 		NodeGraphHandler getMainNodeGraph()

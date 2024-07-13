@@ -146,7 +146,7 @@ namespace st
 		{
 			m_plane = std::make_shared<renderer::Plane>();
 			m_plane->initialize();
-			m_contentManager->add(m_plane);
+			m_contentManager->getMainNodeGraph().addNode(m_plane);
 		}
 
 		void undo() override
@@ -178,7 +178,7 @@ namespace st
 		{
 			m_standardMaterial = std::make_shared<renderer::StandardMaterial2>();
 			m_standardMaterial->initialize();
-			m_contentManager->add(m_standardMaterial);
+			m_contentManager->getMainNodeGraph().addNode(m_standardMaterial);
 		}
 
 		void undo() override
@@ -209,7 +209,7 @@ namespace st
 		{
 			m_renderer = std::make_shared<renderer::Renderer>();
 			m_renderer->initialize();
-			m_contentManager->add(m_renderer);
+			m_contentManager->getMainNodeGraph().addNode(m_renderer);
 
 			//Make material nodes automatically connect to renderer
 			core::NodeGraphHandler nodeGraph = m_contentManager->getMainNodeGraph();
@@ -590,7 +590,9 @@ namespace st
 		int run()
 		{	
 			spdlog::info("Application::run()");	
-			// Show all created gui elements if any
+
+			m_contentManager.run();
+			
 			m_guiManager.show();
 
 			return m_app.exec();
