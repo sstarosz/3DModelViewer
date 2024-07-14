@@ -1,18 +1,20 @@
 #include "MainWindow.hpp"
 #include <QDebug>
 #include <QHBoxLayout>
-#include <QSplitter>
 #include <QLabel>
+#include <QSplitter>
 
-#include "Viewport.hpp"
-#include "NodeEditor.hpp"
 #include "Core/ContentManager.hpp"
+#include "NodeEditor.hpp"
+#include "Viewport.hpp"
 
 #include <spdlog/spdlog.h>
 
 namespace st::ui
 {
-	MainWindow::MainWindow(st::core::ContentManager& contentManager, QWidget* parent, Qt::WindowFlags flags):
+	MainWindow::MainWindow(st::core::ContentManagerHandler contentManager,
+						   QWidget* parent,
+						   Qt::WindowFlags flags) :
 		QMainWindow(parent, flags),
 		m_contentManager(contentManager)
 	{
@@ -25,7 +27,7 @@ namespace st::ui
 		QHBoxLayout* centralLayout = new QHBoxLayout(centralWidget);
 		centralLayout->setContentsMargins(0, 0, 0, 0);
 
-		m_viewport = new Viewport();
+		m_viewport = new Viewport(contentManager);
 		m_viewport->setContentsMargins(0, 0, 0, 0);
 		m_viewport->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 

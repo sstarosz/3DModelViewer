@@ -56,7 +56,7 @@ void NodeScene::drawBackground(QPainter* painter, const QRectF& rect)
 /*------------------------------------*/
 /*---------MARK:NodeEditor------------*/
 /*------------------------------------*/
-NodeEditor::NodeEditor(core::ContentManager& contentManager, QWidget* parent):
+NodeEditor::NodeEditor(core::ContentManagerHandler contentManager, QWidget* parent):
     QGraphicsView(parent),
     m_scene(new NodeScene(this)),
     m_contentManager(contentManager),
@@ -79,7 +79,7 @@ NodeEditor::NodeEditor(core::ContentManager& contentManager, QWidget* parent):
 
 	void NodeEditor::setupScene()
     {
-        core::NodeGraphHandler nodeGraph = m_contentManager.getMainNodeGraph();
+        core::NodeGraphHandler nodeGraph = m_contentManager->getMainNodeGraph();
         m_scene->setNodeGraph(nodeGraph);
     }
 

@@ -112,6 +112,13 @@ namespace st::renderer
 		{
 			spdlog::info("StandardMaterial2::compute()");
 
+			//Print the mesh data
+			auto meshData = m_inputs.meshData.getValue();
+			spdlog::info("Mesh Data: {}", meshData);
+
+
+			m_outputs.renderable = Renderable("Test");
+
 			return true;
 		}
 

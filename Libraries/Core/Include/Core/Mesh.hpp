@@ -3,6 +3,7 @@
 
 #include <Eigen/Core>
 #include <vector>
+#include <spdlog/spdlog.h>
 
 namespace st::core
 {
@@ -33,11 +34,21 @@ namespace st::core
 			return m_indices;
 		}
 
+
 	  private:
 		std::vector<Eigen::Vector3f> m_vertices;
 		std::vector<uint32_t> m_indices;
 	};
-
 } // namespace st::core
+
+template<>
+struct fmt::formatter<st::core::MeshData>: fmt::formatter<std::string>
+{
+	template <typename FormatContext>
+	auto format(const st::core::MeshData& meshData, FormatContext& ctx) const -> decltype(ctx.out())
+	{
+		return fmt::format_to(ctx.out(), "MeshData: vertices: {}, indices: {}", meshData.getVertexPointList().size(), meshData.getIndicesPointList().size());
+	}
+};
 
 #endif // ST_CORE_MESH_HPP

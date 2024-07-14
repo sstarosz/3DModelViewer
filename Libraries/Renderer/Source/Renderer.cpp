@@ -130,6 +130,7 @@ namespace st::renderer
 			m_vulkanContext(),
 			m_physicalDevice(m_vulkanContext)
 		{
+			spdlog::info("Renderer::PrivateRenderer()");
 		}
 
 		~PrivateRenderer()
@@ -336,6 +337,8 @@ namespace st::renderer
 
 		void recordCommandBuffer(vk::CommandBuffer& commandBuffer, const core::Scene& /*scene*/, uint32_t imageIndex)
 		{
+			spdlog::info("Renderer::recordCommandBuffer()");
+
 			commandBuffer.begin(vk::CommandBufferBeginInfo{});
 
 			vk::Viewport viewport{0.0F,
@@ -386,6 +389,17 @@ namespace st::renderer
 			commandBuffer.bindIndexBuffer(m_pipeline.resources.indexBuffer, 0, vk::IndexType::eUint32);
 			commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipeline.pipelineLayout, 0, m_pipeline.resources.descriptorSets[m_currentFrame], {});
 			commandBuffer.drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
+
+			//StandardMaterial
+			spdlog::info("Renderer::recordCommandBuffer() - StandardMaterial");
+			spdlog::info("Input: {}", m_input.getValue());
+			commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_input.getValue().m_material.m_pipeline);
+			commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_input.getValue().m_material.m_pipelineLayout, 0, m_input.getValue().m_material.m_descriptorSet, {});
+			vk::Buffer vertexBuffers2[] = {m_input.getValue().m_vertexBuffer};
+			vk::DeviceSize offsets2[] = {0};
+			commandBuffer.bindVertexBuffers(0, 1, vertexBuffers2, offsets2);
+			commandBuffer.bindIndexBuffer(m_input.getValue().m_indexBuffer, 0, vk::IndexType::eUint32);
+
 
 			commandBuffer.endRenderPass();
 			commandBuffer.end();
@@ -981,6 +995,7 @@ namespace st::renderer
 
 		std::shared_ptr<core::Scene> m_scene;
 		std::unique_ptr<MaterialManager> m_materialManager;
+		core::TypedInputHandler<Renderable> m_input;
 	};
 
 	/*---------------------*/
@@ -1045,6 +1060,19 @@ namespace st::renderer
 	const MaterialManager& Renderer::getMaterialManager() const
 	{
 		return *m_privateRenderer->m_materialManager.get();
+	}
+
+	void Renderer::updateScene()
+	{
+		//Renderable test = m_input.renderable;
+		spdlog::info("Renderer::updateScene()");
+		Renderable test = m_input.renderable.getValue();
+		spdlog::info("Renderer: {}", test);
+		//TODO improve this
+		m_privateRenderer->m_input = m_input.renderable;
+
+		spdlog::info("Renderer copied input");
+		spdlog::info("Renderer: {}", m_privateRenderer->m_input.getValue());
 	}
 
 

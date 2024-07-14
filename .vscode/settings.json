@@ -86,6 +86,7 @@
         "qgraphicsscene": "cpp",
         "qscrollbar": "cpp",
         "bitset": "cpp",
-        "source_location": "cpp"
+        "source_location": "cpp",
+        "core": "cpp"
     }
 }

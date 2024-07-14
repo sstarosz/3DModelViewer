@@ -79,6 +79,11 @@ namespace st::core
 		{
 			try
 			{
+				if (m_isConnected)
+				{
+					return std::any_cast<Type>(m_connectedAttribute->getValue<Type>());
+				}
+
 				return std::any_cast<Type>(m_data);
 			}
 			catch (const std::bad_any_cast&)
@@ -108,10 +113,9 @@ namespace st::core
 		/*-------Setters--------*/
 		/*----------------------*/
 		template <typename Type>
-		void setData(const Type& data)
-		{
-			m_data = data;
-		}
+		void setData(const Type& data);
+
+
 
 		void setName(const std::string& name)
 		{
@@ -130,10 +134,12 @@ namespace st::core
 
 	  private:
 		std::any m_data;
+		std::shared_ptr<Attribute> m_connectedAttribute;
 		std::string m_name;
 		bool m_readable;
 		bool m_writable;
 		bool m_array;
+		bool m_isConnected;
 	};
 
 	template <NumericAttributeType Type>
@@ -314,20 +320,6 @@ namespace st::core
 
 	  protected:
 		TypedAttribute() = default;
-
-	  public:
-		Type getValue() const
-		{
-			return m_value;
-		}
-
-		void setValue(Type value)
-		{
-			m_value = value;
-		}
-
-	  private:
-		Type m_value;
 	};
 
 	/*----------------------*/
@@ -448,10 +440,21 @@ namespace st::core
 			return m_attribute->getValue();
 		}
 
+		TypedInputHandler<Type>& operator= (const TypedInputHandler<Type>& rhs)
+		{
+			m_attribute = rhs.m_attribute;
+			return *this;
+		}
+
 		TypedInputHandler<Type>& operator= (const Type& rhs)
 		{
-			m_attribute->setValue(rhs);
+			m_attribute->setData<Type>(rhs);
 			return *this;
+		}
+
+		Type getValue() const
+		{
+			return m_attribute->getValue<Type>();
 		}
 
 		std::shared_ptr<TypedAttribute<Type>> getAttribute() const
@@ -482,7 +485,7 @@ namespace st::core
 		TypedOutputHandler<Type>& operator= (const Type& rhs)
 		{
 			assert(m_attribute && "Attribute is not initialized");
-			m_attribute->setValue(rhs);
+			m_attribute->setData(rhs);
 			return *this;
 		}
 
@@ -521,7 +524,7 @@ namespace st::core
 			m_state(NodeState::eUninitialized)
 		{
 		}
-		
+
 		virtual ~Node() = default;
 
 		void defineNode(const std::string& name)
@@ -704,6 +707,22 @@ namespace st::core
 
 		//stati
 	};
+
+	template <typename Type>
+	inline void Attribute::setData(const Type& data)
+	{
+		spdlog::info("Setting data to attribute");
+		m_data = data;
+		m_isConnected = false;
+	}
+
+	template<>
+	inline void Attribute::setData(const std::shared_ptr<Attribute>& data)
+	{
+		spdlog::info("Setting data to connected attribute");
+		m_connectedAttribute = data;
+		m_isConnected = true;
+	}
 
 } // namespace st::core
 

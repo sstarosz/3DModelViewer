@@ -2,35 +2,39 @@
 #define ST_UI_MAINWINDOW_HPP
 
 #include <QMainWindow>
+#include "Core/ContentManager.hpp"
 
 namespace st
 {
 
-namespace core
-{
-	class ContentManager;
-}
-
-namespace ui
-{
-	class Viewport;
-	class NodeEditor;
-
-	class MainWindow : public QMainWindow
+	namespace core
 	{
-		Q_OBJECT
+		class ContentManager;
+	}
 
-	  public:
-		explicit MainWindow(core::ContentManager& contentManager, QWidget* parent = nullptr, Qt::WindowFlags flags = {});
+	namespace ui
+	{
+		class Viewport;
+		class NodeEditor;
 
-		void initialize();
-	  private:
-		core::ContentManager& m_contentManager;
-		Viewport* m_viewport;
-		NodeEditor* m_nodeEditor;
-	};
+		class MainWindow : public QMainWindow
+		{
+			Q_OBJECT
 
-} // namespace ui
+		  public:
+			explicit MainWindow(core::ContentManagerHandler contentManager,
+								QWidget* parent = nullptr,
+								Qt::WindowFlags flags = {});
+
+			void initialize();
+
+		  private:
+			core::ContentManagerHandler m_contentManager;
+			Viewport* m_viewport;
+			NodeEditor* m_nodeEditor;
+		};
+
+	} // namespace ui
 } // namespace st
 
 #endif // ST_UI_MAINWINDOW_HPP

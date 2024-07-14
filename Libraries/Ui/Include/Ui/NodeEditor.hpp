@@ -10,8 +10,10 @@
 #include <QStyleOptionGraphicsItem>
 #include <QShowEvent>
 
+
 #include "Core/Nodes/Node.hpp"
 #include "Core/Nodes/NodeGraph.hpp"
+#include "Core/ContentManager.hpp"
 
 #include <algorithm>
 #include <print>
@@ -831,7 +833,7 @@ namespace st
 			Q_OBJECT
 
 		  public:
-			explicit NodeEditor(core::ContentManager& contentManager, QWidget* parent = nullptr);
+			explicit NodeEditor(core::ContentManagerHandler contentManager, QWidget* parent = nullptr);
 
 			void initialize();
 
@@ -848,7 +850,7 @@ namespace st
 			void setupScene();
 
 			NodeScene* m_scene;
-			core::ContentManager& m_contentManager;
+			core::ContentManagerHandler m_contentManager;
 
 			bool m_panning;
 			QPointF m_lastPanPoint;

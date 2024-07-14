@@ -96,8 +96,9 @@ namespace st::renderer
 			//    }
 			//}
 
-			m_outputs.mesh = core::MeshData(vertices, indices);
-
+			core::MeshData meshData(vertices, indices);
+			spdlog::info("Mesh Data: {}", meshData);
+			m_outputs.mesh = meshData;
 			return true;
 		}
 

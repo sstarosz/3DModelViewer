@@ -47,6 +47,9 @@ namespace st::renderer
         bool compute() override
 		{
 			spdlog::info("Renderer::compute()");
+
+			updateScene();
+			
 			//TODO cleanup
 			return true;
 		}
@@ -65,6 +68,7 @@ namespace st::renderer
 
 		const MaterialManager& getMaterialManager() const;
 
+		void updateScene();
 
 		struct Input
 		{

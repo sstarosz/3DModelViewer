@@ -327,7 +327,8 @@ namespace st
 	class GuiManager
 	{
 	  public:
-		GuiManager(core::ContentManager& contentManager) :
+		GuiManager(core::ContentManagerHandler contentManager) :
+			m_contentManager(contentManager),
 			m_mainWindow(contentManager)
 		{
 			spdlog::info("GuiManager::GuiManager()");
@@ -346,6 +347,7 @@ namespace st
 		}
 
 	  private:
+		core::ContentManagerHandler m_contentManager;
 		ui::MainWindow m_mainWindow;
 	};
 
@@ -453,54 +455,6 @@ namespace st
 		{
 			std::unique_ptr<CommandAssignMaterial> command = std::make_unique<CommandAssignMaterial>(m_context.m_contentManager, material, m_context.selectedNode);
 			m_commandManager->execute(std::move(command));
-			
-			// renderer::MaterialManager materialManager;
-			// materialManager.assignMaterialToMesh(material, node);
-
-			// Check if mesh node has MeshData output
-
-			/*
-			std::shared_ptr<renderer::StandardMaterial2> targetMaterial = material.lock();
-			std::shared_ptr<core::Node> sourceNode = m_context.selectedNode.lock();
-
-			std::shared_ptr<core::Attribute> sourceAttribute = nullptr;
-			std::shared_ptr<core::Attribute> targetAttribute = nullptr;
-
-			// Check if mesh node has MeshData output
-			if (sourceNode)
-			{
-				auto attributes = sourceNode->getAttributes();
-				for (auto& attribute : attributes)
-				{
-					//Check if attribute is a TypedAttribute
-					if(std::shared_ptr<core::TypedAttribute<core::MeshData>> meshData = std::dynamic_pointer_cast<core::TypedAttribute<core::MeshData>>(attribute))
-					{
-						std::println("Found MeshData");
-					    sourceAttribute = attribute;
-					}
-				}
-			}
-
-			// Check if material has input for meshData
-			if (auto materialNode = material.lock())
-			{
-				auto attributes = materialNode->getAttributes();
-				for (auto& attribute : attributes)
-				{
-					if (std::shared_ptr<core::TypedAttribute<core::MeshData>> meshData = std::dynamic_pointer_cast<core::TypedAttribute<core::MeshData>>(attribute))
-					{
-						std::println("Found MeshData");
-						targetAttribute = attribute;
-					}
-				}
-			}
-
-			// Add connection
-			m_context.m_contentManager->getMainNodeGraph().addConnection(sourceNode,
-																		sourceAttribute,
-																		targetMaterial,
-																		targetAttribute);
-																		*/
 		}
 
 	  private:
@@ -564,7 +518,7 @@ namespace st
 			m_commandManager(),
 			m_eventSystem(),
 			m_contentManager(m_eventSystem),
-			m_guiManager(m_contentManager),
+			m_guiManager(core::ContentManagerHandler(&m_contentManager)),
 			m_creator(core::ContentManagerHandler(&m_contentManager), CommandManagerHandler(&m_commandManager))
 		{
 			spdlog::set_level(spdlog::level::debug);

@@ -28,6 +28,8 @@ namespace st::core
         // Check if sourceAttribute and destinationAttribute are compatible (type)
         // Check if sourceAttribute and destinationAttribute are compatible (dimension)
         m_connections.emplace_back(std::make_shared<Connection>(sourceNode, sourceAttrName, targetNode, targetAttrName));
+        spdlog::info("NodeGraph::addConnection() - Connection added from {} to {}", sourceNode->getName(), targetNode->getName());
+        targetAttrName->setData(sourceAttrName);
     }
 
 
