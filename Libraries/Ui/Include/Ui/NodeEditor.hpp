@@ -688,14 +688,14 @@ namespace st
 				// TODO
 				// Check if the node is already in the scene
 				// If not add it
-				for (auto node : m_nodeGraph.getNodes())
+				for (auto node : m_nodeGraph->getNodes())
 				{
 					addNode(node);
 				}
 
 				// TODO
-				std::println("Connections: {}", m_nodeGraph.getConnections().size());
-				for (auto connection : m_nodeGraph.getConnections())
+				std::println("Connections: {}", m_nodeGraph->getConnections().size());
+				for (auto connection : m_nodeGraph->getConnections())
 				{
 					// TODO
 					addConnection(connection);

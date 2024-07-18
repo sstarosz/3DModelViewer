@@ -4,11 +4,13 @@
 #include "EventSystem.hpp"
 #include "Nodes/NodeGraph.hpp"
 #include "Nodes/Node.hpp"
+#include "Handlers.hpp"
 #include <memory>
 #include <print>
 #include <vector>
 
 #include <spdlog/spdlog.h>
+
 
 namespace st::core
 {
@@ -53,30 +55,7 @@ namespace st::core
 	};
 
 
-    class ContentManagerHandler
-    {
-    public:
-        ContentManagerHandler()
-            : m_pContentManager(nullptr)
-        {
-        }
-
-        ContentManagerHandler(ContentManager* contentManager) :
-            m_pContentManager(contentManager)
-        {
-        }
-
-        ContentManager* operator->()
-		{
-			assert(m_pContentManager != nullptr);
-			return m_pContentManager;
-		}
-
-        private:
-            ContentManager* m_pContentManager;
-    };
-
-        
+	using ContentManagerHandler = Handler<ContentManager>;
 
 } // namespace st::core
 

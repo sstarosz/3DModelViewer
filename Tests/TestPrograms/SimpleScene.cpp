@@ -146,7 +146,7 @@ namespace st
 		{
 			m_plane = std::make_shared<renderer::Plane>();
 			m_plane->initialize();
-			m_contentManager->getMainNodeGraph().addNode(m_plane);
+			m_contentManager->getMainNodeGraph()->addNode(m_plane);
 		}
 
 		void undo() override
@@ -178,7 +178,7 @@ namespace st
 		{
 			m_standardMaterial = std::make_shared<renderer::StandardMaterial2>();
 			m_standardMaterial->initialize();
-			m_contentManager->getMainNodeGraph().addNode(m_standardMaterial);
+			m_contentManager->getMainNodeGraph()->addNode(m_standardMaterial);
 		}
 
 		void undo() override
@@ -209,10 +209,11 @@ namespace st
 		{
 			m_renderer = std::make_shared<renderer::Renderer>();
 			m_renderer->initialize();
-			m_contentManager->getMainNodeGraph().addNode(m_renderer);
+
+			core::NodeGraphHandler nodeGraph = m_contentManager->getMainNodeGraph();
+			nodeGraph->addNode(m_renderer);
 
 			//Make material nodes automatically connect to renderer
-			core::NodeGraphHandler nodeGraph = m_contentManager->getMainNodeGraph();
 
 			std::shared_ptr<core::Attribute> targetAttribute = nullptr;
 			for(auto& attribute : m_renderer->getAttributes())
@@ -224,7 +225,7 @@ namespace st
 				}
 			}
 
-			for(auto& node : nodeGraph.getNodes())
+			for(auto& node : nodeGraph->getNodes())
 			{
 				if(std::dynamic_pointer_cast<renderer::StandardMaterial2>(node))
 				{
@@ -233,7 +234,7 @@ namespace st
 						if (std::shared_ptr<core::TypedAttribute<renderer::Renderable>> renderable = std::dynamic_pointer_cast<core::TypedAttribute<renderer::Renderable>>(attribute))
 						{
 							std::println("Found Renderable");
-							nodeGraph.addConnection(node, renderable, m_renderer, targetAttribute);
+							nodeGraph->addConnection(node, renderable, m_renderer, targetAttribute);
 						}
 					}
 				}
@@ -306,7 +307,7 @@ namespace st
 			}
 
 			// Add connection
-			m_contentManager->getMainNodeGraph().addConnection(node,
+			m_contentManager->getMainNodeGraph()->addConnection(node,
 																sourceAttribute,
 																material,
 																targetAttribute);

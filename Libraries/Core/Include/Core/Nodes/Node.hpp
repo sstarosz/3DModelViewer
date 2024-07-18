@@ -322,10 +322,25 @@ namespace st::core
 		TypedAttribute() = default;
 	};
 
+	template <typename Type>
+	inline void Attribute::setData(const Type& data)
+	{
+		m_data = data;
+		m_isConnected = false;
+	}
+
+	template<>
+	inline void Attribute::setData(const std::shared_ptr<Attribute>& data)
+	{
+		m_connectedAttribute = data;
+		m_isConnected = true;
+	}
+
+
 	/*----------------------*/
 	/*-------Handlers-------*/
 	/*----------------------*/
-	class Handler
+	class AttributeHandler
 	{
 	};
 
@@ -336,7 +351,7 @@ namespace st::core
 	 * Inputs are always readable and writable
 	 */
 	template <NumericAttributeType Type> // TODO add Constraint
-	class NumericInputHandler : public Handler
+	class NumericInputHandler : public AttributeHandler
 	{
 	  public:
 		NumericInputHandler() = default;
@@ -400,7 +415,7 @@ namespace st::core
 	};
 
 	template <NumericAttributeType Type>
-	class NumericOutputHandler : public Handler
+	class NumericOutputHandler : public AttributeHandler
 	{
 	  public:
 		NumericOutputHandler() = default;
@@ -425,7 +440,7 @@ namespace st::core
 	};
 
 	template <typename Type>
-	class TypedInputHandler : public Handler
+	class TypedInputHandler : public AttributeHandler
 	{
 	  public:
 		TypedInputHandler() = default;
@@ -467,7 +482,7 @@ namespace st::core
 	};
 
 	template <typename Type>
-	class TypedOutputHandler : public Handler
+	class TypedOutputHandler : public AttributeHandler
 	{
 	  public:
 		TypedOutputHandler() = default;
@@ -506,7 +521,6 @@ namespace st::core
 	/*----------------------*/
 	/*-------Node----------*/
 	/*----------------------*/
-
 	class Node
 	{
 	  public:
@@ -617,11 +631,6 @@ namespace st::core
 		std::shared_ptr<Attribute> targetAttrName;
 	};
 
-
-
-
-
-
 	template <typename NodeType>
 	class NodeFactory
 	{
@@ -641,7 +650,6 @@ namespace st::core
 			return true;
 		}
 	};
-
 
 	class NodeRegistry
 	{
@@ -691,9 +699,6 @@ namespace st::core
 		std::vector<NodeInitializer> m_nodeInitializers;
 	};
 
-
-
-
 	template <typename NodeType>
 	class RegisterNode
 	{
@@ -704,25 +709,7 @@ namespace st::core
 
 			NodeRegistry::getInstance().registerNode(name, &NodeFactory<NodeType>::createNode, &NodeInitializer<NodeType>::initializeNode);
 		}
-
-		//stati
 	};
-
-	template <typename Type>
-	inline void Attribute::setData(const Type& data)
-	{
-		spdlog::info("Setting data to attribute");
-		m_data = data;
-		m_isConnected = false;
-	}
-
-	template<>
-	inline void Attribute::setData(const std::shared_ptr<Attribute>& data)
-	{
-		spdlog::info("Setting data to connected attribute");
-		m_connectedAttribute = data;
-		m_isConnected = true;
-	}
 
 } // namespace st::core
 

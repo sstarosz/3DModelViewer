@@ -36,7 +36,7 @@ namespace st::ui
 			{
 				//Find Renderer Node inside the content manager
 				core::NodeGraphHandler nodeGraph = m_contentManager->getMainNodeGraph();
-				for(auto node : nodeGraph.getNodes())
+				for(auto node : nodeGraph->getNodes())
 				{
 					if (std::shared_ptr<renderer::Renderer> renderable = std::dynamic_pointer_cast<renderer::Renderer>(node))
 					{
