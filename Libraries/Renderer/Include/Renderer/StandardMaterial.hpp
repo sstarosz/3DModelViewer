@@ -5,7 +5,7 @@
 #include "Material.hpp"
 #include "Renderable.hpp"
 #include "Core/Nodes/Node.hpp"
-#include "Core/Mesh.hpp"
+#include "Geometry/DataTypes/Mesh.hpp"
 
 #include <string_view>
 #include <string>
@@ -91,7 +91,7 @@ namespace st::renderer
 		{
 			defineNode("Standard Material");
 
-			m_inputs.meshData = core::TypedAttribute<core::MeshData>::Builder("Mesh Data")
+			m_inputs.meshData = core::TypedAttribute<geometry::Mesh>::Builder("Mesh Data")
 									.setReadable(false)
 									.setWritable(true)
 									.build();
@@ -130,7 +130,7 @@ namespace st::renderer
 
 		struct Inputs
 		{
-			core::TypedInputHandler<core::MeshData> meshData;
+			core::TypedInputHandler<geometry::Mesh> meshData;
 		};
 
 		struct Outputs

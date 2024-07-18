@@ -3,7 +3,7 @@
 
 #include "Core/StObject.hpp"
 #include "Core/Nodes/Node.hpp"
-#include "Geometry/Geometry.hpp"
+#include "Geometry/DataTypes/Mesh.hpp"
 
 #include <Eigen/Core>
 #include <vector>

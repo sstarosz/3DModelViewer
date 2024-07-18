@@ -3,7 +3,6 @@
 #include "Core/Transform.hpp"
 #include "Core/EventSystem.hpp"
 
-#include "Renderer/Grid.hpp"
 #include "Renderer/MaterialManager.hpp"
 #include "Renderer/Mesh.hpp"
 #include "Renderer/Plane.hpp"
@@ -276,16 +275,16 @@ namespace st
 			std::shared_ptr<core::Attribute> sourceAttribute = nullptr;
 			std::shared_ptr<core::Attribute> targetAttribute = nullptr;
 
-			// Check if mesh node has MeshData output
+			// Check if mesh node has Mesh output
 			if (auto meshNode = node)
 			{
 				auto attributes = meshNode->getAttributes();
 				for (auto& attribute : attributes)
 				{
 					//Check if attribute is a TypedAttribute
-					if (std::shared_ptr<core::TypedAttribute<core::MeshData>> meshData = std::dynamic_pointer_cast<core::TypedAttribute<core::MeshData>>(attribute))
+					if (std::shared_ptr<core::TypedAttribute<geometry::Mesh>> meshData = std::dynamic_pointer_cast<core::TypedAttribute<geometry::Mesh>>(attribute))
 					{
-						std::println("Found MeshData");
+						std::println("Found Mesh");
 						sourceAttribute = attribute;
 					}
 				}
@@ -297,9 +296,9 @@ namespace st
 				auto attributes = materialNode->getAttributes();
 				for (auto& attribute : attributes)
 				{
-					if (std::shared_ptr<core::TypedAttribute<core::MeshData>> meshData = std::dynamic_pointer_cast<core::TypedAttribute<core::MeshData>>(attribute))
+					if (std::shared_ptr<core::TypedAttribute<geometry::Mesh>> meshData = std::dynamic_pointer_cast<core::TypedAttribute<geometry::Mesh>>(attribute))
 					{
-						std::println("Found MeshData");
+						std::println("Found Mesh");
 						targetAttribute = attribute;
 					}
 				}

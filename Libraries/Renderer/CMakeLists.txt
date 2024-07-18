@@ -12,14 +12,12 @@ set(Sources
     "Source/PhysicalDevice.cpp"
     "Source/QueueFamily.cpp"
     "Source/GraphicsPiplineFactory.cpp"
-    "Source/Grid.cpp"
     )
 
 set(Public_Headers
     "Include/Renderer/Renderer.hpp"
     "Include/Renderer/GraphicsPiplineFactory.hpp"
     "Include/Renderer/VulkanContext.hpp"
-    "Include/Renderer/Grid.hpp"
     )
 
 set(Private_Headers

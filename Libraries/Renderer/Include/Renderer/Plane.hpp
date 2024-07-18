@@ -4,7 +4,7 @@
 
 
 #include "Core/Nodes/Node.hpp"
-#include "Core/Mesh.hpp"
+#include "Geometry/DataTypes/Mesh.hpp"
 #include <Eigen/Core>
 
 namespace st::renderer
@@ -58,7 +58,7 @@ namespace st::renderer
 			addAttribute(m_inputs.subdivisionHeight);
 
 
-			m_outputs.mesh = core::TypedAttribute<core::MeshData>::Builder("Mesh")
+			m_outputs.mesh = core::TypedAttribute<geometry::Mesh>::Builder("Mesh")
 								 .setReadable(true)
 								 .setWritable(false)
 								 .build();
@@ -78,8 +78,8 @@ namespace st::renderer
 			//{
 			//     for(int j = 0; j < m_inputs.subdivisionHeight; j++)
 			//     {
-			core::FloatPointVector vertices;
-			core::IntVector indices;
+			geometry::FloatPointVector vertices;
+			geometry::IntVector indices;
 
 			vertices.push_back(Eigen::Vector3f(-0.5F, -0.5F, -0.0F));
 			vertices.push_back(Eigen::Vector3f( 0.5F, -0.5F, -0.0F));
@@ -96,7 +96,7 @@ namespace st::renderer
 			//    }
 			//}
 
-			core::MeshData meshData(vertices, indices);
+			geometry::Mesh meshData(vertices, indices);
 			spdlog::info("Mesh Data: {}", meshData);
 			m_outputs.mesh = meshData;
 			return true;
@@ -114,7 +114,7 @@ namespace st::renderer
 
 		struct Outputs
 		{
-			core::TypedOutputHandler<core::MeshData> mesh;
+			core::TypedOutputHandler<geometry::Mesh> mesh;
 		};
 
 	  private:

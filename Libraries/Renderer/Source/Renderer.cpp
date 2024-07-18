@@ -924,8 +924,8 @@ namespace st::renderer
 			spdlog::info("Renderer::updateScene() - Initialize Shader");
 			spdlog::info("Vertex Shader: {}", m_input.getValue().m_vertexShader);
 			spdlog::info("Fragment Shader: {}", m_input.getValue().m_fragmentShader);
-			spdlog::info("MeshData: {}", m_input.getValue().m_meshData.getVertexPointList().size());
-			spdlog::info("MeshData: {}", m_input.getValue().m_meshData.getIndicesPointList().size());
+			spdlog::info("Mesh: {}", m_input.getValue().m_meshData.getVertexPointList().size());
+			spdlog::info("Mesh: {}", m_input.getValue().m_meshData.getIndicesPointList().size());
 
 			m_pipeline = PipelineBuilder2(m_vulkanContext)
 							 .setVertexShader(m_input.getValue().m_vertexShader)

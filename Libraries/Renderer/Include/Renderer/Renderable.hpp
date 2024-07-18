@@ -3,7 +3,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include <Core/Mesh.hpp>
+#include "Geometry/DataTypes/Mesh.hpp"
 
 namespace st::renderer
 {
@@ -46,7 +46,7 @@ namespace st::renderer
         std::string m_vertexShader;
         std::string m_fragmentShader;
 
-        core::MeshData m_meshData;
+        geometry::Mesh m_meshData;
 
         vk::Buffer m_vertexBuffer;
         vk::Buffer m_indexBuffer;
