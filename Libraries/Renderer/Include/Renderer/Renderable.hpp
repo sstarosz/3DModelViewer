@@ -3,6 +3,7 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include <Core/Mesh.hpp>
 
 namespace st::renderer
 {
@@ -41,6 +42,12 @@ namespace st::renderer
 
         public:
         std::string m_name;
+
+        std::string m_vertexShader;
+        std::string m_fragmentShader;
+
+        core::MeshData m_meshData;
+
         vk::Buffer m_vertexBuffer;
         vk::Buffer m_indexBuffer;
         Material m_material;

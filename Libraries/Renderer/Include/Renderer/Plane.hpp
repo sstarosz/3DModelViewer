@@ -81,10 +81,10 @@ namespace st::renderer
 			core::FloatPointVector vertices;
 			core::IntVector indices;
 
-			vertices.push_back(Eigen::Vector3f(-0.5F, 0.0F, -0.5F));
-			vertices.push_back(Eigen::Vector3f(0.5F, 0.0F, -0.5F));
-			vertices.push_back(Eigen::Vector3f(0.5F, 0.0F, 0.5F));
-			vertices.push_back(Eigen::Vector3f(-0.5F, 0.0F, 0.5F));
+			vertices.push_back(Eigen::Vector3f(-0.5F, -0.5F, -0.0F));
+			vertices.push_back(Eigen::Vector3f( 0.5F, -0.5F, -0.0F));
+			vertices.push_back(Eigen::Vector3f( 0.5F,  0.5F,  0.0F));
+			vertices.push_back(Eigen::Vector3f(-0.5F,  0.5F,  0.0F));
 
 			indices.push_back(0);
 			indices.push_back(1);

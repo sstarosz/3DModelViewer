@@ -14,37 +14,38 @@ namespace st::renderer
 {
 
 	constexpr std::string_view standardMaterialVertexShader = R"(
-        #version 330 core
+		#version 450
 
-        layout(location = 0) in vec3 aPos;
-        layout(location = 1) in vec2 aTexCoord;
+		layout(location = 0) in vec3 inPosition;
+		//layout(location = 1) in vec3 inColor;
 
-        out vec2 TexCoord;
+		layout(location = 0) out vec3 outFragColor;
 
-        uniform mat4 model;
-        uniform mat4 view;
-        uniform mat4 projection;
+		layout(set = 0, binding = 0) uniform MVP
+		{
+			mat4 model;
+			mat4 view;
+			mat4 proj;
+		} mvp;
 
-        void main()
-        {
-            gl_Position = projection * view * model * vec4(aPos, 1.0);
-            TexCoord = aTexCoord;
-        }
+		void main()
+		{
+			gl_Position = vec4(inPosition, 1.0);
+			outFragColor = vec3(1.0, 0.0, 0.0);
+		}
     )";
 
 	constexpr std::string_view standardMaterialFragmentShader = R"(
-        #version 330 core
+        #version 450
 
-        out vec4 FragColor;
+		layout(location = 0) in vec3 inFragColor;
 
-        in vec2 TexCoord;
+		layout(location = 0) out vec4 outColor;
 
-        uniform sampler2D texture_diffuse1;
-
-        void main()
-        {
-            FragColor = texture(texture_diffuse1, TexCoord);
-        }
+		void main()
+		{
+			outColor = vec4(inFragColor, 1.0);
+		}
     )";
 
 	class StandardMaterial : public Material
@@ -116,8 +117,13 @@ namespace st::renderer
 			auto meshData = m_inputs.meshData.getValue();
 			spdlog::info("Mesh Data: {}", meshData);
 
+			Renderable renderable;
+			renderable.m_vertexShader = standardMaterialVertexShader;
+			renderable.m_fragmentShader = standardMaterialFragmentShader;
+			renderable.m_meshData = meshData;
 
-			m_outputs.renderable = Renderable("Test");
+
+			m_outputs.renderable = renderable;
 
 			return true;
 		}

@@ -46,11 +46,9 @@ namespace st::ui
 				}
 
 
-				vk::Instance instance = m_renderer2->createInstance();
-
+				//Create Vulkan Instance for QVulkanWindow
 				QVulkanInstance vulkanInstance;
-				vulkanInstance.setVkInstance(instance);
-
+				vulkanInstance.setVkInstance(m_renderer2->getVulkanInstance());
 				if (!vulkanInstance.create())
 				{
 					qDebug() << "Failed to create vulkan instance";
@@ -58,8 +56,9 @@ namespace st::ui
 				}
 				setVulkanInstance(&vulkanInstance);
 
+				//Embed Surface to Renderer
 				m_renderer2->setSurface(vulkanInstance.surfaceForWindow(this));
-				m_renderer2->init();
+				//m_renderer2->init();
 
 				connect(&m_timer, &QTimer::timeout, this, &PrivateWindow::update);
 				m_timer.start(16); // 60fps

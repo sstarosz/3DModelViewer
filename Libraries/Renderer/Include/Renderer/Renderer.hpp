@@ -40,6 +40,8 @@ namespace st::renderer
 
 
 			addAttribute(m_input.renderable);
+
+			init();
 			
 			return true;
 		}
@@ -61,7 +63,7 @@ namespace st::renderer
 		void render(const core::Scene& scene);
 		void embedScene(std::shared_ptr<core::Scene> scene);
 
-		vk::Instance createInstance() const;
+		vk::Instance getVulkanInstance() const;
 		void setSurface(vk::SurfaceKHR surface);
 
 		void changeSwapchainExtent(uint32_t width, uint32_t height);
