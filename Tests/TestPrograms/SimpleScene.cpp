@@ -1,6 +1,5 @@
 #include "Core/Camera.hpp"
 #include "Core/ContentManager.hpp"
-#include "Core/Scene.hpp"
 #include "Core/Transform.hpp"
 #include "Core/EventSystem.hpp"
 
@@ -518,7 +517,7 @@ namespace st
 			m_app(argc, argv),
 			m_commandManager(),
 			m_eventSystem(),
-			m_contentManager(m_eventSystem),
+			m_contentManager(core::EventSystemHandler(&m_eventSystem)),
 			m_guiManager(core::ContentManagerHandler(&m_contentManager)),
 			m_creator(core::ContentManagerHandler(&m_contentManager), CommandManagerHandler(&m_commandManager))
 		{

@@ -1,13 +1,10 @@
 #include "Viewport.hpp"
-#include <QDebug>
 #include <QHBoxLayout>
 #include <QTimer>
 #include <QVulkanInstance>
 #include <QWindow>
-#include <QOpenGLWidget>
 
 #include "Renderer/Renderer.hpp"
-#include "Core/Scene.hpp"
 
 namespace st::ui
 {
@@ -81,20 +78,13 @@ namespace st::ui
 			m_renderer2 = renderer;
 		}
 
-		void setScene(core::Scene&& scene)
-		{
-			m_scene = std::move(scene);
-		}
-
 	  private:
 		// Main loop
 		void update()
 		{
 			if (m_initialized)
 			{
-				m_renderer2->render(m_scene);
-
-
+				m_renderer2->render();
 				requestUpdate();
 			}
 		}
@@ -104,7 +94,6 @@ namespace st::ui
 		QTimer m_timer;
 		//renderer::Renderer m_renderer;
 		std::shared_ptr<renderer::Renderer> m_renderer2;
-		core::Scene m_scene;
 	};
 
 	/*---------------------*/

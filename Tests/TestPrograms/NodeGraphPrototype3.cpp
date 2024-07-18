@@ -1,19 +1,18 @@
+#include "Core/Nodes/Node.hpp"
 #include <Eigen/Core>
 #include <algorithm>
 #include <cassert>
+#include <format>
 #include <iostream>
 #include <map>
 #include <memory>
-#include <format>
 #include <print>
 #include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
-#include "Core/Nodes/Node.hpp"
 
 using namespace st;
-
 
 template <typename T>
 void AssertEqual(const T& expected, const T& actual, const std::string& message = "")
@@ -39,21 +38,21 @@ void AssertEqual(float expected, float actual, const std::string& message = "", 
 
 void createAttribute()
 {
-	//auto test = core::AttributeBuilder("Test")
+	// auto test = core::AttributeBuilder("Test")
 	//				.setReadable(true)
 	//				.setWritable(true)
 	//				.build();
 
-	auto numericAttribute = core::NumericAttributeBuilder<float>("Test")
-								.setReadable(true)
-								.setWritable(true)
-								.setDefaultValue(0.0f)
-								.setLimits(-100.0f, 100.0f)
-								.setSoftLimits(-1.0f, 1.0f)
-								.build();
+	core::NumericInputHandler<float> numericAttribute = core::NumericAttribute<float>::Builder("Test", 0.0f)
+															.setReadable(true)
+															.setWritable(true)
+															.setDefaultValue(0.0f)
+															.setLimits(-100.0f, 100.0f)
+															.setSoftLimits(-1.0f, 1.0f)
+															.build();
 
 	AssertEqual(0.0F, numericAttribute, "Default value is not correct");
-	
+
 	numericAttribute += 10.0f;
 	AssertEqual(10.0f, numericAttribute, "Value is not correct after addition");
 
@@ -65,10 +64,7 @@ void createAttribute()
 
 	numericAttribute /= 2.0f;
 	AssertEqual(5.0f, numericAttribute, "Value is not correct after division");
-
 }
-
-
 
 int main()
 {

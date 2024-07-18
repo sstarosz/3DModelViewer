@@ -8,11 +8,6 @@
 #include <memory>
 #include <vulkan/vulkan.hpp>
 
-namespace st::core
-{
-	class Scene;
-}
-
 namespace st::renderer
 {
 
@@ -60,8 +55,6 @@ namespace st::renderer
 
 		void init();
 		void render();
-		void render(const core::Scene& scene);
-		void embedScene(std::shared_ptr<core::Scene> scene);
 
 		vk::Instance getVulkanInstance() const;
 		void setSurface(vk::SurfaceKHR surface);

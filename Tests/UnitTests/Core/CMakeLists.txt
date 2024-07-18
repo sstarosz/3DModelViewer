@@ -10,7 +10,6 @@ set(Tests_Sources
 
     "Nodes/AttributesTest.cpp"
     "CameraTest.cpp"
-    "SceneTest.cpp"
     "GraphNodeTest.cpp"
 )
 

@@ -10,24 +10,24 @@
 #include <string>
 
 
-PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT;
-PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
-
-// TODO - change it to class method
-[[maybe_unused]] VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugUtilsMessengerEXT(VkInstance instance,
-																			   const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-																			   const VkAllocationCallbacks* pAllocator,
-																			   VkDebugUtilsMessengerEXT* pMessenger)
-{
-	return pfnVkCreateDebugUtilsMessengerEXT(instance, pCreateInfo, pAllocator, pMessenger);
-}
-
-[[maybe_unused]] VKAPI_ATTR void VKAPI_CALL vkDestroyDebugUtilsMessengerEXT(VkInstance instance,
-																			VkDebugUtilsMessengerEXT messenger,
-																			VkAllocationCallbacks const* pAllocator)
-{
-	return pfnVkDestroyDebugUtilsMessengerEXT(instance, messenger, pAllocator);
-}
+//PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXTTest;
+//PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXTTest;
+//
+//// TODO - change it to class method
+//[[maybe_unused]] VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugUtilsMessengerEXT(VkInstance instance,
+//																			   const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+//																			   const VkAllocationCallbacks* pAllocator,
+//																			   VkDebugUtilsMessengerEXT* pMessenger)
+//{
+//	return pfnVkCreateDebugUtilsMessengerEXTTest(instance, pCreateInfo, pAllocator, pMessenger);
+//}
+//
+//[[maybe_unused]] VKAPI_ATTR void VKAPI_CALL vkDestroyDebugUtilsMessengerEXT(VkInstance instance,
+//																			VkDebugUtilsMessengerEXT messenger,
+//																			VkAllocationCallbacks const* pAllocator)
+//{
+//	return pfnVkDestroyDebugUtilsMessengerEXTTest(instance, messenger, pAllocator);
+//}
 
 namespace st::renderer::test
 {
@@ -123,8 +123,8 @@ namespace st::renderer::test
 			m_instance = vk::createInstance(createInfo);
 
 			// Setup debug messenger
-			pfnVkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(m_instance.getProcAddr("vkCreateDebugUtilsMessengerEXT"));
-			if (!pfnVkCreateDebugUtilsMessengerEXT)
+			auto pfnVkCreateDebugUtilsMessengerEXTTest =  m_instance.getProcAddr("vkCreateDebugUtilsMessengerEXT");
+			if (!pfnVkCreateDebugUtilsMessengerEXTTest)
 			{
 				// TODO - Change it to something independent of iostream
 				std::cout << "GetInstanceProcAddr: Unable to find "
@@ -133,8 +133,8 @@ namespace st::renderer::test
 				exit(1);
 			}
 
-			pfnVkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(m_instance.getProcAddr("vkDestroyDebugUtilsMessengerEXT"));
-			if (!pfnVkDestroyDebugUtilsMessengerEXT)
+			auto  pfnVkDestroyDebugUtilsMessengerEXTTest = m_instance.getProcAddr("vkDestroyDebugUtilsMessengerEXT");
+			if (!pfnVkDestroyDebugUtilsMessengerEXTTest)
 			{
 				// TODO - Change it to something independent of iostream
 				std::cout << "GetInstanceProcAddr: Unable to find "

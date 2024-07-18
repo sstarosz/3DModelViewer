@@ -1,7 +1,7 @@
 #ifndef ST_CORE_HANDLERS_HPP
 #define ST_CORE_HANDLERS_HPP
 
-#include <memory>
+#include <cassert>
 
 namespace st::core
 {

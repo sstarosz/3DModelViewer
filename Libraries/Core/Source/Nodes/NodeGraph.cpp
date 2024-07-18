@@ -4,7 +4,7 @@
 
 namespace st::core
 {
-	NodeGraph::NodeGraph(EventSystem& eventSystem) :
+	NodeGraph::NodeGraph(EventSystemHandler eventSystem) :
 		m_eventSystem(eventSystem)
 	{
 	}

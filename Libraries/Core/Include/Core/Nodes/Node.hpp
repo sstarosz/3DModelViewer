@@ -75,13 +75,13 @@ namespace st::core
 		/*-------Getters--------*/
 		/*----------------------*/
 		template <typename Type>
-		Type getValue() const
+		Type getData() const
 		{
 			try
 			{
 				if (m_isConnected)
 				{
-					return std::any_cast<Type>(m_connectedAttribute->getValue<Type>());
+					return std::any_cast<Type>(m_connectedAttribute->getData<Type>());
 				}
 
 				return std::any_cast<Type>(m_data);
@@ -89,7 +89,7 @@ namespace st::core
 			catch (const std::bad_any_cast&)
 			{
 				// Handle error or assert
-				assert(false && "Bad any_cast in getValue()");
+				assert(false && "Bad any_cast in getData()");
 				throw std::bad_any_cast();
 			}
 		}
@@ -185,7 +185,7 @@ namespace st::core
 				numericAttribute->setName(this->m_name);
 				numericAttribute->setReadable(this->m_readable);
 				numericAttribute->setWritable(this->m_writable);
-				numericAttribute->setData<Type>(m_defaultValue);
+				numericAttribute->setData(m_defaultValue);
 				numericAttribute->setDefaultValue(m_defaultValue);
 				numericAttribute->setLimits(m_min, m_max);
 				numericAttribute->setSoftLimits(m_softMin, m_softMax);
@@ -208,14 +208,14 @@ namespace st::core
 		NumericAttribute() = default;
 
 	  public:
-		Type getValue() const
+		Type getData() const
 		{
-			return Attribute::getValue<Type>();
+			return Attribute::getData<Type>();
 		}
 
-		void setValue(Type value)
+		void setData(Type value)
 		{
-			setData<Type>(value);
+			Attribute::setData<Type>(value);
 		}
 
 		/*----------------------*/
@@ -363,8 +363,7 @@ namespace st::core
 
 		operator Type () const
 		{
-
-			return m_attribute->getValue();
+			return m_attribute->getData();
 		}
 
 		NumericInputHandler<Type>& operator= (const Type& rhs)
@@ -375,33 +374,29 @@ namespace st::core
 
 		NumericInputHandler& operator+= (const Type& rhs)
 		{
-			void* data = m_attribute->getData();
-			Type* value = static_cast<Type*>(data);
-			*value += rhs;
+			Type value = m_attribute->getData();
+			value += rhs;
 			return *this;
 		}
 
 		NumericInputHandler& operator-= (const Type& rhs)
 		{
-			void* data = m_attribute->getData();
-			Type* value = static_cast<Type*>(data);
-			*value -= rhs;
+			Type value = m_attribute->getData();
+			value -= rhs;
 			return *this;
 		}
 
 		NumericInputHandler& operator*= (const Type& rhs)
 		{
-			void* data = m_attribute->getData();
-			Type* value = static_cast<Type*>(data);
-			*value *= rhs;
+			Type value = m_attribute->getData();
+			value *= rhs;
 			return *this;
 		}
 
 		NumericInputHandler& operator/= (const Type& rhs)
 		{
-			void* data = m_attribute->getData();
-			Type* value = static_cast<Type*>(data);
-			*value /= rhs;
+			Type value = m_attribute->getData();
+			value /= rhs;
 			return *this;
 		}
 
@@ -469,7 +464,7 @@ namespace st::core
 
 		Type getValue() const
 		{
-			return m_attribute->getValue<Type>();
+			return m_attribute->getData<Type>();
 		}
 
 		std::shared_ptr<TypedAttribute<Type>> getAttribute() const

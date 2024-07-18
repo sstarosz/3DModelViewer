@@ -1,6 +1,5 @@
 #include "Renderer.hpp"
 #include "Core/EventSystem.hpp"
-#include "Core/Scene.hpp"
 #include "MaterialManager.hpp"
 #include "Mesh.hpp"
 #include "PhysicalDevice.hpp"
@@ -282,36 +281,7 @@ namespace st::renderer
 			resetCommandBuffer(m_currentFrame);
 
 			// Record command for the current frame
-			// recordCommandBuffer(m_vulkanContext.m_commandBuffers[m_currentFrame], imageIndex);
-
-			// Submit command buffer
-			submitCommandBuffer(m_currentFrame);
-
-			// Present image
-			presentImage(imageIndex);
-
-			// Advance to next frame
-			m_currentFrame = (m_currentFrame + 1) % m_vulkanContext.MAX_FRAMES_IN_FLIGHT;
-		}
-
-		void render(const core::Scene& scene)
-		{
-			// TODO implement rendering scene
-
-			// Wait for previous frame to finish
-			waitForPreviousFrame();
-
-			// Reset the fence for the current frame
-			m_vulkanContext.m_device.resetFences(m_vulkanContext.m_inFlightFences.at(m_currentFrame));
-
-			// Acquire swap chain image
-			uint32_t imageIndex = acquireSwapChainImage();
-
-			// Reset the command buffer for the current frame
-			resetCommandBuffer(m_currentFrame);
-
-			// Record command for the current frame
-			recordCommandBuffer(m_vulkanContext.m_commandBuffers[m_currentFrame], scene, imageIndex);
+			recordCommandBuffer(m_vulkanContext.m_commandBuffers[m_currentFrame], imageIndex);
 
 			// Submit command buffer
 			submitCommandBuffer(m_currentFrame);
@@ -368,7 +338,7 @@ namespace st::renderer
 			}
 		}
 
-		void recordCommandBuffer(vk::CommandBuffer& commandBuffer, const core::Scene& /*scene*/, uint32_t imageIndex)
+		void recordCommandBuffer(vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
 		{
 			spdlog::info("Renderer::recordCommandBuffer()");
 
@@ -946,47 +916,6 @@ namespace st::renderer
 			m_vulkanContext.m_device.unmapMemory(m_pipeline.resources.indexBufferMemory);
 		}
 
-		// TODO - Missing error handling
-		void onNewMeshAdded(const core::Event* event)
-		{
-			////TODO - Implement adding model to the scene
-			// auto* eventData = dynamic_cast<const core::EventData*>(event);
-			// if(eventData)
-			//{
-			//	if(core::Node* node = eventData->m_eventData)
-			//	{
-			//		//TODO - Implement adding model to the scene
-			//		//if(node->isOfType(core::Node::Type::eMesh))
-			//		//{
-			//		//	//Add renderable object to the scene
-			//		//	std::cout << "New object added to the scene" << std::endl;
-			//		//}
-			//	}
-			// }
-		}
-
-		void embedScene(std::shared_ptr<core::Scene> scene)
-		{
-			m_scene = scene;
-
-			// Initialize Renderable objects
-			for (const auto& object : m_scene->getSceneContent())
-			{
-				if (object->isOfType(core::StObject::Type::eMesh))
-				{
-					auto mesh = std::dynamic_pointer_cast<Mesh>(object);
-					if (mesh)
-					{
-						// TODO - Implement adding mesh to the scene
-						std::cout << "Mesh added to the scene" << std::endl;
-					}
-				}
-			}
-
-			// Register to the event system
-			// core::EventSystem::registerEvent(core::Event::Type::eAddedModel, [this](const core::Event* event) { onNewMeshAdded(event); });
-		}
-
 		void updateScene(core::TypedInputHandler<Renderable> input)
 		{
 			m_input = input;
@@ -1038,7 +967,6 @@ namespace st::renderer
 		//	0 // Second triangle (top-left)
 		//};
 
-		std::shared_ptr<core::Scene> m_scene;
 		std::unique_ptr<MaterialManager> m_materialManager;
 		core::TypedInputHandler<Renderable> m_input;
 	};
@@ -1065,16 +993,6 @@ namespace st::renderer
 	void Renderer::render()
 	{
 		m_privateRenderer->render();
-	}
-
-	void Renderer::render(const core::Scene& scene)
-	{
-		m_privateRenderer->render(scene);
-	}
-
-	void Renderer::embedScene(std::shared_ptr<core::Scene> scene)
-	{
-		m_privateRenderer->embedScene(scene);
 	}
 
 	void Renderer::setSurface(vk::SurfaceKHR surface)

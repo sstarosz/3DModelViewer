@@ -48,7 +48,7 @@ namespace st::core::test
     TEST_F(AttributeTest, NumericAttributeInitialization)
     {
         auto numericAttribute = NumericAttribute<float>::Builder("TestAttribute", 10.0f).build();
-        ASSERT_EQ(10.0f, numericAttribute->getValue());
+        ASSERT_EQ(10.0f, numericAttribute->getData());
     }
 
 

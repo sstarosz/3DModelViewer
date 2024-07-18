@@ -1,4 +1,4 @@
-#include "Nodes/Node.hpp"
+#include "Nodes/NodeGraph.hpp"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -49,7 +49,6 @@ namespace st::core::test
     TEST_F(NodeGraphTest, NodeGraphAddNode)
     {
         NodeGraph nodeGraph;
-
 
 
         std::shared_ptr<Node> testNodePtr = std::make_shared<TestableNode>();

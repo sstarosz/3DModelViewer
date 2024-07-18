@@ -14,7 +14,7 @@ namespace st::renderer
      * @brief 
      * 
      */
-    class Grid : public Mesh
+    class Grid
     {
         public:
             Grid(float lengthAndWidth, uint32_t division)

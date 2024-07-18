@@ -18,7 +18,7 @@ namespace st::core
 	class ContentManager
 	{
 	  public:
-		ContentManager(EventSystem& eventSystem) :
+		ContentManager(EventSystemHandler eventSystem) :
 			m_eventSystem(eventSystem),
 			m_nodeGraph(eventSystem)
 		{
@@ -49,7 +49,7 @@ namespace st::core
 		}
 
 	  private:
-		EventSystem& m_eventSystem;
+		EventSystemHandler m_eventSystem;
 		NodeGraph m_nodeGraph;
 		//NodeRegistry m_nodeRegistry;
 	};
