@@ -1,4 +1,4 @@
-#include "Core/Camera.hpp"
+#include "Core/Nodes/Camera.hpp"
 #include "Core/ContentManager.hpp"
 #include "Core/Transform.hpp"
 #include "Core/EventSystem.hpp"

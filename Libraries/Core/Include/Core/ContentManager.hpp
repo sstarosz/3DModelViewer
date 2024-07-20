@@ -51,7 +51,6 @@ namespace st::core
 	  private:
 		EventSystemHandler m_eventSystem;
 		NodeGraph m_nodeGraph;
-		//NodeRegistry m_nodeRegistry;
 	};
 
 

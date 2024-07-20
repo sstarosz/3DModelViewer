@@ -8,7 +8,7 @@ project(Core
         
 
 set(Sources
-    "Source/Camera.cpp"
+    "Source/Nodes/Camera.cpp"
     "Source/Transform.cpp"
     "Source/StObject.cpp"
     "Source/EventSystem.cpp"
@@ -17,7 +17,7 @@ set(Sources
     )
 
 set(Public_Headers
-    "Include/Core/Camera.hpp"
+    "Include/Core/Nodes/Camera.hpp"
     "Include/Core/Transform.hpp"
     "Include/Core/StObject.hpp"
     "Include/Core/EventSystem.hpp"
