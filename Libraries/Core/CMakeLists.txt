@@ -13,7 +13,7 @@ set(Sources
     "Source/StObject.cpp"
     "Source/EventSystem.cpp"
     "Source/ContentManager.cpp"
-    "Source/Nodes/NodeGraph.cpp"
+    "Source/NodeGraph.cpp"
     )
 
 set(Public_Headers
@@ -23,8 +23,8 @@ set(Public_Headers
     "Include/Core/EventSystem.hpp"
     "Include/Core/DataTypes/DataTypes.hpp"
     "Include/Core/ContentManager.hpp"
-    "Include/Core/Nodes/Node.hpp"
-    "Include/Core/Nodes/NodeGraph.hpp"
+    "Include/Core/Node.hpp"
+    "Include/Core/NodeGraph.hpp"
     )
 
 set(Private_Headers

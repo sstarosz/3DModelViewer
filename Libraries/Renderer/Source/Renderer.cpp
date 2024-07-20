@@ -1,11 +1,9 @@
 #include "Renderer.hpp"
 #include "Core/EventSystem.hpp"
 #include "MaterialManager.hpp"
-#include "Mesh.hpp"
 #include "PhysicalDevice.hpp"
 #include "QueueFamily.hpp"
 #include "StandardMaterial.hpp"
-#include "VisualAidsPipline.hpp"
 #include "VulkanContext.hpp"
 
 #include <Eigen/Core>
@@ -198,7 +196,6 @@ namespace st::renderer
 
 
 			createRenderPass();
-			createGraphicsPipeline();
 
 			updateScene(m_input);
 			updateVertexBuffer();
@@ -393,15 +390,6 @@ namespace st::renderer
 			commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipeline.pipelineLayout, 0, m_pipeline.resources.descriptorSets[m_currentFrame], {});
 			commandBuffer.drawIndexed(static_cast<uint32_t>(indicesSize), 1, 0, 0, 0);
 
-			// StandardMaterial
-			//spdlog::info("Renderer::recordCommandBuffer() - StandardMaterial");
-			//spdlog::info("Input: {}", m_input.getValue());
-			//commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_input.getValue().m_material.m_pipeline);
-			//commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_input.getValue().m_material.m_pipelineLayout, 0, m_input.getValue().m_material.m_descriptorSet, {});
-			//vk::Buffer vertexBuffers2[] = {m_input.getValue().m_vertexBuffer};
-			//vk::DeviceSize offsets2[] = {0};
-			//commandBuffer.bindVertexBuffers(0, 1, vertexBuffers2, offsets2);
-			//commandBuffer.bindIndexBuffer(m_input.getValue().m_indexBuffer, 0, vk::IndexType::eUint32);
 
 			commandBuffer.endRenderPass();
 			commandBuffer.end();
@@ -665,16 +653,6 @@ namespace st::renderer
 			throw std::runtime_error("failed to find supported format!");
 		}
 
-		void createGraphicsPipeline()
-		{
-			//VisualAidsPipeline Pipeline(m_vulkanContext, m_vulkanContext.m_renderPass);
-			//PipelineDirector director;
-			//director.setBuilder(&Pipeline);
-			//director.constructPipeline();
-			//m_pipeline = director.getPipeline();
-
-		
-		}
 
 		void createBuffer(vk::DeviceSize size,
 						  vk::BufferUsageFlags usage,
@@ -927,7 +905,7 @@ namespace st::renderer
 			spdlog::info("Mesh: {}", m_input.getValue().m_meshData.getVertexPointList().size());
 			spdlog::info("Mesh: {}", m_input.getValue().m_meshData.getIndicesPointList().size());
 
-			m_pipeline = PipelineBuilder2(m_vulkanContext)
+			m_pipeline = PipelineBuilder(m_vulkanContext)
 							 .setVertexShader(m_input.getValue().m_vertexShader)
 							 .setFragmentShader(m_input.getValue().m_fragmentShader)
 							 .build();
@@ -945,28 +923,7 @@ namespace st::renderer
 		uint32_t m_width = 800;
 		uint32_t m_height = 600;
 
-		//struct Vertex
-		//{
-		//	Eigen::Vector3f position;
-		//	Eigen::Vector3f color;
-		//};
-
-		//std::vector<Eigen::Vector3f> vertices{
-		//	{-0.5f, -0.5f, 0.0f}, // Bottom-left corner, red
-		//	{0.5f,  -0.5f, 0.0f}, // Bottom-right corner, green
-		//	{0.5f,  0.5f,	 0.0f}, // Top-right corner, blue
-		//	{-0.5f, 0.5f,  0.0f}  // Top-left corner, white
-		//};
-
-		//std::vector<uint32_t> m_indices{
-		//	0,
-		//	1,
-		//	2, // First triangle (bottom-right)
-		//	2,
-		//	3,
-		//	0 // Second triangle (top-left)
-		//};
-
+	
 		std::unique_ptr<MaterialManager> m_materialManager;
 		core::TypedInputHandler<Renderable> m_input;
 	};

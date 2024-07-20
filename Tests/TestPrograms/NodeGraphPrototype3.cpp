@@ -1,4 +1,4 @@
-#include "Core/Nodes/Node.hpp"
+#include "Core/Node.hpp"
 #include <Eigen/Core>
 #include <algorithm>
 #include <cassert>

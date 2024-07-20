@@ -4,7 +4,7 @@
 #include "GraphicsPiplineFactory.hpp"
 #include "Material.hpp"
 #include "Renderable.hpp"
-#include "Core/Nodes/Node.hpp"
+#include "Core/Node.hpp"
 #include "Geometry/DataTypes/Mesh.hpp"
 
 #include <string_view>
@@ -48,36 +48,6 @@ namespace st::renderer
 		}
     )";
 
-	class StandardMaterial : public Material
-	{
-	  public:
-		StandardMaterial() = default;
-
-	  private:
-		class StandardMaterialBuilder : public PipelineBuilder
-		{
-		  public:
-			StandardMaterialBuilder(const VulkanContext& context, const vk::RenderPass& renderPass) :
-				PipelineBuilder(context, renderPass)
-			{
-			}
-
-			void buildShader() override
-			{
-				// Compile shaders
-				pipeline.shaderStages = compileShader(std::string(standardMaterialVertexShader), std::string(standardMaterialFragmentShader));
-			};
-
-			void buildDynamicState() override
-			{
-				// TOD
-				pipeline.dynamicStates.push_back(vk::DynamicState::eViewport);
-				pipeline.dynamicStates.push_back(vk::DynamicState::eScissor);
-				pipeline.dynamicStateInfo = vk::PipelineDynamicStateCreateInfo(vk::PipelineDynamicStateCreateFlags{},
-																			   pipeline.dynamicStates);
-			};
-		};
-	};
 
 	class StandardMaterial2 : public core::Node
 	{

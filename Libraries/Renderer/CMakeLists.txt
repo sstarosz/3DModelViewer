@@ -23,7 +23,6 @@ set(Public_Headers
 set(Private_Headers
     "Source/PhysicalDevice.hpp"
     "Source/QueueFamily.hpp"
-    "Source/VisualAidsPipline.hpp"
     )
 
 add_library(${PROJECT_NAME} ${Sources} ${Public_Headers} ${Private_Headers})

@@ -9,9 +9,8 @@
 #include <fstream>
 #include <string>
 
-
-//PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXTTest;
-//PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXTTest;
+// PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXTTest;
+// PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXTTest;
 //
 //// TODO - change it to class method
 //[[maybe_unused]] VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugUtilsMessengerEXT(VkInstance instance,
@@ -32,9 +31,9 @@
 namespace st::renderer::test
 {
 	VkBool32 debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-							VkDebugUtilsMessageTypeFlagsEXT messageType,
-							const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-							void*)
+						   VkDebugUtilsMessageTypeFlagsEXT messageType,
+						   const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+						   void*)
 	{
 		std::ostringstream message;
 
@@ -94,8 +93,6 @@ namespace st::renderer::test
 		return false;
 	}
 
-
-
 	class TestableVulkanContext : public VulkanContext
 	{
 	  public:
@@ -123,7 +120,7 @@ namespace st::renderer::test
 			m_instance = vk::createInstance(createInfo);
 
 			// Setup debug messenger
-			auto pfnVkCreateDebugUtilsMessengerEXTTest =  m_instance.getProcAddr("vkCreateDebugUtilsMessengerEXT");
+			auto pfnVkCreateDebugUtilsMessengerEXTTest = m_instance.getProcAddr("vkCreateDebugUtilsMessengerEXT");
 			if (!pfnVkCreateDebugUtilsMessengerEXTTest)
 			{
 				// TODO - Change it to something independent of iostream
@@ -133,7 +130,7 @@ namespace st::renderer::test
 				exit(1);
 			}
 
-			auto  pfnVkDestroyDebugUtilsMessengerEXTTest = m_instance.getProcAddr("vkDestroyDebugUtilsMessengerEXT");
+			auto pfnVkDestroyDebugUtilsMessengerEXTTest = m_instance.getProcAddr("vkDestroyDebugUtilsMessengerEXT");
 			if (!pfnVkDestroyDebugUtilsMessengerEXTTest)
 			{
 				// TODO - Change it to something independent of iostream
@@ -161,7 +158,6 @@ namespace st::renderer::test
 
 			m_debugMessenger = m_instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);
 
-
 			// Chose physical device
 			std::vector<vk::PhysicalDevice> devices = m_instance.enumeratePhysicalDevices();
 			m_physicalDevice = devices.front();
@@ -182,35 +178,34 @@ namespace st::renderer::test
 	class TestableRenderPass
 	{
 	  public:
-		TestableRenderPass(TestableVulkanContext& context) : m_context(context)
+		TestableRenderPass(TestableVulkanContext& context) :
+			m_context(context)
 		{
 		}
 
 		void initialize()
 		{
-			vk::AttachmentDescription colorAttachment({}, 
-													  vk::Format::eB8G8R8A8Unorm, 
-													  vk::SampleCountFlagBits::e1, 
-													  vk::AttachmentLoadOp::eClear, 
-													  vk::AttachmentStoreOp::eStore, 
-													  vk::AttachmentLoadOp::eDontCare, 
-													  vk::AttachmentStoreOp::eDontCare, 
-													  vk::ImageLayout::eUndefined, 
-													  vk::ImageLayout::ePresentSrcKHR
-													 );
+			vk::AttachmentDescription colorAttachment({},
+													  vk::Format::eB8G8R8A8Unorm,
+													  vk::SampleCountFlagBits::e1,
+													  vk::AttachmentLoadOp::eClear,
+													  vk::AttachmentStoreOp::eStore,
+													  vk::AttachmentLoadOp::eDontCare,
+													  vk::AttachmentStoreOp::eDontCare,
+													  vk::ImageLayout::eUndefined,
+													  vk::ImageLayout::ePresentSrcKHR);
 
 			vk::AttachmentReference colorAttachmentRef(0, vk::ImageLayout::eColorAttachmentOptimal);
 
 			vk::SubpassDescription subpass({}, vk::PipelineBindPoint::eGraphics, 0, nullptr, 1, &colorAttachmentRef, nullptr, nullptr, 0, nullptr);
 
-			vk::SubpassDependency dependency(VK_SUBPASS_EXTERNAL, 
-											 0, 
-											 vk::PipelineStageFlagBits::eColorAttachmentOutput, 
-											 vk::PipelineStageFlagBits::eColorAttachmentOutput, 
-											 {}, 
-											 vk::AccessFlagBits::eColorAttachmentRead | 
-											 	vk::AccessFlagBits::eColorAttachmentWrite
-											);
+			vk::SubpassDependency dependency(VK_SUBPASS_EXTERNAL,
+											 0,
+											 vk::PipelineStageFlagBits::eColorAttachmentOutput,
+											 vk::PipelineStageFlagBits::eColorAttachmentOutput,
+											 {},
+											 vk::AccessFlagBits::eColorAttachmentRead |
+												 vk::AccessFlagBits::eColorAttachmentWrite);
 
 			vk::RenderPassCreateInfo renderPassInfo({}, 1, &colorAttachment, 1, &subpass, 1, &dependency);
 
@@ -218,22 +213,17 @@ namespace st::renderer::test
 		}
 
 	  public:
-	    TestableVulkanContext& m_context;
+		TestableVulkanContext& m_context;
 		vk::RenderPass m_renderPass;
 	};
 
-	class TestPipeline : public PipelineBuilder
-	{
-	  public:
-		TestPipeline(const VulkanContext& context, const vk::RenderPass& renderPass) :
-			PipelineBuilder(context, renderPass)
-		{
-		}
 
-		void buildShader() override
-		{
-			// TODO
-			std::string vertexShader = R"(
+	TEST(GraphicsPiplineFactoryTest, CreateGraphicsPipeline)
+	{
+		TestableVulkanContext context;
+		context.initialize();
+
+		std::string vertexShader = R"(
             #version 450
 
             layout(location = 0) in vec3 inPosition;
@@ -255,7 +245,7 @@ namespace st::renderer::test
             }
         )";
 
-			std::string fragmentShader = R"(
+		std::string fragmentShader = R"(
             #version 450
 
             layout(location = 0) in vec3 inFragColor;
@@ -268,35 +258,10 @@ namespace st::renderer::test
             }
         )";
 
-			// Compile shaders
-			pipeline.shaderStages = compileShader(vertexShader, fragmentShader);
-		};
-
-		void buildDynamicState() override
-		{
-			// TOD
-			pipeline.dynamicStates.push_back(vk::DynamicState::eViewport);
-			pipeline.dynamicStates.push_back(vk::DynamicState::eScissor);
-			pipeline.dynamicStateInfo = vk::PipelineDynamicStateCreateInfo(vk::PipelineDynamicStateCreateFlags{},
-																		   pipeline.dynamicStates);
-		};
-	};
-
-	TEST(GraphicsPiplineFactoryTest, CreateGraphicsPipeline)
-	{
-		TestableVulkanContext context;
-		context.initialize();
-		TestableRenderPass renderPass{context};
-		renderPass.initialize();
-
-		TestPipeline pipeline{context, renderPass.m_renderPass};
-
-		PipelineDirector director;
-		director.setBuilder(&pipeline);
-
-		director.constructPipeline();
-
-		Pipeline graphicsPipeline = director.getPipeline();
+		Pipeline pipeline = PipelineBuilder(context)
+								.setVertexShader(vertexShader)
+								.setFragmentShader(fragmentShader)
+								.build();
 
 		// TODO
 		// st::renderer::GraphicsPiplineFactory factory;

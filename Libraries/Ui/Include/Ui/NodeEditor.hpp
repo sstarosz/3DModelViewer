@@ -11,8 +11,8 @@
 #include <QShowEvent>
 
 
-#include "Core/Nodes/Node.hpp"
-#include "Core/Nodes/NodeGraph.hpp"
+#include "Core/Node.hpp"
+#include "Core/NodeGraph.hpp"
 #include "Core/ContentManager.hpp"
 
 #include <algorithm>

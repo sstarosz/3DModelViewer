@@ -1,7 +1,7 @@
 #ifndef ST_RENDERER_RENDERER_HPP
 #define ST_RENDERER_RENDERER_HPP
 
-#include "Core/Nodes/Node.hpp"
+#include "Core/Node.hpp"
 #include "Renderable.hpp"
 #include "MaterialManager.hpp"
 

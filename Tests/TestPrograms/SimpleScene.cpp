@@ -4,7 +4,7 @@
 #include "Core/EventSystem.hpp"
 
 #include "Renderer/MaterialManager.hpp"
-#include "Renderer/Mesh.hpp"
+#include "Geometry/DataTypes/Mesh.hpp"
 #include "Renderer/Plane.hpp"
 #include "Renderer/Renderer.hpp"
 #include "Renderer/StandardMaterial.hpp"

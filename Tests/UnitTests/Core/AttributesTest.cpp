@@ -1,4 +1,4 @@
-#include "Nodes/Node.hpp" //TODO split this header file into multiple files
+#include "Node.hpp" //TODO split this header file into multiple files
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

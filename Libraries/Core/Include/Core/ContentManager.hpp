@@ -2,8 +2,8 @@
 #define ST_CORE_CONTENTMANAGER_HPP
 
 #include "EventSystem.hpp"
-#include "Nodes/NodeGraph.hpp"
-#include "Nodes/Node.hpp"
+#include "NodeGraph.hpp"
+#include "Node.hpp"
 #include "Handlers.hpp"
 #include <memory>
 #include <print>

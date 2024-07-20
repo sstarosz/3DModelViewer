@@ -8,7 +8,7 @@ set(Test_Name "CoreTests")
 
 set(Tests_Sources
 
-    "Nodes/AttributesTest.cpp"
+    "AttributesTest.cpp"
     "CameraTest.cpp"
     "GraphNodeTest.cpp"
 )

@@ -1,7 +1,7 @@
 #include "NodeEditor.hpp"
 #include "Core/ContentManager.hpp"
-#include "Core/Nodes/Node.hpp"
-#include "Core/Nodes/NodeGraph.hpp"
+#include "Core/Node.hpp"
+#include "Core/NodeGraph.hpp"
 #include <QGraphicsScene>
 #include <QMouseEvent>
 #include <print>

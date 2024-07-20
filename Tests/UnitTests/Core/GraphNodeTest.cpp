@@ -1,4 +1,4 @@
-#include "Nodes/NodeGraph.hpp"
+#include "NodeGraph.hpp"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

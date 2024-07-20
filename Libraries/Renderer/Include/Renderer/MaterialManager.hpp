@@ -2,7 +2,6 @@
 #define ST_RENDERER_MATERIAL_MANAGER_HPP
 
 #include "Material.hpp"
-#include "Mesh.hpp"
 #include <vector>
 #include <memory>
 
@@ -16,11 +15,6 @@ namespace st::renderer
         void createMaterial(Material& material) const
         {
             //m_materials.push_back(std::make_shared<Material>(material));
-            //TODO implement
-        }
-
-        void assignMaterialToMesh(Material& material, std::weak_ptr<core::StObject> mesh) const
-        {
             //TODO implement
         }
 

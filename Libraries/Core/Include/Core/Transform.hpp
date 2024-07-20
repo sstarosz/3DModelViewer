@@ -1,7 +1,7 @@
 #ifndef ST_CORE_TRANSFORM_HPP
 #define ST_CORE_TRANSFORM_HPP
 
-#include "Core/Nodes/Node.hpp"
+#include "Core/Node.hpp"
 
 #include <memory>
 #include <Eigen/Core>

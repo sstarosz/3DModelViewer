@@ -1,7 +1,7 @@
 #ifndef ST_CORE_CAMERA_HPP
 #define ST_CORE_CAMERA_HPP
 
-#include "Nodes/Node.hpp"
+#include "Node.hpp"
 #include "StObject.hpp"
 #include <memory>
 

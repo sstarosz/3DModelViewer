@@ -3,7 +3,7 @@
 
 
 
-#include "Core/Nodes/Node.hpp"
+#include "Core/Node.hpp"
 #include "Geometry/DataTypes/Mesh.hpp"
 #include <Eigen/Core>
 
