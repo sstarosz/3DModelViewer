@@ -9,7 +9,6 @@ project(Core
 
 set(Sources
     "Source/Nodes/Camera.cpp"
-    "Source/Transform.cpp"
     "Source/ContentManager.cpp"
     "Source/NodeGraph.cpp"
     "Source/Node.cpp"
@@ -19,7 +18,6 @@ set(Sources
 
 set(Public_Headers
     "Include/Core/Nodes/Camera.hpp"
-    "Include/Core/Transform.hpp"
     "Include/Core/DataTypes/DataTypes.hpp"
     "Include/Core/ContentManager.hpp"
     "Include/Core/Node.hpp"

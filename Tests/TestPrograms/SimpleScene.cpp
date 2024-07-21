@@ -1,6 +1,5 @@
 #include "Core/Nodes/Camera.hpp"
 #include "Core/ContentManager.hpp"
-#include "Core/Transform.hpp"
 
 #include "Renderer/MaterialManager.hpp"
 #include "Geometry/DataTypes/Mesh.hpp"
@@ -475,13 +474,10 @@ namespace st
 		{
 		}
 
-		std::weak_ptr<core::Transform> transform()
+		//TODO refactor
+		void transform()
 		{
-			// m_transformer = Transformer(node);
-			std::shared_ptr<core::Transform> transform = std::make_shared<core::Transform>();
 
-			// m_contentManager.addToCurrentContext(transform, m_currentContext);
-			return std::weak_ptr<core::Transform>{transform};
 		}
 
 		MaterialModifier material()
