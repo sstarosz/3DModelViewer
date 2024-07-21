@@ -6,35 +6,30 @@
 namespace st::core
 {
 
+	template <typename Component>
+	class Handler
+	{
+	  public:
+		Handler() :
+			m_pComponent(nullptr)
+		{
+		}
 
-template <typename Component>
-class Handler
-{
-    public:
-        Handler()
-            : m_pComponent(nullptr)
-        {
-        }
+		Handler(Component* component) :
+			m_pComponent(component)
+		{
+            assert(m_pComponent != nullptr && "Component is nullptr");
+		}
 
-        Handler(Component* component) :
-            m_pComponent(component)
-        {
-        }
+		Component* operator->()
+		{
+			assert(m_pComponent != nullptr && "Component is nullptr");
+			return m_pComponent;
+		}
 
-        Component* operator->()
-        {
-            assert(m_pComponent != nullptr);
-            return m_pComponent;
-        }
-
-    private:    
-        Component* m_pComponent;
-};
-
-
-
-
-
+	  private:
+		Component* m_pComponent;
+	};
 
 } // namespace st::core
 

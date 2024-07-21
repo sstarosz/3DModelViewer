@@ -1,5 +1,4 @@
 #include "Renderer.hpp"
-#include "Core/EventSystem.hpp"
 #include "MaterialManager.hpp"
 #include "PhysicalDevice.hpp"
 #include "QueueFamily.hpp"

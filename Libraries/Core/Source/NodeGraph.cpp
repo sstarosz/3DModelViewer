@@ -1,11 +1,8 @@
 #include "NodeGraph.hpp"
 
-#include "EventSystem.hpp"
-
 namespace st::core
 {
-	NodeGraph::NodeGraph(EventSystemHandler eventSystem) :
-		m_eventSystem(eventSystem)
+	NodeGraph::NodeGraph()
 	{
 	}
 

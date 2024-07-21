@@ -3,7 +3,6 @@
 
 
 #include "Core/Handlers.hpp"
-#include "Core/EventSystem.hpp"
 #include "Node.hpp"
 
 #include <list>
@@ -19,7 +18,7 @@ namespace st::core
   	class NodeGraph
 	{
 	  public:
-		NodeGraph(EventSystemHandler eventSystem = {});
+		NodeGraph();
 
 		void addNode(std::shared_ptr<Node> node);
 
@@ -34,8 +33,6 @@ namespace st::core
 		std::vector<std::shared_ptr<Connection>> getConnections() const;
 
 	  private:
-		EventSystemHandler m_eventSystem;
-
 		std::vector<std::shared_ptr<Node>> m_nodes;
 		std::vector<std::shared_ptr<Connection>> m_connections;
 	};

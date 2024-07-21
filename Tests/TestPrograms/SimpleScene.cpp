@@ -1,7 +1,6 @@
 #include "Core/Nodes/Camera.hpp"
 #include "Core/ContentManager.hpp"
 #include "Core/Transform.hpp"
-#include "Core/EventSystem.hpp"
 
 #include "Renderer/MaterialManager.hpp"
 #include "Geometry/DataTypes/Mesh.hpp"
@@ -413,7 +412,6 @@ namespace st
 	  private:
 		core::ContentManagerHandler m_contentManager;
 		CommandManagerHandler m_commandManager;
-		core::EventSystemHandler m_eventSystem;
 	};
 
 	class Transformer
@@ -515,8 +513,7 @@ namespace st
 		Application(int argc, char* argv[]) :
 			m_app(argc, argv),
 			m_commandManager(),
-			m_eventSystem(),
-			m_contentManager(core::EventSystemHandler(&m_eventSystem)),
+			m_contentManager(),
 			m_guiManager(core::ContentManagerHandler(&m_contentManager)),
 			m_creator(core::ContentManagerHandler(&m_contentManager), CommandManagerHandler(&m_commandManager))
 		{
@@ -544,7 +541,7 @@ namespace st
 		{	
 			spdlog::info("Application::run()");	
 
-			m_contentManager.run();
+			m_contentManager.onStart();
 			
 			m_guiManager.show();
 
@@ -573,7 +570,6 @@ namespace st
 
 		//Communication withing the application
 		CommandManager m_commandManager;
-		core::EventSystem m_eventSystem;
 
 
 		// Content
