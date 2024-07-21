@@ -4,6 +4,7 @@
 
 
 #include "Core/Node.hpp"
+#include "Core/NodeRegistry.hpp"
 #include "Geometry/DataTypes/Mesh.hpp"
 #include <Eigen/Core>
 

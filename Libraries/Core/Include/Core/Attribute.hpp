@@ -9,7 +9,7 @@
 namespace st::core
 {
 
-    //TODO Attribute need redesign
+	// TODO Attribute need redesign
 	class Attribute
 	{
 	  public:
@@ -121,8 +121,7 @@ namespace st::core
 		bool m_isConnected;
 	};
 
-
-    //TODO Attribute need redesign
+	// TODO Attribute need redesign
 	template <typename Type>
 	inline void Attribute::setData(const Type& data)
 	{
@@ -130,21 +129,23 @@ namespace st::core
 		m_isConnected = false;
 	}
 
-	template<>
+	template <>
 	inline void Attribute::setData(const std::shared_ptr<Attribute>& data)
 	{
 		m_connectedAttribute = data;
 		m_isConnected = true;
 	}
 
-    /*----------------------*/
-    /*-------Handlers-------*/
-    /*----------------------*/
-    class AttributeHandler
-    {
+	/*----------------------*/
+	/*-------Handlers-------*/
+	/*----------------------*/
+	class AttributeHandler
+	{
+	  public:
+		virtual ~AttributeHandler() = default;
 
-    };
-
+		//virtual std::shared_ptr<Attribute> getAttribute() = 0;
+	};
 
 } // namespace st::core
 

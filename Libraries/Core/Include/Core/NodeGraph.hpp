@@ -14,6 +14,27 @@
 namespace st::core
 {
 
+	class Connection
+	{
+	  public:
+		Connection(std::shared_ptr<Node> sourceNode,
+				   std::shared_ptr<Attribute> sourceAttrName,
+				   std::shared_ptr<Node> targetNode,
+				   std::shared_ptr<Attribute> targetAttrName) :
+			sourceNode(sourceNode),
+			sourceAttrName(sourceAttrName),
+			targetNode(targetNode),
+			targetAttrName(targetAttrName)
+		{
+		}
+
+		std::shared_ptr<Node> sourceNode;
+		std::shared_ptr<Attribute> sourceAttrName;
+
+		std::shared_ptr<Node> targetNode;
+		std::shared_ptr<Attribute> targetAttrName;
+	};
+
 
   	class NodeGraph
 	{

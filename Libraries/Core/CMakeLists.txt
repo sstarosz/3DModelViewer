@@ -13,6 +13,7 @@ set(Sources
     "Source/StObject.cpp"
     "Source/ContentManager.cpp"
     "Source/NodeGraph.cpp"
+    "Source/Node.cpp"
     "Source/Attribute.cpp"
     "Source/NumericAttribute.cpp"
     )
