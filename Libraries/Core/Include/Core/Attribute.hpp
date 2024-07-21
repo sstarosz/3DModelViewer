@@ -137,6 +137,15 @@ namespace st::core
 		m_isConnected = true;
 	}
 
+    /*----------------------*/
+    /*-------Handlers-------*/
+    /*----------------------*/
+    class AttributeHandler
+    {
+
+    };
+
+
 } // namespace st::core
 
 #endif // ST_CORE_NODES_NODE_HPP

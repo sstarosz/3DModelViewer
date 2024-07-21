@@ -152,6 +152,105 @@ namespace st::core
 		NumericAttributeProperties m_properties;
 	};
 
+
+	/*----------------------*/
+	/*-------Handlers-------*/
+	/*----------------------*/
+    /**
+	 * @brief NumericInputHandler is a class that provide handler over numeric attributes
+	 * for easy access and manipulation on generic attributes
+	 *
+	 * Inputs are always readable and writable
+	 */
+	template <NumericAttributeType Type> // TODO add Constraint
+	class NumericInputHandler : public AttributeHandler
+	{
+	  public:
+		NumericInputHandler() = default;
+
+		NumericInputHandler(std::shared_ptr<NumericAttribute<Type>> attribute) :
+			m_attribute(attribute)
+		{
+		}
+
+		operator Type () const
+		{
+			return m_attribute->getData();
+		}
+
+		NumericInputHandler<Type>& operator= (const Type& rhs)
+		{
+			m_attribute->setValue(rhs);
+			return *this;
+		}
+
+		NumericInputHandler& operator+= (const Type& rhs)
+		{
+			Type value = m_attribute->getData();
+			value += rhs;
+			return *this;
+		}
+
+		NumericInputHandler& operator-= (const Type& rhs)
+		{
+			Type value = m_attribute->getData();
+			value -= rhs;
+			return *this;
+		}
+
+		NumericInputHandler& operator*= (const Type& rhs)
+		{
+			Type value = m_attribute->getData();
+			value *= rhs;
+			return *this;
+		}
+
+		NumericInputHandler& operator/= (const Type& rhs)
+		{
+			Type value = m_attribute->getData();
+			value /= rhs;
+			return *this;
+		}
+
+		std::shared_ptr<NumericAttribute<Type>> getAttribute() const
+		{
+			return m_attribute;
+		}
+
+	  private:
+		std::shared_ptr<NumericAttribute<Type>> m_attribute;
+	};
+
+	template <NumericAttributeType Type>
+	class NumericOutputHandler : public AttributeHandler
+	{
+	  public:
+		NumericOutputHandler() = default;
+
+		NumericOutputHandler(std::shared_ptr<NumericAttribute<Type>> attribute) :
+			m_attribute(attribute)
+		{
+		}
+
+        operator Type () const
+        {
+            return m_attribute->getData();
+        }
+
+		Type getData() const
+		{
+			return m_attribute->getData();
+		}
+
+		std::shared_ptr<NumericAttribute<Type>> getAttribute() const
+		{
+			return m_attribute;
+		}
+
+	  private:
+		std::shared_ptr<NumericAttribute<Type>> m_attribute;
+	};
+
 } // namespace st::core
 
 #endif // ST_CORE_NUMERIC_ATTRIBUTE_HPP

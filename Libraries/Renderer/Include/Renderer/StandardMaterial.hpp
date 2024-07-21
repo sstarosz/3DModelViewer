@@ -84,7 +84,7 @@ namespace st::renderer
 			spdlog::info("StandardMaterial2::compute()");
 
 			//Print the mesh data
-			auto meshData = m_inputs.meshData.getValue();
+			auto meshData = m_inputs.meshData.getData();
 			spdlog::info("Mesh Data: {}", meshData);
 
 			Renderable renderable;

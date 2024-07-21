@@ -381,7 +381,7 @@ namespace st::renderer
 			commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.pipeline);
 
 			// Object
-			auto indicesSize = m_input.getValue().m_meshData.getIndicesPointList().size();
+			auto indicesSize = m_input.getData().m_meshData.getIndicesPointList().size();
 			vk::Buffer vertexBuffers[] = {m_pipeline.resources.vertexBuffer};
 			vk::DeviceSize offsets[] = {0};
 			commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
@@ -844,7 +844,7 @@ namespace st::renderer
 		// Temporary
 		void updateVertexBuffer()
 		{
-			auto vertices = m_input.getValue().m_meshData.getVertexPointList();
+			auto vertices = m_input.getData().m_meshData.getVertexPointList();
 
 			vk::BufferCreateInfo bufferInfo{{},
 											sizeof(vertices[0]) * vertices.size(),
@@ -870,7 +870,7 @@ namespace st::renderer
 
 		void updateIndexBuffer()
 		{
-			auto m_indices = m_input.getValue().m_meshData.getIndicesPointList();
+			auto m_indices = m_input.getData().m_meshData.getIndicesPointList();
 			vk::BufferCreateInfo bufferInfo{{},
 											sizeof(m_indices[0]) * m_indices.size(),
 											vk::BufferUsageFlagBits::eIndexBuffer,
@@ -899,14 +899,14 @@ namespace st::renderer
 
 			// Initialize Shader
 			spdlog::info("Renderer::updateScene() - Initialize Shader");
-			spdlog::info("Vertex Shader: {}", m_input.getValue().m_vertexShader);
-			spdlog::info("Fragment Shader: {}", m_input.getValue().m_fragmentShader);
-			spdlog::info("Mesh: {}", m_input.getValue().m_meshData.getVertexPointList().size());
-			spdlog::info("Mesh: {}", m_input.getValue().m_meshData.getIndicesPointList().size());
+			spdlog::info("Vertex Shader: {}", m_input.getData().m_vertexShader);
+			spdlog::info("Fragment Shader: {}", m_input.getData().m_fragmentShader);
+			spdlog::info("Mesh: {}", m_input.getData().m_meshData.getVertexPointList().size());
+			spdlog::info("Mesh: {}", m_input.getData().m_meshData.getIndicesPointList().size());
 
 			m_pipeline = PipelineBuilder(m_vulkanContext)
-							 .setVertexShader(m_input.getValue().m_vertexShader)
-							 .setFragmentShader(m_input.getValue().m_fragmentShader)
+							 .setVertexShader(m_input.getData().m_vertexShader)
+							 .setFragmentShader(m_input.getData().m_fragmentShader)
 							 .build();
 		}
 
