@@ -13,6 +13,8 @@ set(Sources
     "Source/StObject.cpp"
     "Source/ContentManager.cpp"
     "Source/NodeGraph.cpp"
+    "Source/Attribute.cpp"
+    "Source/NumericAttribute.cpp"
     )
 
 set(Public_Headers
@@ -23,6 +25,8 @@ set(Public_Headers
     "Include/Core/ContentManager.hpp"
     "Include/Core/Node.hpp"
     "Include/Core/NodeGraph.hpp"
+    "Include/Core/Attribute.hpp"
+    "Include/Core/NumericAttribute.hpp"
     )
 
 set(Private_Headers
