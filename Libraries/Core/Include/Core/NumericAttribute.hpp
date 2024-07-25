@@ -180,7 +180,7 @@ namespace st::core
 
 		NumericInputHandler<Type>& operator= (const Type& rhs)
 		{
-			m_attribute->setValue(rhs);
+			m_attribute->setData(rhs);
 			return *this;
 		}
 

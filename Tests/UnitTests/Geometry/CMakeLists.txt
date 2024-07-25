@@ -8,6 +8,7 @@ set(Test_Name "GeometryTests")
 
 set(Tests_Sources
     "MeshTest.cpp"
+    "PlaneTest.cpp"
 )
 
 

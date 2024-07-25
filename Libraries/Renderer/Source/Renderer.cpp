@@ -336,7 +336,7 @@ namespace st::renderer
 
 		void recordCommandBuffer(vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
 		{
-			spdlog::info("Renderer::recordCommandBuffer()");
+			//spdlog::info("Renderer::recordCommandBuffer()");
 
 			commandBuffer.begin(vk::CommandBufferBeginInfo{});
 

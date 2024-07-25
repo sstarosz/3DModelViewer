@@ -39,4 +39,40 @@ struct fmt::formatter<st::geometry::Mesh> : fmt::formatter<std::string>
 	}
 };
 
+template <>
+struct fmt::formatter<st::geometry::FloatPointVector> : fmt::formatter<std::string>
+{
+	template <typename FormatContext>
+	auto format(const st::geometry::FloatPointVector& vertices, FormatContext& ctx) const -> decltype(ctx.out())
+	{
+		//Print all vertices
+		fmt::format_to(ctx.out(), "Vertices (Count: {}):\n", vertices.size());
+		for (const auto& vertex : vertices)
+		{
+			fmt::format_to(ctx.out(), "\tVertex: x: {}, y: {}, z: {}\n", vertex.x(), vertex.y(), vertex.z());
+		}
+
+		return ctx.out();
+	}
+};
+
+template <>
+struct fmt::formatter<st::geometry::IntVector> : fmt::formatter<std::string>
+{
+	template <typename FormatContext>
+	auto format(const st::geometry::IntVector& indices, FormatContext& ctx) const -> decltype(ctx.out())
+	{
+		//Print all indices
+		fmt::format_to(ctx.out(), "Indices (Count: {}):\n", indices.size());
+		for (const auto& index : indices)
+		{
+			fmt::format_to(ctx.out(), "\tIndex: {}", index);
+		}
+
+		return ctx.out();
+	}
+};
+
+
+
 #endif // ST_GEOMETRY_MESH_HPP

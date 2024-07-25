@@ -3,7 +3,7 @@
 
 #include "Renderer/MaterialManager.hpp"
 #include "Geometry/DataTypes/Mesh.hpp"
-#include "Renderer/Plane.hpp"
+#include "Geometry/Nodes/Plane.hpp"
 #include "Renderer/Renderer.hpp"
 #include "Renderer/StandardMaterial.hpp"
 #include "Ui/MainWindow.hpp"
@@ -140,7 +140,7 @@ namespace st
 
 		void execute() override
 		{
-			m_plane = std::make_shared<renderer::Plane>();
+			m_plane = std::make_shared<geometry::Plane>();
 			m_plane->initialize();
 			m_contentManager->getMainNodeGraph()->addNode(m_plane);
 		}
@@ -151,14 +151,14 @@ namespace st
 			//m_contentManager.remove(m
 		}
 
-		std::shared_ptr<renderer::Plane> getResult()
+		std::shared_ptr<geometry::Plane> getResult()
 		{
 			return m_plane;
 		}
 
 	  private:
 		core::ContentManagerHandler m_contentManager;
-		std::shared_ptr<renderer::Plane> m_plane;
+		std::shared_ptr<geometry::Plane> m_plane;
 	};
 
 
@@ -487,7 +487,7 @@ namespace st
 			if(auto node = m_context.selectedNode.lock())
 			{
 				//Throw if node is not of type plane
-				if(!std::dynamic_pointer_cast<renderer::Plane>(node))
+				if(!std::dynamic_pointer_cast<geometry::Plane>(node))
 				{
 					throw std::runtime_error("Node is not of type Plane");
 				}
