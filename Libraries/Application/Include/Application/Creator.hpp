@@ -1,11 +1,11 @@
 #ifndef ST_APPLICATION_CREATOR_HPP
 #define ST_APPLICATION_CREATOR_HPP
 
-#include "Core/ContentManager.hpp"
 #include "Core/CommandManager.hpp"
-#include "Renderer/Renderer.hpp"
-#include "Renderer/Nodes/StandardMaterial.hpp"
+#include "Core/ContentManager.hpp"
 #include "Core/Nodes/Camera.hpp"
+#include "Renderer/Nodes/StandardMaterial.hpp"
+#include "Renderer/Renderer.hpp"
 
 namespace st::application
 {
@@ -15,15 +15,12 @@ namespace st::application
 		Creator(core::ContentManagerHandler contentManager,
 				core::CommandManagerHandler commandManager);
 
-		std::weak_ptr<core::Node> camera(
-			const float angleOfView = 45.0f,
-			const float focalLength = 35.0f,
-			const float nearClippingPlane = 0.1f,
-			const float farClippingPlane = 10000.0f);
+		std::weak_ptr<core::Node> camera(const float angleOfView = 45.0f,
+										 const float focalLength = 35.0f,
+										 const float nearClippingPlane = 0.1f,
+										 const float farClippingPlane = 10000.0f);
 
-		std::weak_ptr<core::Node> plane(
-			[[maybe_unused]] const float width = 1.0f,
-			[[maybe_unused]] const float height = 1.0f);
+		std::weak_ptr<core::Node> plane(const float width = 1.0f, const float height = 1.0f);
 
 		std::weak_ptr<renderer::StandardMaterial> standardMaterial();
 

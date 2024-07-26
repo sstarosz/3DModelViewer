@@ -1,9 +1,10 @@
 #ifndef ST_APPLICATION_MODIFIER_HPP
 #define ST_APPLICATION_MODIFIER_HPP
 
+#include "Core/Node.hpp"
 #include "Core/CommandManager.hpp"
-#include "Geometry/Commands/PlaneCommands.hpp"
-#include "Renderer/Commands/StandardMaterialCommands.hpp"
+#include "Core/ContentManager.hpp"
+#include "Renderer/Nodes/StandardMaterial.hpp"
 
 namespace st::application
 {

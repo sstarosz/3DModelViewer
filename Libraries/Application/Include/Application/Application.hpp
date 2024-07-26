@@ -1,15 +1,11 @@
 #ifndef ST_APPLICATION_APPLICATION
 #define ST_APPLICATION_APPLICATION
 
-#include <Eigen/Core>
-#include <spdlog/spdlog.h>
-#include <vector>
-
-#include <QApplication>
-#include "Core/CommandManager.hpp"
-#include "Core/ContentManager.hpp"
 #include "Application/Creator.hpp"
 #include "Application/Modifier.hpp"
+#include "Core/CommandManager.hpp"
+#include "Core/ContentManager.hpp"
+#include <QApplication>
 
 #include "Ui/GuiManager.hpp"
 
@@ -21,20 +17,16 @@ namespace st::application
 	  public:
 		Application(int argc, char* argv[]);
 
-
 		int initialize();
-
 		int run();
 
 		Creator& create();
-
 		Modifier modify(std::weak_ptr<core::Node> node);
-
 
 	  private:
 		QApplication m_app;
 
-		//Communication withing the application
+		// Communication withing the application
 		core::CommandManager m_commandManager;
 		core::ContentManager m_contentManager;
 
@@ -48,6 +40,5 @@ namespace st::application
 	};
 
 } // namespace st::application
-
 
 #endif // ST_APPLICATION_APPLICATION

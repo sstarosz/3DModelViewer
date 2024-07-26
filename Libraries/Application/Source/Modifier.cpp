@@ -1,6 +1,8 @@
 #include "Modifier.hpp"
 
+#include "Geometry/Commands/PlaneCommands.hpp"
 #include "Renderer/Commands/MaterialCommands.hpp"
+#include "Renderer/Commands/StandardMaterialCommands.hpp"
 
 namespace st::application
 {
@@ -23,10 +25,10 @@ namespace st::application
 		m_commandManager->execute(std::move(command));
 	}
 
+
 	/*---------------------------------*/
 	/*------------Modifier-------------*/
 	/*---------------------------------*/
-
 	Modifier::Modifier(ModifyContext context,
 					   core::CommandManagerHandler commandManager) :
 		m_context(context),

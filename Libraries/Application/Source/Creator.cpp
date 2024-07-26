@@ -4,7 +4,6 @@
 #include "Renderer/Commands/RendererCommands.hpp"
 #include "Renderer/Commands/StandardMaterialCommands.hpp"
 
-
 namespace st::application
 {
 	Creator::Creator(core::ContentManagerHandler contentManager,

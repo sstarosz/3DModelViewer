@@ -1,5 +1,8 @@
 #include "Application.hpp"
 
+#include <spdlog/spdlog.h>
+
+
 namespace st::application
 {
     Application::Application(int argc, char* argv[]) :
