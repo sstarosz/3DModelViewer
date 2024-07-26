@@ -13,6 +13,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #---------------------------------------------------------------------------------------#
 option(Build_Docs           "Determine if build documentation" OFF)
 option(Build_Tests          "Determine if build unit tests" ON)
+option(Build_Examples       "Determine if build examples" ON)
 option(Build_Tests_For_Gpu  "Determine if build unit that use Vulkan or other gpu features" ON)
 option(Build_Benchmarks     "Determine if build benchmarks" OFF)
 
@@ -91,5 +92,9 @@ endif()
 if(Build_Tests)
     enable_testing()
     add_subdirectory(Tests)
+endif()
+
+if(Build_Examples)
+    add_subdirectory(Examples)
 endif()
 
