@@ -9,10 +9,14 @@ project(Application
 
 set(Sources
     "Source/Creator.cpp"
+    "Source/Modifier.cpp"
+    "Source/Application.cpp"
     )
 
 set(Public_Headers
     "Include/Application/Creator.hpp"
+    "Include/Application/Modifier.hpp"
+    "Include/Application/Application.hpp"
     )
 
 set(Private_Headers
@@ -36,6 +40,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
                                                 Geometry
                                                 Renderer
                                                 Ui
+                                                Qt6::Widgets #TODO remove this in the future
                         )
 
 
