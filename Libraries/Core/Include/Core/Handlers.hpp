@@ -27,6 +27,18 @@ namespace st::core
 			return m_pComponent;
 		}
 
+		const Component* operator->() const
+		{
+			assert(m_pComponent != nullptr && "Component is nullptr");
+			return m_pComponent;
+		}
+
+		operator bool() const
+		{
+			return m_pComponent != nullptr;
+		}
+
+
 	  private:
 		Component* m_pComponent;
 	};

@@ -4,33 +4,23 @@
 #include <Core/ContentManager.hpp>
 #include <QWidget>
 
-namespace st
+namespace st::ui
 {
 
-	namespace renderer
+	class Viewport : public QWidget
 	{
-		class Renderer;
-	}
+		Q_OBJECT
 
-	namespace ui
-	{
+	  public:
+		explicit Viewport(core::ContentManagerHandler contentManager,
+						  QWidget* parent = nullptr,
+						  Qt::WindowFlags flags = {});
 
-		class Viewport : public QWidget
-		{
-			Q_OBJECT
+	  private:
+		class PrivateWindow;
+		PrivateWindow* m_window;
+	};
 
-		  public:
-			explicit Viewport(
-				core::ContentManagerHandler contentManager,
-				QWidget* parent = nullptr,
-				Qt::WindowFlags flags = {});
-
-		  private:
-			class PrivateWindow;
-			PrivateWindow* m_window;
-		};
-
-	} // namespace ui
-} // namespace st
+} // namespace st::ui
 
 #endif // ST_UI_VIEWPORT_HPP
