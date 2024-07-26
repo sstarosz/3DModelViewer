@@ -11,11 +11,13 @@ find_package(Eigen3 CONFIG REQUIRED)
 set(Sources
     "Source/DataTypes/Mesh.cpp"
     "Source/Nodes/Plane.cpp"
+    "Source/Commands/PlaneCommands.cpp"
     )
 
 set(Public_Headers
     "Include/Geometry/DataTypes/Mesh.hpp"
     "Include/Geometry/Nodes/Plane.hpp"
+    "Include/Geometry/Commands/PlaneCommands.hpp"
     )
 
 set(Private_Headers
@@ -28,6 +30,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/S
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include/${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include/${PROJECT_NAME}/DataTypes)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include/${PROJECT_NAME}/Nodes)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include/${PROJECT_NAME}/Commands)
 
 
 

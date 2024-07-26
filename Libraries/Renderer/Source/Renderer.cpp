@@ -4,6 +4,9 @@
 #include "QueueFamily.hpp"
 #include "StandardMaterial.hpp"
 #include "VulkanContext.hpp"
+#include "GraphicsPiplineFactory.hpp"
+#include "Renderer/Nodes/StandardMaterial.hpp"
+#include "Renderer/DataTypes/Renderable.hpp"
 
 #include <Eigen/Core>
 #include <vulkan/vulkan.hpp>

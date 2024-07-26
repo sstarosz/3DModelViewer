@@ -2,7 +2,7 @@
 #define ST_RENDERER_RENDERER_HPP
 
 #include "Core/Node.hpp"
-#include "Renderable.hpp"
+#include "Renderer/DataTypes/Renderable.hpp"
 #include "MaterialManager.hpp"
 
 #include <memory>

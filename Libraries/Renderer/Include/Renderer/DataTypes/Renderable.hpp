@@ -12,6 +12,7 @@ namespace st::renderer
 	 * @brief
 	 *
 	 */
+	//TODO refactor
 	class Renderable
 	{
 

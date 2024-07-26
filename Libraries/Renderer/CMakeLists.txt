@@ -12,12 +12,21 @@ set(Sources
     "Source/PhysicalDevice.cpp"
     "Source/QueueFamily.cpp"
     "Source/GraphicsPiplineFactory.cpp"
+    "Source/Nodes/StandardMaterial.cpp"
+    "Source/Commands/StandardMaterialCommands.cpp"
+    "Source/Commands/RendererCommands.cpp"
+    "Source/Commands/MaterialCommands.cpp"
     )
 
 set(Public_Headers
     "Include/Renderer/Renderer.hpp"
     "Include/Renderer/GraphicsPiplineFactory.hpp"
     "Include/Renderer/VulkanContext.hpp"
+    "Include/Renderer/Nodes/StandardMaterial.hpp"
+    "Include/Renderer/DataTypes/Renderable.hpp"
+    "Include/Renderer/Commands/StandardMaterialCommands.hpp"
+    "Include/Renderer/Commands/RendererCommands.hpp"
+    "Include/Renderer/Commands/MaterialCommands.hpp"
     )
 
 set(Private_Headers
@@ -30,6 +39,9 @@ add_library(${PROJECT_NAME} ${Sources} ${Public_Headers} ${Private_Headers})
 target_include_directories(${PROJECT_NAME} PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/Include/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include/${PROJECT_NAME})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include/${PROJECT_NAME}/Nodes)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include/${PROJECT_NAME}/DataTypes)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include/${PROJECT_NAME}/Commands)
 
 
 
