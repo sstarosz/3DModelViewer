@@ -14,6 +14,7 @@ set(Sources
     "Source/Node.cpp"
     "Source/Attribute.cpp"
     "Source/NumericAttribute.cpp"
+    "Source/CommandManager.cpp"
     )
 
 set(Public_Headers
@@ -24,6 +25,8 @@ set(Public_Headers
     "Include/Core/NodeGraph.hpp"
     "Include/Core/Attribute.hpp"
     "Include/Core/NumericAttribute.hpp"
+    "Include/Core/CommandManager.hpp"
+    "Include/Core/Command.hpp"
     )
 
 set(Private_Headers

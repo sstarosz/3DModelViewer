@@ -1,5 +1,6 @@
 #include "Core/Nodes/Camera.hpp"
 #include "Core/ContentManager.hpp"
+#include "Core/CommandManager.hpp"
 
 #include "Renderer/MaterialManager.hpp"
 #include "Geometry/DataTypes/Mesh.hpp"
@@ -17,120 +18,7 @@ using namespace st;
 
 namespace st
 {
-
-	class Command
-	{
-	  public:
-		virtual ~Command() = default;
-		virtual void execute() = 0;
-		virtual void undo() = 0;
-	};
-
-	class CommandRegistry
-	{
-		public:
-		CommandRegistry() = default;
-
-		void registerCommand(const std::string& name, std::unique_ptr<Command> command)
-		{
-			m_commands[name] = std::move(command);
-		}
-
-		bool executeCommand(const std::string& name)
-		{
-			auto it = m_commands.find(name);
-			if (it != m_commands.end())
-			{
-				it->second->execute();
-				return true;
-			}
-			else
-			{
-				std::cerr << "Command not found: " << name << std::endl;
-				return false;
-			}
-		}
-
-	  private:
-		std::unordered_map<std::string, std::unique_ptr<Command>> m_commands;
-	};
-
-
-
-	class CommandManager
-	{
-		public:
-		CommandManager()
-		{
-			spdlog::info("CommandManager::CommandManager()");
-		}
-
-		void initialize()
-		{
-			spdlog::info("CommandManager::initialize()");
-		}
-
-		void execute(std::unique_ptr<Command> command)
-		{
-			command->execute();
-			m_undoStack.push_back(std::move(command));
-			m_redoStack.clear();
-		}
-
-		void undo()
-		{
-			if(!m_undoStack.empty())
-			{
-				std::unique_ptr<Command> command = std::move(m_undoStack.back());
-				m_undoStack.pop_back();
-				command->undo();
-				m_redoStack.push_back(std::move(command));
-			}
-		}
-
-		void redo()
-		{
-			if(m_redoStack.empty())
-			{
-				std::unique_ptr<Command> command = std::move(m_redoStack.back());
-				m_redoStack.pop_back();
-				command->execute();
-				m_undoStack.push_back(std::move(command));
-			}
-		}
-
-
-
-	  private:
-		std::vector<std::unique_ptr<Command>> m_undoStack;
-		std::vector<std::unique_ptr<Command>> m_redoStack;
-	};
-
-	class CommandManagerHandler
-	{
-		public:
-		CommandManagerHandler():
-			m_commandManager(nullptr)
-		{
-		}
-
-		CommandManagerHandler(CommandManager* commandManager) :
-			m_commandManager(commandManager)
-		{
-		}
-
-		CommandManager* operator->()
-		{
-			return m_commandManager;
-		}
-
-		private:
-		CommandManager* m_commandManager;
-	};
-
-
-
-	class CreatePlaneCommand : public Command
+	class CreatePlaneCommand : public core::Command
 	{
 		public:
 		CreatePlaneCommand(core::ContentManagerHandler contentManager) :
@@ -162,7 +50,7 @@ namespace st
 	};
 
 
-	class CreateStandardMaterialCommand : public Command
+	class CreateStandardMaterialCommand : public core::Command
 	{
 		public:
 		CreateStandardMaterialCommand(core::ContentManagerHandler contentManager) :
@@ -193,7 +81,7 @@ namespace st
 		std::shared_ptr<renderer::StandardMaterial2> m_standardMaterial;
 	};
 
-	class CreateRendererCommand : public Command
+	class CreateRendererCommand : public core::Command
 	{
 		public:
 		CreateRendererCommand(core::ContentManagerHandler contentManager) :
@@ -253,7 +141,7 @@ namespace st
 		std::shared_ptr<renderer::Renderer> m_renderer;
 	};
 
-	class CommandAssignMaterial : public Command
+	class CommandAssignMaterial : public core::Command
 	{
 		public:
 		CommandAssignMaterial(core::ContentManagerHandler contentManager,
@@ -352,7 +240,7 @@ namespace st
 	{
 	  public:
 		Creator(core::ContentManagerHandler contentManager,
-				CommandManagerHandler commandManager):
+				core::CommandManagerHandler commandManager):
 			m_contentManager(contentManager),
 			m_commandManager(commandManager)
 		{
@@ -410,7 +298,7 @@ namespace st
 
 	  private:
 		core::ContentManagerHandler m_contentManager;
-		CommandManagerHandler m_commandManager;
+		core::CommandManagerHandler m_commandManager;
 	};
 
 	class Transformer
@@ -441,7 +329,7 @@ namespace st
 	class MaterialModifier
 	{
 	  public:
-		MaterialModifier(ModifyContext context, CommandManagerHandler commandManager):
+		MaterialModifier(ModifyContext context, core::CommandManagerHandler commandManager):
 			m_context(context),
 			m_commandManager(commandManager)
 		{
@@ -455,7 +343,7 @@ namespace st
 
 	  private:
 		ModifyContext m_context;
-		CommandManagerHandler m_commandManager;
+		 core::CommandManagerHandler m_commandManager;
 	};
 
 
@@ -468,7 +356,7 @@ namespace st
 	{
 	  public:
 		Modifier(ModifyContext context,
-				 CommandManagerHandler commandManager):
+				  core::CommandManagerHandler commandManager):
 			m_context(context),
 			m_commandManager(commandManager)
 		{
@@ -500,7 +388,7 @@ namespace st
     
         private:
         ModifyContext m_context;
-		CommandManagerHandler m_commandManager;
+		 core::CommandManagerHandler m_commandManager;
 	};
 
 	class Application
@@ -511,7 +399,7 @@ namespace st
 			m_commandManager(),
 			m_contentManager(),
 			m_guiManager(core::ContentManagerHandler(&m_contentManager)),
-			m_creator(core::ContentManagerHandler(&m_contentManager), CommandManagerHandler(&m_commandManager))
+			m_creator(core::ContentManagerHandler(&m_contentManager), core::CommandManagerHandler(&m_commandManager))
 		{
 			spdlog::set_level(spdlog::level::debug);
 			spdlog::info("Application::Application()");
@@ -556,7 +444,7 @@ namespace st
 			context.selectedNode = node;
 
 
-			Modifier modifier{context, CommandManagerHandler(&m_commandManager)};
+			Modifier modifier{context, core::CommandManagerHandler(&m_commandManager)};
 			return modifier;
 		}
 
@@ -565,7 +453,7 @@ namespace st
 		QApplication m_app;
 
 		//Communication withing the application
-		CommandManager m_commandManager;
+		core::CommandManager m_commandManager;
 
 
 		// Content
