@@ -16,12 +16,14 @@ set(Sources
     "Source/MainWindow.cpp"
     "Source/Viewport.cpp"
     "Source/NodeEditor.cpp"
+    "Source/GuiManager.cpp"
     )
 
 set(Public_Headers
     "Include/Ui/MainWindow.hpp"
     "Include/Ui/Viewport.hpp"
     "Include/Ui/NodeEditor.hpp"
+    "Include/Ui/GuiManager.hpp"
     )
 
 set(Private_Headers)

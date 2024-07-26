@@ -10,8 +10,10 @@
 #include "Renderer/Nodes/StandardMaterial.hpp"
 #include "Renderer/Commands/StandardMaterialCommands.hpp"
 #include "Renderer/Commands/RendererCommands.hpp"
-#include "Ui/MainWindow.hpp"
+#include "Renderer/Commands/MaterialCommands.hpp"
+#include "Ui/GuiManager.hpp"
 #include "Ui/Viewport.hpp"
+#include "Application/Creator.hpp"
 
 #include <QApplication>
 
@@ -21,97 +23,9 @@ using namespace st;
 
 namespace st
 {
-	class GuiManager
-	{
-	  public:
-		GuiManager(core::ContentManagerHandler contentManager) :
-			m_contentManager(contentManager),
-			m_mainWindow(contentManager)
-		{
-			spdlog::info("GuiManager::GuiManager()");
-		}
+	
 
-	  public:
-		void initialize()
-		{
-			spdlog::info("GuiManager::initialize()");
-			m_mainWindow.initialize();
-		}
-
-		void show()
-		{
-			m_mainWindow.show();
-		}
-
-	  private:
-		core::ContentManagerHandler m_contentManager;
-		ui::MainWindow m_mainWindow;
-	};
-
-	class Creator
-	{
-	  public:
-		Creator(core::ContentManagerHandler contentManager,
-				core::CommandManagerHandler commandManager):
-			m_contentManager(contentManager),
-			m_commandManager(commandManager)
-		{
-		}
-
-		std::weak_ptr<core::Node> camera(
-			const float angleOfView = 45.0f,
-			const float focalLength = 35.0f,
-			const float nearClippingPlane = 0.1f,
-			const float farClippingPlane = 10000.0f)
-		{
-			std::shared_ptr<core::Camera> camera = std::make_shared<core::Camera>(angleOfView,
-																				  focalLength,
-																				  nearClippingPlane,
-																				  farClippingPlane);
-
-			//TODO
-
-			return std::weak_ptr<core::Node>{camera};
-		}
-
-		std::weak_ptr<core::Node> plane(
-			[[maybe_unused]] const float width = 1.0f,
-			[[maybe_unused]] const float height = 1.0f)
-		{
-			spdlog::info("Creator::plane()");
-			//Create Plane command
-			std::unique_ptr<geometry::CreatePlaneCommand> command = std::make_unique<geometry::CreatePlaneCommand>(m_contentManager);
-			geometry::CreatePlaneCommand* commandPtr = command.get();
-			m_commandManager->execute(std::move(command));
-
-			return std::weak_ptr<core::Node>{commandPtr->getResult()};
-
-		}
-
-		std::weak_ptr<renderer::StandardMaterial> standardMaterial()
-		{
-			spdlog::info("Creator::standardMaterial()");
-			std::unique_ptr<renderer::CreateStandardMaterialCommand> command = std::make_unique<renderer::CreateStandardMaterialCommand>(m_contentManager);
-			renderer::CreateStandardMaterialCommand* commandPtr = command.get();
-			m_commandManager->execute(std::move(command));
-
-			return std::weak_ptr<renderer::StandardMaterial>{commandPtr->getResult()};
-
-		}
-
-		std::weak_ptr<renderer::Renderer> renderer(std::weak_ptr<core::Node> camera)
-		{
-			spdlog::info("Creator::renderer()");
-			std::unique_ptr<renderer::CreateRendererCommand> command = std::make_unique<renderer::CreateRendererCommand>(m_contentManager);
-			renderer::CreateRendererCommand* commandPtr = command.get();
-			m_commandManager->execute(std::move(command));
-			return std::weak_ptr<renderer::Renderer>{commandPtr->getResult()};
-		}
-
-	  private:
-		core::ContentManagerHandler m_contentManager;
-		core::CommandManagerHandler m_commandManager;
-	};
+	
 
 	class Transformer
 	{
@@ -149,7 +63,10 @@ namespace st
 
 		void assign(std::weak_ptr<renderer::StandardMaterial> material)
 		{
-			std::unique_ptr<CommandAssignMaterial> command = std::make_unique<CommandAssignMaterial>(m_context.m_contentManager, material, m_context.selectedNode);
+			//TODO refactor
+			std::shared_ptr<renderer::StandardMaterial> materialPtr = material.lock();
+			std::shared_ptr<core::Node> nodePtr = m_context.selectedNode.lock();
+			std::unique_ptr<renderer::CommandAssignMaterial> command = std::make_unique<renderer::CommandAssignMaterial>(m_context.m_contentManager, materialPtr, nodePtr);
 			m_commandManager->execute(std::move(command));
 		}
 
@@ -244,7 +161,7 @@ namespace st
 			return m_app.exec();
 		}
 
-		Creator& create()
+		application::Creator& create()
 		{
 			return m_creator;
 		}
@@ -270,10 +187,10 @@ namespace st
 
 		// Content
 		core::ContentManager m_contentManager;
-		Creator m_creator;
+		application::Creator m_creator;
 
 		// Gui
-		GuiManager m_guiManager;
+		ui::GuiManager m_guiManager;
 
 		// GuiCreator m_guiCreator; To investigate future use
 	};

@@ -22,6 +22,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
                                             Geometry
                                             Renderer
                                             Ui
+                                            Application
                                             Qt6::Widgets
                                             spdlog::spdlog
                                             )
