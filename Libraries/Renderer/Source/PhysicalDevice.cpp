@@ -38,23 +38,27 @@ namespace st::renderer
 		}
 	}
 
+
+	
+
+	//Check if device support all required extensions and has graphics queue family
 	bool PhysicalDevice::isDeviceSuitable(const vk::PhysicalDevice& device) const
 	{
 		// TODO - Check if this function prefere real GPU than gpu inside cpu
 
-		QueueFamily indices = QueueFamily::findQueueFamilies(device, m_vulkanContext.m_surface);
+		bool isGraphicsSupported = false;
+		const auto queueFamily = device.getQueueFamilyProperties();
+		for(const auto& queueFamilyProperties : queueFamily)
+		{
+			if (queueFamilyProperties.queueFlags & vk::QueueFlagBits::eGraphics)
+			{
+				isGraphicsSupported = true;
+			}
+		}
 
 		bool extensionsSupported = checkDeviceExtensionSupport(device);
 
-		bool swapChainAdequate = false;
-		if (extensionsSupported)
-		{
-			auto availableFormats = device.getSurfaceFormatsKHR(m_vulkanContext.m_surface);
-			auto availablePresentModes = device.getSurfacePresentModesKHR(m_vulkanContext.m_surface);
-			swapChainAdequate = !availableFormats.empty() && !availablePresentModes.empty();
-		}
-
-		return indices.isComplete() && extensionsSupported && swapChainAdequate;
+		return isGraphicsSupported && extensionsSupported;
 	}
 
 	bool PhysicalDevice::checkDeviceExtensionSupport(const vk::PhysicalDevice& device) const

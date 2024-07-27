@@ -1,18 +1,17 @@
 #ifndef ST_RENDERER_RENDERER_HPP
 #define ST_RENDERER_RENDERER_HPP
 
+#include "Core/Node.hpp"
+#include "Renderer/DataTypes/Renderable.hpp"
+#include "MaterialManager.hpp"
+
 #include <memory>
 #include <vulkan/vulkan.hpp>
-
-namespace st::core
-{
-	class Scene;
-}
 
 namespace st::renderer
 {
 
-	class Renderer
+	class Renderer : public core::Node
 	{
 	  public:
 		Renderer();
@@ -23,16 +22,55 @@ namespace st::renderer
 		Renderer& operator=(const Renderer&) = delete;
 		Renderer& operator=(Renderer&&) noexcept;
 
+		bool initialize() override
+		{
+			//TODO cleanup
+			defineNode("Renderer");
+
+
+			m_input.renderable = core::TypedAttribute<Renderable>::Builder("Renderable")
+									  .setReadable(false)
+									  .setWritable(true)
+									  .build();
+
+
+			addAttribute(m_input.renderable);
+
+			init();
+			
+			return true;
+		}
+
+        bool compute() override
+		{
+			spdlog::info("Renderer::compute()");
+
+			updateScene();
+			
+			//TODO cleanup
+			return true;
+		}
+
+
 
 		void init();
 		void render();
-		void render(const core::Scene& scene);
-		void embedScene(std::shared_ptr<core::Scene> scene);
 
-		vk::Instance createInstance() const;
+		vk::Instance getVulkanInstance() const;
 		void setSurface(vk::SurfaceKHR surface);
 
 		void changeSwapchainExtent(uint32_t width, uint32_t height);
+
+		const MaterialManager& getMaterialManager() const;
+
+		void updateScene();
+
+		struct Input
+		{
+			core::TypedInputHandler<Renderable> renderable;
+		};
+
+		Input m_input; 
 
 	  private:
 		class PrivateRenderer;

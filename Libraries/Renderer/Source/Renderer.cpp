@@ -1,16 +1,16 @@
 #include "Renderer.hpp"
+#include "MaterialManager.hpp"
 #include "PhysicalDevice.hpp"
 #include "QueueFamily.hpp"
-#include "VisualAidsPipline.hpp"
+#include "StandardMaterial.hpp"
 #include "VulkanContext.hpp"
-#include "Mesh.hpp"
-#include "Core/Scene.hpp"
-#include "Core/EventSystem.hpp"
+#include "GraphicsPiplineFactory.hpp"
+#include "Renderer/Nodes/StandardMaterial.hpp"
+#include "Renderer/DataTypes/Renderable.hpp"
 
 #include <Eigen/Core>
 #include <vulkan/vulkan.hpp>
 
-#include <vector>
 #include <array>
 #include <filesystem>
 #include <fstream>
@@ -18,6 +18,7 @@
 #include <numeric>
 #include <set>
 #include <sstream>
+#include <vector>
 
 PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT;
 PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
@@ -128,13 +129,14 @@ namespace st::renderer
 			m_vulkanContext(),
 			m_physicalDevice(m_vulkanContext)
 		{
+			spdlog::info("Renderer::PrivateRenderer()");
 		}
 
 		~PrivateRenderer()
 		{
 		}
 
-		vk::Instance createInstance()
+		void createInstance()
 		{
 			vk::ApplicationInfo appInfo{
 				"St Model Viewer",
@@ -159,21 +161,56 @@ namespace st::renderer
 				extensions};
 
 			m_vulkanContext.m_instance = vk::createInstance(createInfo);
+		}
+
+		vk::Instance getVulkanInstance() const
+		{
 			return m_vulkanContext.m_instance;
 		}
 
 		void init()
 		{
+			//Create not graphics objects
+			createInstance();
 			createDebugMessageUtils();
 			m_physicalDevice.initialize();
 			createLogicalDevice();
+
+		}
+
+		void initSurface(vk::SurfaceKHR surface)
+		{
+			//Create graphics objects
+			m_vulkanContext.m_surface = surface;
+
+			////Check if the physical device supports the surface
+			// if (!m_physicalDevice.checkQueueFamiliesSupport(m_vulkanContext.m_physicalDevice, m_vulkanContext.m_surface))
+			//{
+			//	throw std::runtime_error("Physical device does not support the surface!");
+			// }
+
 			createSwapChain();
+
+			//Pick the first available queue family
+			QueueFamily indices = QueueFamily::findQueueFamilies(m_vulkanContext.m_physicalDevice, m_vulkanContext.m_surface);
+			m_vulkanContext.m_graphicsQueue = m_vulkanContext.m_device.getQueue(indices.m_graphicsFamily.value(), 0);
+			m_vulkanContext.m_presentQueue = m_vulkanContext.m_device.getQueue(indices.m_presentFamily.value(), 0);
+
+
 			createRenderPass();
-			createGraphicsPipeline();
+
+			updateScene(m_input);
+			updateVertexBuffer();
+			updateIndexBuffer();
+
 			createCommandPool();
 			createFrameBuffer();
 			createCommandBuffers();
 			createSyncObjects();
+
+			m_initialized = true;
+
+
 		}
 
 		void waitForPreviousFrame()
@@ -243,36 +280,7 @@ namespace st::renderer
 			resetCommandBuffer(m_currentFrame);
 
 			// Record command for the current frame
-			//recordCommandBuffer(m_vulkanContext.m_commandBuffers[m_currentFrame], imageIndex);
-
-			// Submit command buffer
-			submitCommandBuffer(m_currentFrame);
-
-			// Present image
-			presentImage(imageIndex);
-
-			// Advance to next frame
-			m_currentFrame = (m_currentFrame + 1) % m_vulkanContext.MAX_FRAMES_IN_FLIGHT;
-		}
-
-		void render(const core::Scene& scene)
-		{
-			//TODO implement rendering scene
-
-			// Wait for previous frame to finish
-			waitForPreviousFrame();
-
-			// Reset the fence for the current frame
-			m_vulkanContext.m_device.resetFences(m_vulkanContext.m_inFlightFences.at(m_currentFrame));
-
-			// Acquire swap chain image
-			uint32_t imageIndex = acquireSwapChainImage();
-
-			// Reset the command buffer for the current frame
-			resetCommandBuffer(m_currentFrame);
-
-			// Record command for the current frame
-			recordCommandBuffer(m_vulkanContext.m_commandBuffers[m_currentFrame], scene, imageIndex);
+			recordCommandBuffer(m_vulkanContext.m_commandBuffers[m_currentFrame], imageIndex);
 
 			// Submit command buffer
 			submitCommandBuffer(m_currentFrame);
@@ -329,24 +337,11 @@ namespace st::renderer
 			}
 		}
 
-		void recordCommandBuffer(vk::CommandBuffer& commandBuffer, const core::Scene& /*scene*/, uint32_t imageIndex)
+		void recordCommandBuffer(vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
 		{
+			//spdlog::info("Renderer::recordCommandBuffer()");
+
 			commandBuffer.begin(vk::CommandBufferBeginInfo{});
-
-			const vk::ClearColorValue clearColor(std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
-			const vk::ClearDepthStencilValue clearDepthStencil(1.0f, 0);
-
-			std::array<vk::ClearValue, 2> clearValues = {clearColor, clearDepthStencil};
-
-			vk::RenderPassBeginInfo renderPassInfo{m_vulkanContext.m_renderPass,
-												   m_vulkanContext.m_swapchainFramebuffers[imageIndex],
-												   vk::Rect2D{vk::Offset2D{0, 0}, m_vulkanContext.m_swapchainExtent},
-												   clearValues};
-
-			commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
-
-			//Material
-			commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.pipeline);
 
 			vk::Viewport viewport{0.0F,
 								  0.0F,
@@ -363,13 +358,40 @@ namespace st::renderer
 			commandBuffer.setViewport(0, 1, &viewport);
 			commandBuffer.setScissor(0, 1, &scissor);
 
-			//Object
+			const vk::ClearColorValue clearColor(std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
+			const vk::ClearDepthStencilValue clearDepthStencil(1.0f, 0);
+
+			std::array<vk::ClearValue, 2> clearValues = {clearColor, clearDepthStencil};
+
+			vk::RenderPassBeginInfo renderPassInfo{
+				m_vulkanContext.m_renderPass,
+				m_vulkanContext.m_swapchainFramebuffers[imageIndex],
+				vk::Rect2D{vk::Offset2D{0, 0}, m_vulkanContext.m_swapchainExtent},
+				clearValues
+			   };
+
+			commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+
+			// Iterate over all materials used in the sceneNO o
+			// for(const auto& material : m_materialManager->m_materials)
+			//{
+			//	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, material->m_pipeline);
+			//
+			//	//Iterate over all objects associated with the material
+			//
+			//}
+
+			commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.pipeline);
+
+			// Object
+			auto indicesSize = m_input.getData().m_meshData.getIndicesPointList().size();
 			vk::Buffer vertexBuffers[] = {m_pipeline.resources.vertexBuffer};
 			vk::DeviceSize offsets[] = {0};
 			commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
 			commandBuffer.bindIndexBuffer(m_pipeline.resources.indexBuffer, 0, vk::IndexType::eUint32);
 			commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipeline.pipelineLayout, 0, m_pipeline.resources.descriptorSets[m_currentFrame], {});
-			commandBuffer.drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
+			commandBuffer.drawIndexed(static_cast<uint32_t>(indicesSize), 1, 0, 0, 0);
+
 
 			commandBuffer.endRenderPass();
 			commandBuffer.end();
@@ -419,17 +441,15 @@ namespace st::renderer
 
 		void createLogicalDevice()
 		{
-			QueueFamily indices = QueueFamily::findQueueFamilies(m_vulkanContext.m_physicalDevice, m_vulkanContext.m_surface);
-
-			std::vector<vk::DeviceQueueCreateInfo> queueCreateInfo;
-			std::set<uint32_t> uniqueQueueFamilies = {indices.m_graphicsFamily.value(), indices.m_presentFamily.value()};
+			std::vector<vk::QueueFamilyProperties> allQueueFamilies = m_vulkanContext.m_physicalDevice.getQueueFamilyProperties();
 
 			float queuePriority = 1.0f;
-			for (const auto& queueFamily : uniqueQueueFamilies)
+			std::vector<vk::DeviceQueueCreateInfo> queueCreateInfo;
+			for(uint32_t i = 0; i < allQueueFamilies.size(); i++)
 			{
 				vk::DeviceQueueCreateInfo queueCreateInfoItem{
 					{},
-					queueFamily,
+					i,
 					1,
 					&queuePriority};
 
@@ -450,8 +470,6 @@ namespace st::renderer
 				&deviceFeatures};
 
 			m_vulkanContext.m_device = m_vulkanContext.m_physicalDevice.createDevice(createInfo);
-			m_vulkanContext.m_graphicsQueue = m_vulkanContext.m_device.getQueue(indices.m_graphicsFamily.value(), 0);
-			m_vulkanContext.m_presentQueue = m_vulkanContext.m_device.getQueue(indices.m_presentFamily.value(), 0);
 		}
 
 		void createSwapChain()
@@ -489,7 +507,8 @@ namespace st::renderer
 				vk::CompositeAlphaFlagBitsKHR::eOpaque,
 				presentMode,
 				VK_TRUE,
-				nullptr};
+				nullptr
+			};
 
 			m_vulkanContext.m_swapchain = m_vulkanContext.m_device.createSwapchainKHR(createInfo);
 			m_vulkanContext.m_swapchainImages = m_vulkanContext.m_device.getSwapchainImagesKHR(m_vulkanContext.m_swapchain);
@@ -528,7 +547,11 @@ namespace st::renderer
 
 		vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities)
 		{
-			if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+
+			if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max() ||
+				capabilities.currentExtent.height != std::numeric_limits<uint32_t>::max() ||
+				capabilities.currentExtent.width != 0 ||
+				capabilities.currentExtent.height != 0)
 			{
 				return capabilities.currentExtent;
 			}
@@ -632,17 +655,6 @@ namespace st::renderer
 			throw std::runtime_error("failed to find supported format!");
 		}
 
-		void createGraphicsPipeline()
-		{
-			VisualAidsPipeline Pipeline(m_vulkanContext, m_vulkanContext.m_renderPass);
-			PipelineDirector director;
-			director.setBuilder(&Pipeline);
-			director.constructPipeline();
-			m_pipeline = director.getPipeline();
-
-			updateVertexBuffer();
-			updateIndexBuffer();
-		}
 
 		void createBuffer(vk::DeviceSize size,
 						  vk::BufferUsageFlags usage,
@@ -835,6 +847,8 @@ namespace st::renderer
 		// Temporary
 		void updateVertexBuffer()
 		{
+			auto vertices = m_input.getData().m_meshData.getVertexPointList();
+
 			vk::BufferCreateInfo bufferInfo{{},
 											sizeof(vertices[0]) * vertices.size(),
 											vk::BufferUsageFlagBits::eVertexBuffer,
@@ -859,6 +873,7 @@ namespace st::renderer
 
 		void updateIndexBuffer()
 		{
+			auto m_indices = m_input.getData().m_meshData.getIndicesPointList();
 			vk::BufferCreateInfo bufferInfo{{},
 											sizeof(m_indices[0]) * m_indices.size(),
 											vk::BufferUsageFlagBits::eIndexBuffer,
@@ -881,42 +896,25 @@ namespace st::renderer
 			m_vulkanContext.m_device.unmapMemory(m_pipeline.resources.indexBufferMemory);
 		}
 
-
-		//TODO - Missing error handling
-		void onNewMeshAdded(const core::Event* event)
+		void updateScene(core::TypedInputHandler<Renderable> input)
 		{
-			//TODO - Implement adding model to the scene
-			auto* eventData = dynamic_cast<const core::EventData*>(event);
-			if(eventData)
-			{
-				if(std::shared_ptr<core::StObject> object = eventData->m_eventData.lock())
-				{
-					//Add renderable object to the scene
-					std::cout << "New object added to the scene" << std::endl;
-				}
-			}
+			m_input = input;
 
-			
-		}
+			// Initialize Shader
+			spdlog::info("Renderer::updateScene() - Initialize Shader");
+			spdlog::info("Vertex Shader: {}", m_input.getData().m_vertexShader);
+			spdlog::info("Fragment Shader: {}", m_input.getData().m_fragmentShader);
+			spdlog::info("Mesh: {}", m_input.getData().m_meshData.getVertexPointList().size());
+			spdlog::info("Mesh: {}", m_input.getData().m_meshData.getIndicesPointList().size());
 
-		void embedScene(std::shared_ptr<core::Scene> scene)
-		{
-			m_scene = scene;
-
-			//Initialize Renderable objects
-			for (const auto& object : m_scene->getSceneContent())
-			{
-				//TODO - Implement adding model to the scene
-				//Add renderable object to the scene
-				std::cout << "New object added to the scene: " << static_cast<uint32_t>(object->getType()) << std::endl;
-			}
-
-			//Register to the event system
-			core::EventSystem::registerEvent(core::Event::Type::eAddedModel, [this](const core::Event* event) { onNewMeshAdded(event); });
-
+			m_pipeline = PipelineBuilder(m_vulkanContext)
+							 .setVertexShader(m_input.getData().m_vertexShader)
+							 .setFragmentShader(m_input.getData().m_fragmentShader)
+							 .build();
 		}
 
 	  public:
+	  	bool m_initialized = false;
 		VulkanContext m_vulkanContext;
 		Pipeline m_pipeline;
 		PhysicalDevice m_physicalDevice;
@@ -927,30 +925,9 @@ namespace st::renderer
 		uint32_t m_width = 800;
 		uint32_t m_height = 600;
 
-		struct Vertex
-		{
-			Eigen::Vector3f position;
-			Eigen::Vector3f color;
-		};
-
-		std::vector<Vertex> vertices{
-			{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Bottom-left corner, red
-			{{0.5f, -0.5f, 0.0f},  {0.0f, 1.0f, 0.0f}}, // Bottom-right corner, green
-			{{0.5f, 0.5f, 0.0f},	 {0.0f, 0.0f, 1.0f}}, // Top-right corner, blue
-			{{-0.5f, 0.5f, 0.0f},  {1.0f, 1.0f, 1.0f}}	// Top-left corner, white
-		};
-
-		std::vector<uint32_t> m_indices{
-			0,
-			1,
-			2, // First triangle (bottom-right)
-			2,
-			3,
-			0 // Second triangle (top-left)
-		};
-
-		std::shared_ptr<core::Scene> m_scene;
-		
+	
+		std::unique_ptr<MaterialManager> m_materialManager;
+		core::TypedInputHandler<Renderable> m_input;
 	};
 
 	/*---------------------*/
@@ -965,7 +942,7 @@ namespace st::renderer
 
 	Renderer::Renderer(Renderer&&) noexcept = default;
 
-	Renderer& Renderer::operator=(Renderer&&) noexcept = default;
+	Renderer& Renderer::operator= (Renderer&&) noexcept = default;
 
 	void Renderer::init()
 	{
@@ -977,32 +954,61 @@ namespace st::renderer
 		m_privateRenderer->render();
 	}
 
-	void Renderer::render(const core::Scene& scene)
-	{
-		m_privateRenderer->render(scene);
-	}
-
-	void Renderer::embedScene(std::shared_ptr<core::Scene> scene)
-	{
-		m_privateRenderer->embedScene(scene);
-	}
-
 	void Renderer::setSurface(vk::SurfaceKHR surface)
 	{
-		m_privateRenderer->m_vulkanContext.m_surface = surface;
+		m_privateRenderer->initSurface(surface);
 	}
 
-	vk::Instance Renderer::createInstance() const
+	vk::Instance Renderer::getVulkanInstance() const
 	{
-		return m_privateRenderer->createInstance();
+		return m_privateRenderer->getVulkanInstance();
 	}
 
 	void Renderer::changeSwapchainExtent(uint32_t width, uint32_t height)
 	{
-		m_privateRenderer->m_width = width;
-		m_privateRenderer->m_height = height;
+		if (width > 0)
+		{
+			m_privateRenderer->m_width = width;
+		}
+
+		if (height > 0)
+		{
+			m_privateRenderer->m_height = height;
+		}
 
 		m_privateRenderer->recreateSwapChain();
+	}
+
+	const MaterialManager& Renderer::getMaterialManager() const
+	{
+		return *m_privateRenderer->m_materialManager.get();
+	}
+
+	void Renderer::updateScene()
+	{
+		// Renderable test = m_input.renderable;
+		spdlog::info("Renderer::updateScene()");
+		// Renderable test = m_input.renderable.getValue();
+		// spdlog::info("Renderer: {}", test);
+		// TODO improve this
+		// m_privateRenderer->m_input = m_input.renderable;
+
+		// spdlog::info("Renderer copied input");
+		// spdlog::info("Renderer: {}", m_privateRenderer->m_input.getValue());
+
+		// Initialize Shader
+
+		if(m_privateRenderer->m_initialized)
+		{
+			m_privateRenderer->updateScene(m_input.renderable);
+		}
+		else
+		{
+			m_privateRenderer->m_input = m_input.renderable;
+		}
+		// Initialize Pipeline
+
+		// Initialize Objects
 	}
 
 } // namespace st::renderer

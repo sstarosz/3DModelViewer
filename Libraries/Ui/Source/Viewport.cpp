@@ -1,12 +1,10 @@
 #include "Viewport.hpp"
-#include <QDebug>
 #include <QHBoxLayout>
 #include <QTimer>
 #include <QVulkanInstance>
 #include <QWindow>
 
 #include "Renderer/Renderer.hpp"
-#include "Core/Scene.hpp"
 
 namespace st::ui
 {
@@ -16,9 +14,13 @@ namespace st::ui
 	class Viewport::PrivateWindow : public QWindow
 	{
 	  public:
-		PrivateWindow()
+		PrivateWindow(core::ContentManagerHandler contentManager,
+					  QWindow* parent = nullptr) :
+			QWindow(parent),
+			m_contentManager(contentManager)
 		{
 			setSurfaceType(QSurface::VulkanSurface);
+			setMinimumSize(QSize(1, 1));
 		}
 
 		void showEvent(QShowEvent* event) override
@@ -27,11 +29,20 @@ namespace st::ui
 
 			if (!m_initialized)
 			{
-				vk::Instance instance = m_renderer.createInstance();
+				// Find Renderer Node inside the content manager
+				core::NodeGraphHandler nodeGraph = m_contentManager->getMainNodeGraph();
+				for (auto node : nodeGraph->getNodes())
+				{
+					if (std::shared_ptr<renderer::Renderer> renderable = std::dynamic_pointer_cast<renderer::Renderer>(node))
+					{
+						spdlog::info("Renderer Node found");
+						m_renderer = renderable;
+					}
+				}
 
+				// Create Vulkan Instance for QVulkanWindow
 				QVulkanInstance vulkanInstance;
-				vulkanInstance.setVkInstance(instance);
-
+				vulkanInstance.setVkInstance(m_renderer->getVulkanInstance());
 				if (!vulkanInstance.create())
 				{
 					qDebug() << "Failed to create vulkan instance";
@@ -39,8 +50,8 @@ namespace st::ui
 				}
 				setVulkanInstance(&vulkanInstance);
 
-				m_renderer.setSurface(vulkanInstance.surfaceForWindow(this));
-				m_renderer.init();
+				// Embed Surface to Renderer
+				m_renderer->setSurface(vulkanInstance.surfaceForWindow(this));
 
 				connect(&m_timer, &QTimer::timeout, this, &PrivateWindow::update);
 				m_timer.start(16); // 60fps
@@ -55,17 +66,7 @@ namespace st::ui
 				return;
 
 			QWindow::resizeEvent(event);
-			m_renderer.changeSwapchainExtent(width(), height());
-		}
-
-		void setRenderer(renderer::Renderer&& renderer)
-		{
-			m_renderer = std::move(renderer);
-		}
-
-		void setScene(core::Scene&& scene)
-		{
-			m_scene = std::move(scene);
+			m_renderer->changeSwapchainExtent(width(), height());
 		}
 
 	  private:
@@ -74,40 +75,32 @@ namespace st::ui
 		{
 			if (m_initialized)
 			{
-				m_renderer.render(m_scene);
-
-
+				m_renderer->render();
 				requestUpdate();
 			}
 		}
 
-		bool m_initialized = false;
+		core::ContentManagerHandler m_contentManager;
+		bool m_initialized{false};
 		QTimer m_timer;
-		renderer::Renderer m_renderer;
-		core::Scene m_scene;
+		std::shared_ptr<renderer::Renderer> m_renderer;
 	};
 
 	/*---------------------*/
 	/*-------Public--------*/
 	/*---------------------*/
-	Viewport::Viewport(QWidget* parent, Qt::WindowFlags flags) :
+	Viewport::Viewport(
+		core::ContentManagerHandler contentManager,
+		QWidget* parent,
+		Qt::WindowFlags flags) :
 		QWidget(parent, flags),
-		m_window(new PrivateWindow)
+		m_window(new PrivateWindow(contentManager))
 	{
 		QWidget* vulkanWidget = QWidget::createWindowContainer(m_window, this);
 
 		QHBoxLayout* layout = new QHBoxLayout(this);
+		layout->setContentsMargins(0, 0, 0, 0);
 		layout->addWidget(vulkanWidget);
-	}
-
-	void Viewport::embedRenderer(renderer::Renderer&& renderer)
-	{
-		m_window->setRenderer(std::move(renderer));
-	}
-
-	void Viewport::embedScene(core::Scene&& scene)
-	{
-		m_window->setScene(std::move(scene));
 	}
 
 } // namespace st::ui

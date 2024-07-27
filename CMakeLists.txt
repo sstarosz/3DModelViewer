@@ -13,6 +13,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #---------------------------------------------------------------------------------------#
 option(Build_Docs           "Determine if build documentation" OFF)
 option(Build_Tests          "Determine if build unit tests" ON)
+option(Build_Examples       "Determine if build examples" ON)
 option(Build_Tests_For_Gpu  "Determine if build unit that use Vulkan or other gpu features" ON)
 option(Build_Benchmarks     "Determine if build benchmarks" OFF)
 
@@ -33,7 +34,8 @@ endif()
 #---------------------------------------------------------------------------------------#
 #----------------------------------Project flags----------------------------------------#
 #---------------------------------------------------------------------------------------#
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(MSVC)
     message(STATUS "MSVC detected")
@@ -57,6 +59,7 @@ find_package(Qt6 CONFIG REQUIRED
                         Gui
                         Widgets
                         CoreTools
+                        OpenGLWidgets
             )
 
 find_package(Vulkan REQUIRED
@@ -64,11 +67,11 @@ find_package(Vulkan REQUIRED
                             shaderc_combined
             )
 
-find_package(Stb                      REQUIRED)
-find_package(spirv_cross_core  CONFIG REQUIRED)
-find_package(spirv_cross_glsl  CONFIG REQUIRED)
-find_package(Eigen3            CONFIG REQUIRED)
-
+find_package(Stb                        REQUIRED)
+find_package(spirv_cross_core   CONFIG  REQUIRED)
+find_package(spirv_cross_glsl   CONFIG  REQUIRED)
+find_package(Eigen3             CONFIG  REQUIRED)
+find_package(spdlog             CONFIG  REQUIRED)
 
 
 #---------------------------------------------------------------------------------------#
@@ -89,5 +92,9 @@ endif()
 if(Build_Tests)
     enable_testing()
     add_subdirectory(Tests)
+endif()
+
+if(Build_Examples)
+    add_subdirectory(Examples)
 endif()
 

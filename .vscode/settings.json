@@ -1,36 +1,4 @@
 {
-    "cSpell.words": [
-        "basetype",
-        "buildsystems",
-        "Eigen",
-        "Framebuffer",
-        "Mipmap",
-        "msvc",
-        "multisampling",
-        "Ruleset",
-        "Sfloat",
-        "shaderc",
-        "SPIR",
-        "spirv",
-        "Subpass",
-        "Subresource",
-        "Swapchain",
-        "toolset",
-        "vcpkg",
-        "vecsize",
-        "VKAPI"
-    ],
-    "cSpell.ignorePaths": [
-        "package-lock.json",
-        "node_modules",
-        "vscode-extension",
-        ".git/objects",
-        ".vscode",
-        ".vscode-insiders",
-        "out/*",
-        "C:/Program Files/*",
-        "C:/VulkanSDK/*",
-    ],
     "files.associations": {
         "algorithm": "cpp",
         "any": "cpp",
@@ -78,6 +46,7 @@
         "numeric": "cpp",
         "optional": "cpp",
         "ostream": "cpp",
+        "print": "cpp",
         "queue": "cpp",
         "ranges": "cpp",
         "ratio": "cpp",
@@ -114,14 +83,10 @@
         "xtr1common": "cpp",
         "xtree": "cpp",
         "xutility": "cpp",
-        "coroutine": "cpp",
-        "expected": "cpp",
-        "memory_resource": "cpp",
-        "numbers": "cpp",
-        "random": "cpp",
-        "regex": "cpp",
-        "shared_mutex": "cpp",
+        "qgraphicsscene": "cpp",
+        "qscrollbar": "cpp",
+        "bitset": "cpp",
         "source_location": "cpp",
-        "stdfloat": "cpp"
+        "core": "cpp"
     }
 }

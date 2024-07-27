@@ -1,17 +1,8 @@
 #ifndef ST_UI_VIEWPORT_HPP
 #define ST_UI_VIEWPORT_HPP
 
+#include <Core/ContentManager.hpp>
 #include <QWidget>
-
-namespace st::core
-{
-	class Scene;
-}
-
-namespace st::renderer
-{
-	class Renderer;
-}
 
 namespace st::ui
 {
@@ -21,10 +12,9 @@ namespace st::ui
 		Q_OBJECT
 
 	  public:
-		explicit Viewport(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
-
-		void embedRenderer(renderer::Renderer&& renderer);
-		void embedScene(core::Scene&& scene);
+		explicit Viewport(core::ContentManagerHandler contentManager,
+						  QWidget* parent = nullptr,
+						  Qt::WindowFlags flags = {});
 
 	  private:
 		class PrivateWindow;

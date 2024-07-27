@@ -2,22 +2,22 @@ cmake_minimum_required(VERSION 3.26)
 
 project(Geometry
 		VERSION 0.0.1
-		DESCRIPTION "Rendering Engine "
+		DESCRIPTION "Geometry Library"
 		LANGUAGES CXX)
 
         
 find_package(Eigen3 CONFIG REQUIRED)
 
 set(Sources
-    "Source/Line.cpp"
-    "Source/Point3d.cpp"
-    "Source/Geometry.cpp"
+    "Source/DataTypes/Mesh.cpp"
+    "Source/Nodes/Plane.cpp"
+    "Source/Commands/PlaneCommands.cpp"
     )
 
 set(Public_Headers
-    "Include/Geometry/Line.hpp"
-    "Include/Geometry/Point3d.hpp"
-    "Include/Geometry/Geometry.hpp"
+    "Include/Geometry/DataTypes/Mesh.hpp"
+    "Include/Geometry/Nodes/Plane.hpp"
+    "Include/Geometry/Commands/PlaneCommands.hpp"
     )
 
 set(Private_Headers
@@ -28,6 +28,9 @@ add_library(${PROJECT_NAME} ${Sources} ${Public_Headers} ${Private_Headers})
 target_include_directories(${PROJECT_NAME} PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/Include/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include/${PROJECT_NAME})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include/${PROJECT_NAME}/DataTypes)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include/${PROJECT_NAME}/Nodes)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include/${PROJECT_NAME}/Commands)
 
 
 

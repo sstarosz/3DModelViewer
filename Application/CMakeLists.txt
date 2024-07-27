@@ -24,6 +24,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE ${Compiler_Flags})
 target_link_libraries(${PROJECT_NAME} PRIVATE
                         Qt6::Widgets
                         Ui
+                        Core
                         )
 
 
