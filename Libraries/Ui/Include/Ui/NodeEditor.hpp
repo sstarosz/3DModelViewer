@@ -358,7 +358,7 @@ namespace st::ui
 	  public:
 		explicit NodeScene(QObject* parent = nullptr);
 
-		void setNodeGraph(core::NodeGraphHandler nodeGraph);
+		void setNodeGraph(core::NodeGraph* nodeGraph);
 		void updateScene();
 
 		void addNode(std::weak_ptr<core::Node> node);
@@ -384,7 +384,7 @@ namespace st::ui
 		void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
 
 	  private:
-		core::NodeGraphHandler m_nodeGraph;
+		core::NodeGraph* m_nodeGraph;
 		std::unordered_map<std::weak_ptr<core::Node>, NodeItem*, WeakPtrHash, WeakPtrEqual> m_nodes;
 
 		PlugConnection* m_pTempConnection = nullptr;

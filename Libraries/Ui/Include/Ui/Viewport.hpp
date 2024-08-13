@@ -19,6 +19,10 @@ namespace st::ui
 	  private:
 		class PrivateWindow;
 		PrivateWindow* m_window;
+
+		core::ContentManagerHandler m_contentManager;
+
+		bool isRendererSpecified() const;
 	};
 
 } // namespace st::ui

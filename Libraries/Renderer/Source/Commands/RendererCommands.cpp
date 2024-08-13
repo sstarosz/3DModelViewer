@@ -15,8 +15,8 @@ namespace st::renderer
 		m_renderer = std::make_shared<renderer::Renderer>();
 		m_renderer->initialize();
 
-		core::NodeGraphHandler nodeGraph = m_contentManager->getMainNodeGraph();
-		nodeGraph->addNode(m_renderer);
+		core::NodeGraph& nodeGraph = m_contentManager->getMainNodeGraph();
+		nodeGraph.addNode(m_renderer);
 
 		// Make material nodes automatically connect to renderer
 
@@ -30,7 +30,7 @@ namespace st::renderer
 			}
 		}
 
-		for (auto& node : nodeGraph->getNodes())
+		for (auto& node : nodeGraph.getNodes())
 		{
 			if (std::dynamic_pointer_cast<renderer::StandardMaterial>(node))
 			{
@@ -39,7 +39,7 @@ namespace st::renderer
 					if (std::shared_ptr<core::TypedAttribute<renderer::Renderable>> renderable = std::dynamic_pointer_cast<core::TypedAttribute<renderer::Renderable>>(attribute))
 					{
 						std::println("Found Renderable");
-						nodeGraph->addConnection(node, renderable, m_renderer, targetAttribute);
+						nodeGraph.addConnection(node, renderable, m_renderer, targetAttribute);
 					}
 				}
 			}

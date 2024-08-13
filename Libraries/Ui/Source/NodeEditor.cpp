@@ -457,7 +457,7 @@ namespace st::ui
 		painter->drawLine(0, -sceneHeight, 0, sceneHeight);
 	}
 
-    void NodeScene::setNodeGraph(core::NodeGraphHandler nodeGraph)
+    void NodeScene::setNodeGraph(core::NodeGraph* nodeGraph)
     {
         m_nodeGraph = nodeGraph;
     }
@@ -608,7 +608,7 @@ namespace st::ui
 
 	void NodeEditor::initialize()
 	{
-        m_scene->setNodeGraph(m_contentManager->getMainNodeGraph());
+        m_scene->setNodeGraph(&m_contentManager->getMainNodeGraph());
 	}
 
 	/*--------------------------------*/
