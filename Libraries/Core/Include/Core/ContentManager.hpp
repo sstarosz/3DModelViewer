@@ -21,7 +21,8 @@ namespace st::core
 		/*----------------------*/
 		/*--------Setters-------*/
 		/*----------------------*/
-		NodeGraphHandler getMainNodeGraph();
+		NodeGraph& getMainNodeGraph();
+		const NodeGraph& getMainNodeGraph() const;
 
 
 	  private:

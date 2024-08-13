@@ -11,7 +11,7 @@ namespace st::renderer
     {
         m_standardMaterial = std::make_shared<renderer::StandardMaterial>();
         m_standardMaterial->initialize();
-        m_contentManager->getMainNodeGraph()->addNode(m_standardMaterial);
+        m_contentManager->getMainNodeGraph().addNode(m_standardMaterial);
     }
 
     void CreateStandardMaterialCommand::undo()

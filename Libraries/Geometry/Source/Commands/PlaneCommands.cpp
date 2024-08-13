@@ -12,7 +12,7 @@ namespace st::geometry
 	{
 		m_plane = std::make_shared<geometry::Plane>();
 		m_plane->initialize();
-		m_contentManager->getMainNodeGraph()->addNode(m_plane);
+		m_contentManager->getMainNodeGraph().addNode(m_plane);
 	}
 
 	void CreatePlaneCommand::undo()

@@ -44,7 +44,7 @@ namespace st::renderer
 		
 
 		// Add connection
-		m_contentManager->getMainNodeGraph()->addConnection(m_node,
+		m_contentManager->getMainNodeGraph().addConnection(m_node,
 															sourceAttribute,
 															m_material,
 															targetAttribute);

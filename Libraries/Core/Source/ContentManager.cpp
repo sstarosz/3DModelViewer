@@ -30,10 +30,16 @@ namespace st::core
 
 		return true;
 	}
-
-	NodeGraphHandler ContentManager::getMainNodeGraph()
+	
+	NodeGraph& ContentManager::getMainNodeGraph()
 	{
-		return NodeGraphHandler(&m_nodeGraph);
+		return m_nodeGraph;
 	}
+
+	const NodeGraph&  ContentManager::getMainNodeGraph() const
+	{
+		return m_nodeGraph;
+	}
+
 
 } // namespace st::core
