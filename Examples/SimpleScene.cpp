@@ -6,7 +6,6 @@ using namespace st::application;
 int main(int argc, char* argv[])
 {
 	Application app(argc, argv);
-	app.initialize();
 
 	// Add Camera
 	auto camera = app.create()

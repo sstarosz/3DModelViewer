@@ -19,7 +19,7 @@ namespace st::application
 		const float nearClippingPlane,
 		const float farClippingPlane)
 	{
-		std::shared_ptr<core::Camera> camera = std::make_shared<core::Camera>(angleOfView,
+		std::shared_ptr<core::CameraNode> camera = std::make_shared<core::CameraNode>(angleOfView,
 																			  focalLength,
 																			  nearClippingPlane,
 																			  farClippingPlane);

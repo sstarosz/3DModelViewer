@@ -3,7 +3,7 @@
 
 #include "Core/CommandManager.hpp"
 #include "Core/ContentManager.hpp"
-#include "Core/Nodes/Camera.hpp"
+#include "Core/Nodes/CameraNode.hpp"
 #include "Renderer/Nodes/StandardMaterial.hpp"
 #include "Renderer/Renderer.hpp"
 

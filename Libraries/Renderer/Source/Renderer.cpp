@@ -20,6 +20,17 @@
 #include <sstream>
 #include <vector>
 
+//TODO refactor
+class UniformBufferObject
+{
+  public:
+	Eigen::Matrix4f model;
+	Eigen::Matrix4f view;
+	Eigen::Matrix4f proj;
+};
+
+
+
 PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT;
 PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
 
@@ -199,7 +210,7 @@ namespace st::renderer
 
 			createRenderPass();
 
-			updateScene(m_input);
+			updateScene(m_input, m_camera);
 			updateVertexBuffer();
 			updateIndexBuffer();
 
@@ -278,6 +289,9 @@ namespace st::renderer
 
 			// Reset the command buffer for the current frame
 			resetCommandBuffer(m_currentFrame);
+
+			// Update uniform buffer
+			updateUniformBuffer(m_currentFrame);
 
 			// Record command for the current frame
 			recordCommandBuffer(m_vulkanContext.m_commandBuffers[m_currentFrame], imageIndex);
@@ -384,7 +398,7 @@ namespace st::renderer
 			commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.pipeline);
 
 			// Object
-			auto indicesSize = m_input.getData().m_meshData.getIndicesPointList().size();
+			auto indicesSize = m_input.getData()->m_meshData.getIndicesPointList().size();
 			vk::Buffer vertexBuffers[] = {m_pipeline.resources.vertexBuffer};
 			vk::DeviceSize offsets[] = {0};
 			commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
@@ -395,6 +409,23 @@ namespace st::renderer
 
 			commandBuffer.endRenderPass();
 			commandBuffer.end();
+		}
+
+		void updateUniformBuffer(uint32_t currentImage)
+		{
+			spdlog::info("Renderer::updateUniformBuffer()");
+
+			// TODO - Update uniform buffer
+			UniformBufferObject	ubo{};
+			ubo.model = Eigen::Matrix4f::Identity(); //TODO it should be matrix of model
+
+			ubo.view = m_camera.getData()->getViewMatrix();
+			ubo.proj = m_camera.getData()->getProjectionMatrix();
+
+			void* data = m_vulkanContext.m_device.mapMemory(m_pipeline.resources.uniformBuffersMemory[currentImage], 0, sizeof(ubo));
+			memcpy(data, &ubo, sizeof(ubo));
+			m_vulkanContext.m_device.unmapMemory(m_pipeline.resources.uniformBuffersMemory[currentImage]);
+
 		}
 
 		// Implementation
@@ -847,7 +878,7 @@ namespace st::renderer
 		// Temporary
 		void updateVertexBuffer()
 		{
-			auto vertices = m_input.getData().m_meshData.getVertexPointList();
+			auto vertices = m_input.getData()->m_meshData.getIndicesPointList();
 
 			vk::BufferCreateInfo bufferInfo{{},
 											sizeof(vertices[0]) * vertices.size(),
@@ -873,7 +904,7 @@ namespace st::renderer
 
 		void updateIndexBuffer()
 		{
-			auto m_indices = m_input.getData().m_meshData.getIndicesPointList();
+			auto m_indices = m_input.getData()->m_meshData.getIndicesPointList();
 			vk::BufferCreateInfo bufferInfo{{},
 											sizeof(m_indices[0]) * m_indices.size(),
 											vk::BufferUsageFlagBits::eIndexBuffer,
@@ -896,20 +927,21 @@ namespace st::renderer
 			m_vulkanContext.m_device.unmapMemory(m_pipeline.resources.indexBufferMemory);
 		}
 
-		void updateScene(core::TypedInputHandler<Renderable> input)
+		void updateScene(core::TypedInputHandler<Renderable> input, core::TypedInputHandler<core::Camera> camera)
 		{
 			m_input = input;
+			m_camera = camera;
 
 			// Initialize Shader
 			spdlog::info("Renderer::updateScene() - Initialize Shader");
-			spdlog::info("Vertex Shader: {}", m_input.getData().m_vertexShader);
-			spdlog::info("Fragment Shader: {}", m_input.getData().m_fragmentShader);
-			spdlog::info("Mesh: {}", m_input.getData().m_meshData.getVertexPointList().size());
-			spdlog::info("Mesh: {}", m_input.getData().m_meshData.getIndicesPointList().size());
+			spdlog::info("Vertex Shader: {}", m_input.getData()->m_vertexShader);
+			spdlog::info("Fragment Shader: {}", m_input.getData()->m_fragmentShader);
+			spdlog::info("Mesh: {}", m_input.getData()->m_meshData.getVertexPointList().size());
+			spdlog::info("Mesh: {}", m_input.getData()->m_meshData.getIndicesPointList().size());
 
 			m_pipeline = PipelineBuilder(m_vulkanContext)
-							 .setVertexShader(m_input.getData().m_vertexShader)
-							 .setFragmentShader(m_input.getData().m_fragmentShader)
+							 .setVertexShader(m_input.getData()->m_vertexShader)
+							 .setFragmentShader(m_input.getData()->m_fragmentShader)
 							 .build();
 		}
 
@@ -928,6 +960,7 @@ namespace st::renderer
 	
 		std::unique_ptr<MaterialManager> m_materialManager;
 		core::TypedInputHandler<Renderable> m_input;
+		core::TypedInputHandler<core::Camera> m_camera;
 	};
 
 	/*---------------------*/
@@ -1000,7 +1033,7 @@ namespace st::renderer
 
 		if(m_privateRenderer->m_initialized)
 		{
-			m_privateRenderer->updateScene(m_input.renderable);
+			m_privateRenderer->updateScene(m_input.renderable, m_input.camera);
 		}
 		else
 		{

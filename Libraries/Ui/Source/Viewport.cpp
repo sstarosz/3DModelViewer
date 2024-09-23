@@ -4,6 +4,7 @@
 #include <QVulkanInstance>
 #include <QWindow>
 #include <QLabel>
+#include <QMouseEvent>
 
 #include "Renderer/Renderer.hpp"
 
@@ -102,6 +103,38 @@ namespace st::ui
 			m_renderer = renderer;
 		}
 
+		/*----------------------*/
+		/*----Event Handlers----*/
+		/*----------------------*/
+		void mousePressEvent(QMouseEvent* event)
+		{
+			spdlog::info("Mouse Pressed");
+
+			auto pos = event->position();
+
+			if(event->modifiers() & Qt::AltModifier)
+			{
+				spdlog::info("Alt Modifier Pressed");
+				if(event->button() == Qt::LeftButton)
+				{
+					spdlog::info("Alt + Left Button Pressed");
+					m_renderer->orbitCamera(pos.x(), pos.y());
+				}
+
+
+				if(event->button() == Qt::MiddleButton)
+				{
+					spdlog::info("Alt + Middle Button Pressed");
+				}
+
+				if(event->button() == Qt::RightButton)
+				{
+					spdlog::info("Alt + Right Button Pressed");
+				}
+			}
+		}
+
+
 	  private:
 		// Main loop
 		void update()
@@ -131,15 +164,21 @@ namespace st::ui
 		m_contentManager(contentManager),
 		m_window(nullptr)
 	{
+	}
+
+	void Viewport::initialize()
+	{
 		QWidget* renderWidget{nullptr};
 
 		if(isRendererSpecified())
 		{
-			m_window = new PrivateWindow(contentManager);
+			spdlog::info("Renderer Node found");
+			m_window = new PrivateWindow(m_contentManager);
 			renderWidget = QWidget::createWindowContainer(m_window, this);
 		}
 		else
 		{
+			spdlog::error("Renderer Node not found");
 			renderWidget = new FallBackWidget(this);
 		}
 
@@ -147,7 +186,6 @@ namespace st::ui
 		layout->setContentsMargins(0, 0, 0, 0);
 		layout->addWidget(renderWidget);
 	}
-
 
 	bool Viewport::isRendererSpecified() const
 	{

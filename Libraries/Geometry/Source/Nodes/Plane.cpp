@@ -167,7 +167,7 @@ namespace st::geometry
 
 	geometry::Mesh Plane::getMesh() const
 	{
-		return m_outputs.mesh;
+		return *m_outputs.mesh.getData();
 	}
 
 } // namespace st::geometry

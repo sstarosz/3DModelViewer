@@ -45,12 +45,12 @@ namespace st::renderer
 
 			//Print the mesh data
 			auto meshData = m_inputs.meshData.getData();
-			spdlog::info("Mesh Data: {}", meshData);
+			spdlog::info("Mesh Data: {}", *meshData);
 
 			Renderable renderable;
 			renderable.m_vertexShader = standardMaterialVertexShader;
 			renderable.m_fragmentShader = standardMaterialFragmentShader;
-			renderable.m_meshData = meshData;
+			renderable.m_meshData = *meshData;
 
 
 			m_outputs.renderable = renderable;

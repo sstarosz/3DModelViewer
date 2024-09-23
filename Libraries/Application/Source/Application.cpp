@@ -33,6 +33,8 @@ namespace st::application
     int Application::run()
     {
         spdlog::info("Application::run()");
+        initialize();
+
 
         m_contentManager.onStart();
 

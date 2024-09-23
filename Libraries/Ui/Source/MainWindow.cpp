@@ -52,6 +52,7 @@ namespace st::ui
 	void MainWindow::initialize()
 	{
 		spdlog::info("MainWindow::initialize()");
+		m_viewport->initialize();
 		m_nodeEditor->initialize();
 	}
 

@@ -8,18 +8,20 @@ project(Core
         
 
 set(Sources
-    "Source/Nodes/Camera.cpp"
+    "Source/Nodes/CameraNode.cpp"
     "Source/ContentManager.cpp"
     "Source/NodeGraph.cpp"
     "Source/Node.cpp"
     "Source/Attribute.cpp"
     "Source/NumericAttribute.cpp"
     "Source/CommandManager.cpp"
+    "Source/DataTypes/Camera.cpp"
     )
 
 set(Public_Headers
-    "Include/Core/Nodes/Camera.hpp"
+    "Include/Core/Nodes/CameraNode.hpp"
     "Include/Core/DataTypes/DataTypes.hpp"
+    "Include/Core/DataTypes/Camera.hpp"
     "Include/Core/ContentManager.hpp"
     "Include/Core/Node.hpp"
     "Include/Core/NodeGraph.hpp"
