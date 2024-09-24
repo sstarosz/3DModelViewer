@@ -16,6 +16,7 @@ set(Sources
     "Source/NumericAttribute.cpp"
     "Source/CommandManager.cpp"
     "Source/DataTypes/Camera.cpp"
+    "Source/Commands/CameraCommands.cpp"
     )
 
 set(Public_Headers
@@ -29,6 +30,7 @@ set(Public_Headers
     "Include/Core/NumericAttribute.hpp"
     "Include/Core/CommandManager.hpp"
     "Include/Core/Command.hpp"
+    "Include/Core/Commands/CameraCommands.hpp"
     )
 
 set(Private_Headers

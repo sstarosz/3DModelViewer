@@ -1,12 +1,14 @@
 #include "RendererCommands.hpp"
 
 #include "Renderer/Nodes/StandardMaterial.hpp"
+#include "Core/Nodes/CameraNode.hpp"
 
 namespace st::renderer
 {
 
-	CreateRendererCommand::CreateRendererCommand(core::ContentManagerHandler contentManager) :
-		m_contentManager(contentManager)
+	CreateRendererCommand::CreateRendererCommand(core::ContentManagerHandler contentManager, std::shared_ptr<core::Node> camera) :
+		m_contentManager(contentManager),
+		m_camera(camera)
 	{
 	}
 
@@ -20,6 +22,7 @@ namespace st::renderer
 
 		// Make material nodes automatically connect to renderer
 
+		//Find the Renderable attribute in the renderer
 		std::shared_ptr<core::Attribute> targetAttribute = nullptr;
 		for (auto& attribute : m_renderer->getAttributes())
 		{
@@ -30,6 +33,7 @@ namespace st::renderer
 			}
 		}
 
+		// Find all material nodes and connect them to the renderer
 		for (auto& node : nodeGraph.getNodes())
 		{
 			if (std::dynamic_pointer_cast<renderer::StandardMaterial>(node))
@@ -44,6 +48,32 @@ namespace st::renderer
 				}
 			}
 		}
+
+
+	//Connect the camera to the renderer
+	std::shared_ptr<core::Attribute> cameraInputAttribute = nullptr;
+	for (auto& attribute : m_renderer->getAttributes())
+	{
+		if (std::shared_ptr<core::TypedAttribute<core::CameraNode>> cameraInput = std::dynamic_pointer_cast<core::TypedAttribute<core::CameraNode>>(attribute))
+		{
+			std::println("Found Renderable");
+			cameraInputAttribute = attribute;
+		}
+	}
+
+
+
+	if (m_camera)
+	{
+		for (auto& attribute : m_camera->getAttributes())
+		{
+			if (std::shared_ptr<core::TypedAttribute<core::CameraNode>> cameraOutputAttribute = std::dynamic_pointer_cast<core::TypedAttribute<core::CameraNode>>(attribute))
+			{
+				std::println("Found Renderable");
+				nodeGraph.addConnection(m_camera, cameraOutputAttribute, m_renderer, cameraInputAttribute);
+			}
+		}
+	}
 	}
 
 	void CreateRendererCommand::undo()

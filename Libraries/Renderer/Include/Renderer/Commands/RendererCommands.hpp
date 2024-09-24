@@ -5,23 +5,23 @@
 #include "Core/ContentManager.hpp"
 #include "Renderer/Renderer.hpp"
 
-
 namespace st::renderer
 {
-    class CreateRendererCommand : public core::Command
-    {
-      public:
-        CreateRendererCommand(core::ContentManagerHandler contentManager);
+	class CreateRendererCommand : public core::Command
+	{
+	  public:
+		CreateRendererCommand(core::ContentManagerHandler contentManager, std::shared_ptr<core::Node> camera = nullptr);
 
-        void execute() override;
-        void undo() override;
+		void execute() override;
+		void undo() override;
 
-        std::shared_ptr<renderer::Renderer> getResult();
+		std::shared_ptr<renderer::Renderer> getResult();
 
-        private:
+	  private:
 		core::ContentManagerHandler m_contentManager;
-		std::shared_ptr<renderer::Renderer> m_renderer; 
-    };
+		std::shared_ptr<renderer::Renderer> m_renderer;
+    std::shared_ptr<core::Node> m_camera;
+	};
 } // namespace st::renderer
 
 #endif // ST_RENDERER_RENDERER_COMMANDS_HPP

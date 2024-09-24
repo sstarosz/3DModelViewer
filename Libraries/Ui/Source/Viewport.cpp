@@ -106,7 +106,7 @@ namespace st::ui
 		/*----------------------*/
 		/*----Event Handlers----*/
 		/*----------------------*/
-		void mousePressEvent(QMouseEvent* event)
+		void mousePressEvent(QMouseEvent* event) override
 		{
 			spdlog::info("Mouse Pressed");
 
@@ -132,6 +132,12 @@ namespace st::ui
 					spdlog::info("Alt + Right Button Pressed");
 				}
 			}
+		}
+
+		void mouseMoveEvent(QMouseEvent* event) override
+		{
+			spdlog::info("Mouse Moved");
+			
 		}
 
 

@@ -34,8 +34,13 @@ namespace st::renderer
 									  .setWritable(true)
 									  .build();
 
+			m_input.camera = core::TypedAttribute<core::Camera>::Builder("Camera")
+								   .setReadable(false)
+								   .setWritable(true)
+								   .build();
 
 			addAttribute(m_input.renderable);
+			addAttribute(m_input.camera);
 
 			init();
 			

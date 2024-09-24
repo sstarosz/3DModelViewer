@@ -1038,6 +1038,7 @@ namespace st::renderer
 		else
 		{
 			m_privateRenderer->m_input = m_input.renderable;
+			m_privateRenderer->m_camera = m_input.camera;
 		}
 		// Initialize Pipeline
 

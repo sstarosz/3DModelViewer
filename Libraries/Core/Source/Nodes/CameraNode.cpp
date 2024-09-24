@@ -30,13 +30,15 @@ namespace st::core
 
         addAttribute(m_output.camera);
 
+        defineNode("Camera");
+
 
         return true;
     }
 
     bool CameraNode::compute()
     {
-
+        //m_camera.
 
 
         m_output.camera = m_camera;
