@@ -8,6 +8,8 @@
 
 #include "Renderer/Renderer.hpp"
 
+#include "Core/Nodes/CameraNode.hpp"
+
 namespace st::ui
 {
 
@@ -67,7 +69,24 @@ namespace st::ui
 					spdlog::error("Renderer Node not found");
 					return;
 				}
+
+				for(auto node : nodeGraph.getNodes())
+				{
+					if(std::shared_ptr<core::CameraNode> camera = std::dynamic_pointer_cast<core::CameraNode>(node))
+					{
+						spdlog::info("Camera Node found");
+						m_camera = camera;
+					}
+				}
+
+				if(m_camera == nullptr)
+				{
+					spdlog::error("Camera Node not found");
+					return;
+				}
 				
+
+
 				// Create Vulkan Instance for QVulkanWindow
 				QVulkanInstance vulkanInstance;
 				vulkanInstance.setVkInstance(m_renderer->getVulkanInstance());
@@ -118,27 +137,66 @@ namespace st::ui
 				if(event->button() == Qt::LeftButton)
 				{
 					spdlog::info("Alt + Left Button Pressed");
-					m_renderer->orbitCamera(pos.x(), pos.y());
+					m_camera->setCameraCurrentState(core::Camera::State::eOrbit);
 				}
-
 
 				if(event->button() == Qt::MiddleButton)
 				{
 					spdlog::info("Alt + Middle Button Pressed");
+					m_camera->setCameraCurrentState(core::Camera::State::ePan);
 				}
 
 				if(event->button() == Qt::RightButton)
 				{
 					spdlog::info("Alt + Right Button Pressed");
+					m_camera->setCameraCurrentState(core::Camera::State::eZoom);
 				}
+
+				m_camera->setClickPosition(pos.x(), pos.y());
 			}
 		}
 
 		void mouseMoveEvent(QMouseEvent* event) override
 		{
 			spdlog::info("Mouse Moved");
+			auto pos = event->position();
+
+			float cameraX{0.0f};
+			float cameraY{0.0f};
+
+			m_camera->getClickPosition(cameraX, cameraY);
+
+			float deltaX = pos.x() - cameraX;
+			float deltaY = pos.y() - cameraY;
+
 			
+			if(m_camera->getCameraCurrentState() == core::Camera::State::eOrbit)
+			{
+				m_camera->orbit(deltaX, deltaY);
+			}
+
+			if(m_camera->getCameraCurrentState() == core::Camera::State::ePan)
+			{
+				m_camera->pan(deltaX, deltaY);
+			}
+
+			if(m_camera->getCameraCurrentState() == core::Camera::State::eZoom)
+			{
+				m_camera->dolly(deltaX, deltaY);
+			}
+
+			m_camera->setClickPosition(pos.x(), pos.y());
 		}
+
+		void mouseReleaseEvent(QMouseEvent* event) override
+		{
+			spdlog::info("Mouse Released");
+
+			auto pos = event->position();
+
+			m_camera->setCameraCurrentState(core::Camera::State::eIdle);
+		}
+
 
 
 	  private:
@@ -156,6 +214,7 @@ namespace st::ui
 		bool m_initialized{false};
 		QTimer m_timer;
 		std::shared_ptr<renderer::Renderer> m_renderer;
+		std::shared_ptr<core::CameraNode> m_camera; //Current active camera
 		QLabel* m_fallbackLabel{nullptr};
 	};
 

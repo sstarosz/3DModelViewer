@@ -1,4 +1,7 @@
 #include "Core/DataTypes/Camera.hpp"
+#include "Eigen/Core"
+#include "Eigen/Geometry"
+#include "Eigen/Dense"
 
 namespace st::core
 {
@@ -14,31 +17,45 @@ namespace st::core
 
 	Eigen::Matrix4f Camera::getViewMatrix() const
     {
-        return Eigen::Matrix4f();
+		Eigen::Matrix4f viewMatrix = Eigen::Matrix4f::Identity();
+
+		Eigen::Vector3f forward = (m_target - m_position).normalized();
+		Eigen::Vector3f right = forward.cross(m_up).normalized();
+		Eigen::Vector3f up = right.cross(forward).normalized();
+
+		viewMatrix(0, 0) = right.x();
+		viewMatrix(1, 0) = right.y();
+		viewMatrix(2, 0) = right.z();
+		viewMatrix(3, 0) = -right.dot(m_position);
+
+		viewMatrix(0, 1) = up.x();
+		viewMatrix(1, 1) = up.y();
+		viewMatrix(2, 1) = up.z();
+		viewMatrix(3, 1) = -up.dot(m_position);
+
+		viewMatrix(0, 2) = -forward.x();
+		viewMatrix(1, 2) = -forward.y();
+		viewMatrix(2, 2) = -forward.z();
+		viewMatrix(3, 2) = forward.dot(m_position);
+
+		return viewMatrix;
     }
 
     Eigen::Matrix4f Camera::getProjectionMatrix() const
-    {
-        return Eigen::Matrix4f();
-    }
-
-	void Camera::orbit(float deltaX, float deltaY)
 	{
-		constexpr float sensitivity = 0.01f;
-		
-		float theta = std::atan2(m_position.z() - m_target.z(), m_position.x() - m_target.x());
-		float phi = std::acos((m_position.y() - m_target.y()) / m_position.norm()); //Or radius
+		Eigen::Matrix4f projectionMatrix = Eigen::Matrix4f::Zero();
 
-		theta += deltaX * sensitivity;
-		phi += deltaY * sensitivity;
+		float aspectRatio = 1.0f;
+		float top = tan(m_angleOfView / 2.0f) * m_nearClippingPlane;
+		float right = aspectRatio * top;
 
-		phi = std::clamp(phi, 0.1f, 3.13f); //TODO remove magic numbers
+		projectionMatrix(0, 0) = m_nearClippingPlane / right;
+		projectionMatrix(1, 1) = m_nearClippingPlane / top;
+		projectionMatrix(2, 2) = -(m_farClippingPlane + m_nearClippingPlane) / (m_farClippingPlane - m_nearClippingPlane);
+		projectionMatrix(2, 3) = -2.0f * m_farClippingPlane * m_nearClippingPlane / (m_farClippingPlane - m_nearClippingPlane);
+		projectionMatrix(3, 2) = -1.0f;
 
-		// Convert Spherical to Cartesian coordinates.
-		m_position.x() = m_target.x() + m_focalLength * std::sin(phi) * std::cos(theta);
-		m_position.y() = m_target.y() + m_focalLength * std::cos(phi);
-		m_position.z() = m_target.z() + m_focalLength * std::sin(phi) * std::sin(theta);
-		
+		return projectionMatrix;
 	}
 
 

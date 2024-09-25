@@ -1,5 +1,9 @@
 #include "CameraNode.hpp"
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <Eigen/Dense>
+
 namespace st::core
 {
     /*----------------------*/
@@ -90,5 +94,68 @@ namespace st::core
     {
         return m_camera.m_farClippingPlane;
     }
-    
+
+	void CameraNode::setCameraCurrentState(Camera::State state)
+	{
+        m_camera.m_currentState = state;
+	}
+
+	Camera::State CameraNode::getCameraCurrentState() const
+	{
+		return m_camera.m_currentState;
+	}
+
+	void CameraNode::setClickPosition(float x, float y)
+	{
+        m_camera.m_mouseClickX = x;
+        m_camera.m_mouseClickY = y;
+	}
+
+	void CameraNode::getClickPosition(float& x, float& y) const
+	{
+        x = m_camera.m_mouseClickX;
+        y = m_camera.m_mouseClickY;
+	}
+
+	/*----------------------*/
+	/*-------Operators------*/
+	/*----------------------*/
+	void CameraNode::orbit(float deltaX, float deltaY)
+	{
+		constexpr float sensitivity = 0.01f;
+
+		Eigen::Vector3f right = (m_camera.m_position - m_camera.m_target).cross(m_camera.m_up).normalized();
+		Eigen::Vector3f up = right.cross(m_camera.m_position - m_camera.m_target).normalized();
+
+		m_camera.m_position += -right * deltaX * sensitivity + up * deltaY * sensitivity;
+	}
+		
+	void CameraNode::pan(float deltaX, float deltaY)
+	{
+		constexpr float sensitivity = 0.01f;
+
+		Eigen::Vector3f right = (m_camera.m_position - m_camera.m_target).cross(m_camera.m_up).normalized();
+		Eigen::Vector3f up = right.cross(m_camera.m_position - m_camera.m_target).normalized();
+
+		m_camera.m_position += -right * deltaX * sensitivity + up * deltaY * sensitivity;
+		m_camera.m_target += -right * deltaX * sensitivity + up * deltaY * sensitivity;
+	}
+
+	void CameraNode::dolly(float deltaX, float deltaY)
+	{
+		constexpr float sensitivity = 0.01f;
+
+		m_camera.m_focalLength += deltaY * sensitivity;
+	}
+
+	Eigen::Matrix4f CameraNode::getViewMatrix() const
+	{
+		return m_camera.getViewMatrix();
+	}
+
+	Eigen::Matrix4f CameraNode::getProjectionMatrix() const
+	{
+		return m_camera.getProjectionMatrix();
+	}
+
 } // namespace st::core

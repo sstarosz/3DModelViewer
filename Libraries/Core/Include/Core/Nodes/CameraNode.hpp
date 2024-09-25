@@ -40,10 +40,16 @@ namespace st::core
 		/*----------------------*/
 		/*-------Operators------*/
 		/*----------------------*/
+		void setCameraCurrentState(Camera::State state);
+		Camera::State getCameraCurrentState() const;
+
+		void setClickPosition(float x, float y);
+		void getClickPosition(float& x, float& y) const;
+
 		
-		void orbit (float dx, float dy);
-		void pan (float dx, float dy);
-		void dolly (float dx, float dy);
+		void orbit (float deltaX, float deltaY);
+		void pan (float deltaX, float deltaY);
+		void dolly (float deltaX, float deltaY);
 
 		Eigen::Matrix4f getViewMatrix() const;
 		Eigen::Matrix4f getProjectionMatrix() const;
