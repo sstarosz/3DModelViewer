@@ -18,7 +18,7 @@ namespace st::core
 
 	void CreateCameraCommand::execute()
 	{
-		m_camera = std::make_shared<CameraNode>();
+		m_camera = std::make_shared<CameraNode>(m_angleOfView, m_focalLength, m_nearClippingPlane, m_farClippingPlane);
 		m_camera->initialize();
 
 		core::NodeGraph& nodeGraph = m_contentManager->getMainNodeGraph();

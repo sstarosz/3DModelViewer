@@ -54,9 +54,9 @@ namespace st::renderer
 	std::shared_ptr<core::Attribute> cameraInputAttribute = nullptr;
 	for (auto& attribute : m_renderer->getAttributes())
 	{
-		if (std::shared_ptr<core::TypedAttribute<core::CameraNode>> cameraInput = std::dynamic_pointer_cast<core::TypedAttribute<core::CameraNode>>(attribute))
+		if (std::shared_ptr<core::TypedAttribute<core::Camera>> cameraInput = std::dynamic_pointer_cast<core::TypedAttribute<core::Camera>>(attribute))
 		{
-			std::println("Found Renderable");
+			std::println("Found Camera Input");
 			cameraInputAttribute = attribute;
 		}
 	}
@@ -67,9 +67,9 @@ namespace st::renderer
 	{
 		for (auto& attribute : m_camera->getAttributes())
 		{
-			if (std::shared_ptr<core::TypedAttribute<core::CameraNode>> cameraOutputAttribute = std::dynamic_pointer_cast<core::TypedAttribute<core::CameraNode>>(attribute))
+			if (std::shared_ptr<core::TypedAttribute<core::Camera>> cameraOutputAttribute = std::dynamic_pointer_cast<core::TypedAttribute<core::Camera>>(attribute))
 			{
-				std::println("Found Renderable");
+				std::println("Found Camera Output");
 				nodeGraph.addConnection(m_camera, cameraOutputAttribute, m_renderer, cameraInputAttribute);
 			}
 		}

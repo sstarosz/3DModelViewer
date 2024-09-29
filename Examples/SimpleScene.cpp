@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 
 	// Add Camera
 	auto camera = app.create()
-					  .camera(45.0f,
+					  .camera(60.0f,
 							  35.0f,
 							  0.1f,
 							  10000.0f);

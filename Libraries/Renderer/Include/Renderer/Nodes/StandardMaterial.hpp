@@ -26,7 +26,9 @@ namespace st::renderer
 
 		void main()
 		{
-			gl_Position = vec4(inPosition, 1.0);
+			mat4 proj = mat4(1.0);
+
+			gl_Position = mvp.proj * mvp.view * mvp.model * vec4(inPosition, 1.0);
 			outFragColor = vec3(1.0, 0.0, 0.0);
 		}
     )";
@@ -40,7 +42,9 @@ namespace st::renderer
 
 		void main()
 		{
-			outColor = vec4(inFragColor, 1.0);
+			float depth = gl_FragCoord.z;
+
+			outColor = vec4(vec3(depth), 1.0);
 		}
     )";
 

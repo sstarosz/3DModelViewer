@@ -29,6 +29,9 @@ namespace st::core
 		void setNearClippingPlane(float nearClippingPlane);
 		void setFarClippingPlane(float farClippingPlane);
 
+		void setWidth(float width);
+		void setHeight(float height);
+
 		/*----------------------*/
 		/*-------Getters--------*/
 		/*----------------------*/

@@ -86,6 +86,9 @@ namespace st::ui
 				}
 				
 
+				spdlog::info("Window size: y:{}, x:{}", width(), height());
+				m_camera->setWidth(static_cast<float>(width()));
+				m_camera->setHeight(static_cast<float>(height()));
 
 				// Create Vulkan Instance for QVulkanWindow
 				QVulkanInstance vulkanInstance;
@@ -115,6 +118,9 @@ namespace st::ui
 
 			QWindow::resizeEvent(event);
 			m_renderer->changeSwapchainExtent(width(), height());
+			m_camera->setWidth(static_cast<float>(width()));
+			m_camera->setHeight(static_cast<float>(height()));
+			m_camera->compute();
 		}
 
 		void setRenderer(std::shared_ptr<renderer::Renderer> renderer)

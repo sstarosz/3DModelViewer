@@ -414,13 +414,17 @@ namespace st::renderer
 		void updateUniformBuffer(uint32_t currentImage)
 		{
 			spdlog::info("Renderer::updateUniformBuffer()");
+			spdlog::info("View matrix: {}", m_camera.getData()->getViewMatrix());
+			spdlog::info("Projection matrix: {}", m_camera.getData()->getProjectionMatrix());
+
 
 			// TODO - Update uniform buffer
 			UniformBufferObject	ubo{};
 			ubo.model = Eigen::Matrix4f::Identity(); //TODO it should be matrix of model
 
-			ubo.view = m_camera.getData()->getViewMatrix();
-			ubo.proj = m_camera.getData()->getProjectionMatrix();
+			ubo.view = m_camera.getData()->getViewMatrix().transpose();
+			ubo.proj = m_camera.getData()->getProjectionMatrix().transpose();
+
 
 			void* data = m_vulkanContext.m_device.mapMemory(m_pipeline.resources.uniformBuffersMemory[currentImage], 0, sizeof(ubo));
 			memcpy(data, &ubo, sizeof(ubo));
@@ -878,7 +882,7 @@ namespace st::renderer
 		// Temporary
 		void updateVertexBuffer()
 		{
-			auto vertices = m_input.getData()->m_meshData.getIndicesPointList();
+			auto vertices = m_input.getData()->m_meshData.getVertexPointList();
 
 			vk::BufferCreateInfo bufferInfo{{},
 											sizeof(vertices[0]) * vertices.size(),
@@ -932,12 +936,24 @@ namespace st::renderer
 			m_input = input;
 			m_camera = camera;
 
+			//Camera
+			spdlog::info("Renderer::updateScene() - Camera");
+			spdlog::info("Camera Projection Matrix: {}", m_camera.getData()->getProjectionMatrix());
+			spdlog::info("Camera View Matrix: {}", m_camera.getData()->getViewMatrix());
+			spdlog::info("Camera Position: {}", m_camera.getData()->m_position);
+			spdlog::info("Camera Up: {}", m_camera.getData()->m_up);
+			spdlog::info("Camera Target: {}", m_camera.getData()->m_target);
+
+
+
 			// Initialize Shader
 			spdlog::info("Renderer::updateScene() - Initialize Shader");
 			spdlog::info("Vertex Shader: {}", m_input.getData()->m_vertexShader);
 			spdlog::info("Fragment Shader: {}", m_input.getData()->m_fragmentShader);
-			spdlog::info("Mesh: {}", m_input.getData()->m_meshData.getVertexPointList().size());
-			spdlog::info("Mesh: {}", m_input.getData()->m_meshData.getIndicesPointList().size());
+			spdlog::info("Mesh Vertexes: {}", m_input.getData()->m_meshData.getVertexPointList());
+			spdlog::info("Mesh Indices: {}", m_input.getData()->m_meshData.getIndicesPointList());
+			spdlog::info("Mesh Vertex Count: {}", m_input.getData()->m_meshData.getVertexPointList().size());
+			spdlog::info("Mesh Indices Count: {}", m_input.getData()->m_meshData.getIndicesPointList().size());
 
 			m_pipeline = PipelineBuilder(m_vulkanContext)
 							 .setVertexShader(m_input.getData()->m_vertexShader)
@@ -1033,10 +1049,21 @@ namespace st::renderer
 
 		if(m_privateRenderer->m_initialized)
 		{
+			//Camera
+			spdlog::info("RendererNoPrivate::updateScene() - Camera");
+			spdlog::info("Camera Projection Matrix: {}", m_input.camera.getData()->getProjectionMatrix());
+			spdlog::info("Camera View Matrix: {}", m_input.camera.getData()->getViewMatrix());
+			spdlog::info("Camera Position: {}", m_input.camera.getData()->m_position);
+
+
 			m_privateRenderer->updateScene(m_input.renderable, m_input.camera);
 		}
 		else
 		{
+			spdlog::info("RendererNoPrivate::updateScene() - Camera");
+			spdlog::info("Camera Projection Matrix: {}", m_input.camera.getData()->getProjectionMatrix());
+			spdlog::info("Camera View Matrix: {}", m_input.camera.getData()->getViewMatrix());
+			spdlog::info("Camera Position: {}", m_input.camera.getData()->m_position);
 			m_privateRenderer->m_input = m_input.renderable;
 			m_privateRenderer->m_camera = m_input.camera;
 		}

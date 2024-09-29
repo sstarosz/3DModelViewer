@@ -13,12 +13,14 @@ namespace st::core
         Node(),
         m_camera(0.0f, 0.0f, 0.0f, 0.0f)
     {
+        spdlog::info("CameraNode: Default constructor");
     }
 
     CameraNode::CameraNode(float angleOfView, float focalLength, float nearClippingPlane, float farClippingPlane) :
         Node(),
         m_camera(angleOfView, focalLength, nearClippingPlane, farClippingPlane)
     {
+        spdlog::info("CameraNode: Constructor with parameters");
     }
 
     /*----------------------*/
@@ -31,17 +33,18 @@ namespace st::core
 
 
         m_output.camera = TypedAttribute<Camera>::Builder("Camera").setReadable(true).build();
-
         addAttribute(m_output.camera);
 
-        defineNode("Camera");
+        m_camera.setPosition(Eigen::Vector3f(0.0f, 0.0f, 15.0f));
 
+        defineNode("Camera");
 
         return true;
     }
 
     bool CameraNode::compute()
     {
+        spdlog::info("CameraNode::compute()");
         //m_camera.
 
 
@@ -72,7 +75,19 @@ namespace st::core
         m_camera.m_farClippingPlane = farClippingPlane;
     }
 
-    /*----------------------*/
+	void CameraNode::setWidth(float width)
+	{
+        spdlog::info("CameraNode::setWidth(), width: {}", width);
+        m_camera.m_width = width;
+	}
+
+    void CameraNode::setHeight(float height)
+    {
+        spdlog::info("CameraNode::setHeight(), height: {}", height);
+        m_camera.m_height = height;
+    }
+
+	/*----------------------*/
     /*-------Getters--------*/
     /*----------------------*/
     float CameraNode::getAngleOfView() const

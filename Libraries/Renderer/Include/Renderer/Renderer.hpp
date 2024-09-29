@@ -72,22 +72,6 @@ namespace st::renderer
 		void updateScene();
 
 
-		//Camera
-		void orbitCamera(float x, float y)
-		{
-			m_input.camera->orbit(x, y);
-		}
-
-		void panCamera(float x, float y)
-		{
-			m_input.camera->pan(x, y);
-		}
-
-		void zoomCamera(float x, float y)
-		{
-			m_input.camera->zoom(x, y);
-		}
-
 		struct Input
 		{
 			core::TypedInputHandler<core::Camera> camera;
