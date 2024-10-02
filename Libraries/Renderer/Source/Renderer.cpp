@@ -417,13 +417,16 @@ namespace st::renderer
 			spdlog::info("View matrix: {}", m_camera.getData()->getViewMatrix());
 			spdlog::info("Projection matrix: {}", m_camera.getData()->getProjectionMatrix());
 
+			Eigen::Matrix4f transporeProjection = m_camera.getData()->getProjectionMatrix().transpose();
+			spdlog::info("Projection matrix transposed: {}", transporeProjection);
+
 
 			// TODO - Update uniform buffer
 			UniformBufferObject	ubo{};
 			ubo.model = Eigen::Matrix4f::Identity(); //TODO it should be matrix of model
 
-			ubo.view = m_camera.getData()->getViewMatrix().transpose();
-			ubo.proj = m_camera.getData()->getProjectionMatrix().transpose();
+			ubo.view = m_camera.getData()->getViewMatrix();
+			ubo.proj = m_camera.getData()->getProjectionMatrix();
 
 
 			void* data = m_vulkanContext.m_device.mapMemory(m_pipeline.resources.uniformBuffersMemory[currentImage], 0, sizeof(ubo));

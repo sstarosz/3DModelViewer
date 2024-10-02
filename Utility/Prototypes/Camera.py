@@ -107,7 +107,11 @@ if __name__ == "__main__":
 
     print("Vertices after model matrix multiplication: \n", np.dot(plane.vertices, model_matrix))
 
-    print("Vertices after model view matrix multiplication: \n", np.dot(plane.vertices, np.dot(camera.get_view_matrix(), model_matrix)))
+    view_model_matrix = np.dot(camera.get_view_matrix(), model_matrix)
+    print("View Model Matrix: \n", view_model_matrix)
 
-    print("Vertices after model view projection matrix multiplication: \n", np.dot(plane.vertices, np.dot(camera.get_projection_matrix(), np.dot(camera.get_view_matrix(), model_matrix))))
+    print("Vertices after model view matrix multiplication: \n", np.dot(plane.vertices, view_model_matrix.transpose()))
+
+    mvp_matrix = np.dot(camera.get_projection_matrix(), np.dot(camera.get_view_matrix(), model_matrix))
+    print("Vertices after model view projection matrix multiplication: \n", np.dot(plane.vertices, mvp_matrix.transpose()))
 
