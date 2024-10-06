@@ -2,10 +2,13 @@
 #include "Eigen/Core"
 #include "Eigen/Geometry"
 #include "Eigen/Dense"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <spdlog/spdlog.h>
 
 #include <numbers>
+#include <print>
 
 namespace st::core
 {
@@ -37,33 +40,55 @@ namespace st::core
 
 	Eigen::Matrix4f Camera::getViewMatrix() const
 	{
-		Eigen::Vector3f forward = (m_position - m_target).normalized();
+		//Eigen::Vector3f forward = (m_target - m_position).normalized();
+//
+		//Eigen::Vector3f right = m_up.cross(forward).normalized();
+//
+		//Eigen::Vector3f up = forward.cross(right);
+//
+		//Eigen::Matrix4f viewMatrix = Eigen::Matrix4f::Identity();
+//
+		//viewMatrix(0, 0) = right.x();
+		//viewMatrix(0, 1) = right.y();
+		//viewMatrix(0, 2) = right.z();
+		//viewMatrix(0, 3) = -right.dot(m_position);
+//
+		//viewMatrix(1, 0) = up.x();
+		//viewMatrix(1, 1) = up.y();
+		//viewMatrix(1, 2) = up.z();
+		//viewMatrix(1, 3) = -up.dot(m_position);
+//
+		//viewMatrix(2, 0) = -forward.x();
+		//viewMatrix(2, 1) = -forward.y();
+		//viewMatrix(2, 2) = -forward.z();
+		//viewMatrix(2, 3) = forward.dot(m_position);
+//
+		//viewMatrix(3, 0) = 0.0f;
+		//viewMatrix(3, 1) = 0.0f;
+		//viewMatrix(3, 2) = 0.0f;
+		//viewMatrix(3, 3) = 1.0f;
 
-		Eigen::Vector3f right = m_up.cross(forward).normalized();
+		glm::mat4 viewMatrixGlm = glm::lookAt(glm::vec3(m_position.x(), m_position.y(), m_position.z()),
+											glm::vec3(m_target.x(), m_target.y(), m_target.z()),
+											glm::vec3(m_up.x(), m_up.y(), m_up.z()));
 
-		Eigen::Vector3f up = forward.cross(right);
-
-		Eigen::Matrix4f viewMatrix = Eigen::Matrix4f::Identity();
-
-		viewMatrix(0, 0) = right.x();
-		viewMatrix(0, 1) = right.y();
-		viewMatrix(0, 2) = right.z();
-		viewMatrix(0, 3) = -right.dot(m_position);
-
-		viewMatrix(1, 0) = up.x();
-		viewMatrix(1, 1) = up.y();
-		viewMatrix(1, 2) = up.z();
-		viewMatrix(1, 3) = -up.dot(m_position);
-
-		viewMatrix(2, 0) = -forward.x();
-		viewMatrix(2, 1) = -forward.y();
-		viewMatrix(2, 2) = -forward.z();
-		viewMatrix(2, 3) = forward.dot(m_position);
-
-		viewMatrix(3, 0) = 0.0f;
-		viewMatrix(3, 1) = 0.0f;
-		viewMatrix(3, 2) = 0.0f;
-		viewMatrix(3, 3) = 1.0f;
+		Eigen::Matrix4f viewMatrix = Eigen::Matrix4f::Zero();
+		viewMatrix(0, 0) = viewMatrixGlm[0][0];
+		viewMatrix(0, 1) = viewMatrixGlm[0][1];
+		viewMatrix(0, 2) = viewMatrixGlm[0][2];
+		viewMatrix(0, 3) = viewMatrixGlm[0][3];
+		viewMatrix(1, 0) = viewMatrixGlm[1][0];
+		viewMatrix(1, 1) = viewMatrixGlm[1][1];
+		viewMatrix(1, 2) = viewMatrixGlm[1][2];
+		viewMatrix(1, 3) = viewMatrixGlm[1][3];
+		viewMatrix(2, 0) = viewMatrixGlm[2][0];
+		viewMatrix(2, 1) = viewMatrixGlm[2][1];
+		viewMatrix(2, 2) = viewMatrixGlm[2][2];
+		viewMatrix(2, 3) = viewMatrixGlm[2][3];
+		viewMatrix(3, 0) = viewMatrixGlm[3][0];
+		viewMatrix(3, 1) = viewMatrixGlm[3][1];
+		viewMatrix(3, 2) = viewMatrixGlm[3][2];
+		viewMatrix(3, 3) = viewMatrixGlm[3][3];
 
 
 		return viewMatrix;
@@ -71,15 +96,25 @@ namespace st::core
 
     Eigen::Matrix4f Camera::getProjectionMatrix() const
 	{
+		float aspectRatio = m_width / m_height;
 		float tanHalfFov = std::tan(m_angleOfView / 2.0f);
+		glm::mat4 projectionMatrixGlm = glm::perspectiveRH_ZO(m_angleOfView, aspectRatio, m_nearClippingPlane, m_farClippingPlane);
 
 		Eigen::Matrix4f projectionMatrix = Eigen::Matrix4f::Zero();
-		projectionMatrix(0, 0) = 1.0f / (tanHalfFov * m_width / m_height);
+		projectionMatrix(0, 0) = 1.0f / (aspectRatio * tanHalfFov);
 		projectionMatrix(1, 1) = 1.0f / tanHalfFov;
-		projectionMatrix(2, 2) = -(m_farClippingPlane + m_nearClippingPlane) / (m_farClippingPlane - m_nearClippingPlane);
-		projectionMatrix(2, 3) = -(2.0f * m_farClippingPlane * m_nearClippingPlane) / (m_farClippingPlane - m_nearClippingPlane);
-		projectionMatrix(3, 2) = -1.0f;
-		projectionMatrix(3, 3) = 1.0f;
+		projectionMatrix(2, 2) = m_farClippingPlane / (m_nearClippingPlane - m_farClippingPlane);
+		projectionMatrix(2, 3) = -1.0f;
+		projectionMatrix(3, 2) = -(m_farClippingPlane * m_nearClippingPlane) / (m_farClippingPlane - m_nearClippingPlane);
+
+
+		//Since vulkan clip space has inverted Y and half Z, we need to apply a post view rotation
+		Eigen::Matrix4f postViewRotation = Eigen::Matrix4f::Identity();
+		postViewRotation(1, 1) = 1.0f;
+		postViewRotation(2, 2) = 1.0f;
+//
+		projectionMatrix = projectionMatrix * postViewRotation;
+		spdlog::info("!!!Projection Matrix: {}", projectionMatrix);
 
 		return projectionMatrix;
 	}

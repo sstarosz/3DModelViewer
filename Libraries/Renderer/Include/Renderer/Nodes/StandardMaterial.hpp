@@ -23,10 +23,83 @@ namespace st::renderer
 			mat4 proj;
 		} mvp;
 
+		bool compareMatrices(mat4 a, mat4 b)
+		{
+			const float epsilon = 0.0001;
+			for(int i = 0; i < 4; i++)
+			{
+				for(int j = 0; j < 4; j++)
+				{
+					if(abs(a[i][j] - b[i][j]) > epsilon)
+					{
+						return false;
+					}
+				}
+			}
+
+			return true;
+		}
+
+		bool compareVec3(vec3 a, vec3 b)
+		{
+			const float epsilon = 0.0001;
+			for(int i = 0; i < 3; i++)
+			{
+				if(abs(a[i] - b[i]) > epsilon)
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+		
+
 		void main()
 		{
-			gl_Position = mvp.view * mvp.model * vec4(inPosition, 1.0);
-			outFragColor = vec3(1.0, 0.0, 0.0);
+			/*
+			[1, 0, 0, -0]
+			[0, 1, 0, -0]
+			[-0, -0, -1, 15]
+			[0, 0, 0, 1]
+			*/
+
+			mat4 debugViewMatrix;
+			debugViewMatrix[0] = vec4(1.0, 0.0, 0.0, 0.0);
+			debugViewMatrix[1] = vec4(0.0, 1.0, 0.0, 0.0);
+			debugViewMatrix[2] = vec4(0.0, 0.0, -1.0, 0.0);
+			debugViewMatrix[3] = vec4(0.0, 0.0, 15.0, 1.0);
+
+
+			mat4 viewMatrix = mat4(1.0);
+			viewMatrix[2][2] = 1.0;
+			viewMatrix[3][2] = -15.0;
+
+
+			vec3 position = inPosition;
+
+			//if(position.y > 0.0 && position.x > 0.0)
+			//{
+			//	position.y += 1.0;
+			//}
+
+
+
+			vec4 transformedPosition = mvp.proj * mvp.view * mvp.model * vec4(position, 1.0);
+
+			gl_Position = transformedPosition;
+
+
+
+			if(transformedPosition.y > 0.0)
+			{
+				outFragColor = vec3(0.0, 1.0, 0.0);
+			}
+			else
+			{
+				outFragColor = vec3(1.0, 0.0, 0.0);
+				// = vec3(mvp.view[0][0], mvp.view[1][1], mvp.view[2][2]);
+			}
 		}
     )";
 
@@ -39,7 +112,7 @@ namespace st::renderer
 
 		void main()
 		{
-			outColor = vec4(1.0, 0.0, 0.0, 1.0);
+			outColor = vec4(inFragColor, 1.0);
 		}
     )";
 

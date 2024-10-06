@@ -75,60 +75,66 @@ namespace st::renderer
 						   const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 						   void*)
 	{
-		std::ostringstream message;
 
-		message << vk::to_string(static_cast<vk::DebugUtilsMessageSeverityFlagBitsEXT>(messageSeverity)) << ": "
+		std::string messageIdName = pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "null";
+		std::string message = pCallbackData->pMessage ? pCallbackData->pMessage : "null";
+
+
+
+		std::ostringstream logMessage;
+
+		logMessage << vk::to_string(static_cast<vk::DebugUtilsMessageSeverityFlagBitsEXT>(messageSeverity)) << ": "
 				<< vk::to_string(static_cast<vk::DebugUtilsMessageTypeFlagsEXT>(messageType)) << ":\n";
-		message << "\t"
-				<< "messageIDName   = <" << pCallbackData->pMessageIdName << ">\n";
-		message << "\t"
+		logMessage << "\t"
+				<< "messageIDName   = <" << messageIdName << ">\n";
+		logMessage << "\t"
 				<< "messageIdNumber = " << pCallbackData->messageIdNumber << "\n";
-		message << "\t"
-				<< "message         = <" << pCallbackData->pMessage << ">\n";
+		logMessage << "\t"
+				<< "message         = <" << message << ">\n";
 
 		if (0 < pCallbackData->queueLabelCount)
 		{
-			message << "\t"
+			logMessage << "\t"
 					<< "Queue Labels:\n";
 			for (uint32_t i = 0; i < pCallbackData->queueLabelCount; i++)
 			{
-				message << "\t\t"
+				logMessage << "\t\t"
 						<< "labelName = <" << pCallbackData->pQueueLabels[i].pLabelName << ">\n";
 			}
 		}
 
 		if (0 < pCallbackData->cmdBufLabelCount)
 		{
-			message << "\t"
+			logMessage << "\t"
 					<< "CommandBuffer Labels:\n";
 			for (uint32_t i = 0; i < pCallbackData->cmdBufLabelCount; i++)
 			{
-				message << "\t\t"
+				logMessage << "\t\t"
 						<< "labelName = <" << pCallbackData->pCmdBufLabels[i].pLabelName << ">\n";
 			}
 		}
 
 		if (0 < pCallbackData->objectCount)
 		{
-			message << "\t"
+			logMessage << "\t"
 					<< "Objects:\n";
 			for (uint32_t i = 0; i < pCallbackData->objectCount; i++)
 			{
-				message << "\t\t"
+				logMessage << "\t\t"
 						<< "Object " << i << "\n";
-				message << "\t\t\t"
+				logMessage << "\t\t\t"
 						<< "objectType   = " << vk::to_string(static_cast<vk::ObjectType>(pCallbackData->pObjects[i].objectType)) << "\n";
-				message << "\t\t\t"
+				logMessage << "\t\t\t"
 						<< "objectHandle = " << pCallbackData->pObjects[i].objectHandle << "\n";
 				if (pCallbackData->pObjects[i].pObjectName)
 				{
-					message << "\t\t\t"
+					logMessage << "\t\t\t"
 							<< "objectName   = <" << pCallbackData->pObjects[i].pObjectName << ">\n";
 				}
 			}
 		}
 
-		std::cout << message.str() << std::endl;
+		std::cout << logMessage.str() << std::endl;
 
 		return false;
 	}
@@ -417,7 +423,10 @@ namespace st::renderer
 			spdlog::info("View matrix: {}", m_camera.getData()->getViewMatrix());
 			spdlog::info("Projection matrix: {}", m_camera.getData()->getProjectionMatrix());
 
+			Eigen::Matrix4f transporeView = m_camera.getData()->getViewMatrix().transpose();
 			Eigen::Matrix4f transporeProjection = m_camera.getData()->getProjectionMatrix().transpose();
+
+			spdlog::info("View matrix transposed: {}", transporeView);
 			spdlog::info("Projection matrix transposed: {}", transporeProjection);
 
 
@@ -425,8 +434,9 @@ namespace st::renderer
 			UniformBufferObject	ubo{};
 			ubo.model = Eigen::Matrix4f::Identity(); //TODO it should be matrix of model
 
-			ubo.view = m_camera.getData()->getViewMatrix();
-			ubo.proj = m_camera.getData()->getProjectionMatrix();
+			ubo.view = m_camera.getData()->getViewMatrix().transpose();
+
+			ubo.proj = m_camera.getData()->getProjectionMatrix().transpose();
 
 
 			void* data = m_vulkanContext.m_device.mapMemory(m_pipeline.resources.uniformBuffersMemory[currentImage], 0, sizeof(ubo));

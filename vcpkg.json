@@ -23,6 +23,12 @@
     },
     {
       "name": "spdlog"
+    },
+    {
+      "name": "glm"
+    },
+    {
+      "name": "assimp"
     }
   ]
 }
