@@ -116,6 +116,31 @@ namespace st::core
 		projectionMatrix = projectionMatrix * postViewRotation;
 		spdlog::info("!!!Projection Matrix: {}", projectionMatrix);
 
+
+		projectionMatrix(0, 0) = projectionMatrixGlm[0][0];
+		projectionMatrix(0, 1) = projectionMatrixGlm[0][1];
+		projectionMatrix(0, 2) = projectionMatrixGlm[0][2];
+		projectionMatrix(0, 3) = projectionMatrixGlm[0][3];
+		projectionMatrix(1, 0) = projectionMatrixGlm[1][0];
+		projectionMatrix(1, 1) = projectionMatrixGlm[1][1];
+		projectionMatrix(1, 2) = projectionMatrixGlm[1][2];
+		projectionMatrix(1, 3) = projectionMatrixGlm[1][3];
+		projectionMatrix(2, 0) = projectionMatrixGlm[2][0];
+		projectionMatrix(2, 1) = projectionMatrixGlm[2][1];
+		projectionMatrix(2, 2) = projectionMatrixGlm[2][2];
+		projectionMatrix(2, 3) = projectionMatrixGlm[2][3];
+		projectionMatrix(3, 0) = projectionMatrixGlm[3][0];
+		projectionMatrix(3, 1) = projectionMatrixGlm[3][1];
+		projectionMatrix(3, 2) = projectionMatrixGlm[3][2];
+		projectionMatrix(3, 3) = projectionMatrixGlm[3][3];
+		
+
+		projectionMatrix(1, 1) *= -1.0f;
+		projectionMatrix(2, 2) *= -1.0f;
+
+		//projectionMatrix()
+
+
 		return projectionMatrix;
 	}
 

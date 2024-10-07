@@ -83,7 +83,11 @@ namespace st::renderer
 			//	position.y += 1.0;
 			//}
 
-
+			mat4 postViewRotation = mat4(1.0);
+			postViewRotation[0][0] = 1.0;
+			postViewRotation[1][1] = -1.0;
+			postViewRotation[2][2] = -1.0;
+			postViewRotation[3][3] = 1.0;
 
 			vec4 transformedPosition = mvp.proj * mvp.view * mvp.model * vec4(position, 1.0);
 

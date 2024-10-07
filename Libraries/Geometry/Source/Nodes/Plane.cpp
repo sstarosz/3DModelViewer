@@ -79,6 +79,7 @@ namespace st::geometry
 		{
 			for (uint32_t rowIdx = 0; rowIdx < numVerticesWidth; rowIdx++)
 			{
+				//Start from the bottom left corner
 				float x = widthStartPos + rowIdx * stepWidth;
 				float y = heightStartPos + colIdx * stepHeight;
 				float z = 0.0F;
@@ -90,23 +91,22 @@ namespace st::geometry
 
 		geometry::IntVector indices;
 		//Iterate over faces
-		for (uint32_t rowIdx = 0; rowIdx < m_inputs.subdivisionWidth; rowIdx++)
+		for (uint32_t colIdx = 0; colIdx < m_inputs.subdivisionHeight; colIdx++)
 		{
-			for (uint32_t colIdx = 0; colIdx < m_inputs.subdivisionHeight; colIdx++)
+			for (uint32_t rowIdx = 0; rowIdx < m_inputs.subdivisionWidth; rowIdx++)
 			{
-				uint32_t bottomLeft = rowIdx * numVerticesHeight + colIdx;
-				uint32_t bottomRight = bottomLeft + 1;
-				uint32_t topLeft = (rowIdx + 1) * numVerticesHeight + colIdx;
+				uint32_t topLeft = colIdx * numVerticesWidth + rowIdx;
 				uint32_t topRight = topLeft + 1;
+				uint32_t bottomLeft = (colIdx + 1) * numVerticesWidth + rowIdx;
+				uint32_t bottomRight = bottomLeft + 1;
 
+				indices.push_back(topLeft);
+				indices.push_back(topRight);
+				indices.push_back(bottomLeft);
+
+				indices.push_back(topRight);
 				indices.push_back(bottomLeft);
 				indices.push_back(bottomRight);
-				indices.push_back(topRight);
-
-				indices.push_back(topRight);
-				indices.push_back(topLeft);
-				indices.push_back(bottomLeft);
-
 			}
 		}
 
