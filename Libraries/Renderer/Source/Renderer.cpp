@@ -417,6 +417,8 @@ namespace st::renderer
 			commandBuffer.end();
 		}
 
+
+
 		void updateUniformBuffer(uint32_t currentImage)
 		{
 			spdlog::info("Renderer::updateUniformBuffer()");
@@ -433,10 +435,27 @@ namespace st::renderer
 			// TODO - Update uniform buffer
 			UniformBufferObject	ubo{};
 			ubo.model = Eigen::Matrix4f::Identity(); //TODO it should be matrix of model
+			ubo.model(0, 0) = 1.0f;
+			ubo.model(0, 1) = 2.0f;
+			ubo.model(0, 2) = 3.0f;
+			ubo.model(0, 3) = 4.0f;
+			ubo.model(1, 0) = 5.0f;
+			ubo.model(1, 1) = 6.0f;
+			ubo.model(1, 2) = 7.0f;
+			ubo.model(1, 3) = 8.0f;
+			ubo.model(2, 0) = 9.0f;
+			ubo.model(2, 1) = 10.0f;
+			ubo.model(2, 2) = 11.0f;
+			ubo.model(2, 3) = 12.0f;
+			ubo.model(3, 0) = 13.0f;
+			ubo.model(3, 1) = 14.0f;
+			ubo.model(3, 2) = 15.0f;
+			ubo.model(3, 3) = 16.0f;
+			
 
-			ubo.view = m_camera.getData()->getViewMatrix().transpose();
+			ubo.view = m_camera.getData()->getViewMatrix();
 
-			ubo.proj = m_camera.getData()->getProjectionMatrix().transpose();
+			ubo.proj = m_camera.getData()->getProjectionMatrix();
 
 
 			void* data = m_vulkanContext.m_device.mapMemory(m_pipeline.resources.uniformBuffersMemory[currentImage], 0, sizeof(ubo));

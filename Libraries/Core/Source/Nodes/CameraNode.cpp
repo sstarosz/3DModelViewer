@@ -35,7 +35,7 @@ namespace st::core
         m_output.camera = TypedAttribute<Camera>::Builder("Camera").setReadable(true).build();
         addAttribute(m_output.camera);
 
-        m_camera.setPosition(Eigen::Vector3f(0.0f, 0.0f, 1.0f));
+        m_camera.setPosition(Eigen::Vector3f(1.0f, 0.0f, 0.0f));
 
         defineNode("Camera");
 

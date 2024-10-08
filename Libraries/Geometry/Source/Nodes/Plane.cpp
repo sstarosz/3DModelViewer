@@ -95,18 +95,18 @@ namespace st::geometry
 		{
 			for (uint32_t rowIdx = 0; rowIdx < m_inputs.subdivisionWidth; rowIdx++)
 			{
-				uint32_t topLeft = colIdx * numVerticesWidth + rowIdx;
-				uint32_t topRight = topLeft + 1;
-				uint32_t bottomLeft = (colIdx + 1) * numVerticesWidth + rowIdx;
+				uint32_t bottomLeft = colIdx + rowIdx * numVerticesWidth;
 				uint32_t bottomRight = bottomLeft + 1;
+				uint32_t topLeft = bottomLeft + numVerticesWidth;
+				uint32_t topRight = topLeft + 1;
 
-				indices.push_back(topLeft);
-				indices.push_back(topRight);
-				indices.push_back(bottomLeft);
-
-				indices.push_back(topRight);
 				indices.push_back(bottomLeft);
 				indices.push_back(bottomRight);
+				indices.push_back(topRight);
+
+				indices.push_back(bottomLeft);
+				indices.push_back(topRight);
+				indices.push_back(topLeft);
 			}
 		}
 

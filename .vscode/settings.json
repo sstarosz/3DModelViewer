@@ -87,6 +87,7 @@
         "qscrollbar": "cpp",
         "bitset": "cpp",
         "source_location": "cpp",
-        "core": "cpp"
+        "core": "cpp",
+        "regex": "cpp"
     }
 }

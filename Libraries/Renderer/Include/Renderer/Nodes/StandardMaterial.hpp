@@ -64,45 +64,51 @@ namespace st::renderer
 			[0, 0, 0, 1]
 			*/
 
+			/*
+				Move the model 1 unit in x axis
+				[1, 0, 0, 1]
+				[0, 1, 0, 0]
+				[0, 0, 1, 0]
+				[0, 0, 0, 1]
+
+				Move the model 2 units in y axis positive is down (?)
+				[1, 0, 0, 0]
+				[0, 1, 0, 2]
+				[0, 0, 1, 0]
+				[0, 0, 0, 1]
+			*/
+
 			mat4 debugViewMatrix;
-			debugViewMatrix[0] = vec4(1.0, 0.0, 0.0, 0.0);
-			debugViewMatrix[1] = vec4(0.0, 1.0, 0.0, 0.0);
-			debugViewMatrix[2] = vec4(0.0, 0.0, -1.0, 0.0);
-			debugViewMatrix[3] = vec4(0.0, 0.0, 15.0, 1.0);
+			debugViewMatrix[0][0] = 1.0;
+			debugViewMatrix[1][0] = 0.0;
+			debugViewMatrix[2][0] = 0.0;
+			debugViewMatrix[3][0] = 1.0;
+			debugViewMatrix[0][1] = 0.0;
+			debugViewMatrix[1][1] = 1.0;
+			debugViewMatrix[2][1] = 0.0;
+			debugViewMatrix[3][1] = 1.0;
+			debugViewMatrix[0][2] = 0.0;
+			debugViewMatrix[1][2] = 0.0;
+			debugViewMatrix[2][2] = 1.0;
+			debugViewMatrix[3][2] = 0.0;
+			debugViewMatrix[0][3] = 0.0;
+			debugViewMatrix[1][3] = 0.0;
+			debugViewMatrix[2][3] = 0.0;
+			debugViewMatrix[3][3] = 1.0;
 
 
-			mat4 viewMatrix = mat4(1.0);
-			viewMatrix[2][2] = 1.0;
-			viewMatrix[3][2] = -15.0;
-
-
-			vec3 position = inPosition;
-
-			//if(position.y > 0.0 && position.x > 0.0)
-			//{
-			//	position.y += 1.0;
-			//}
-
-			mat4 postViewRotation = mat4(1.0);
-			postViewRotation[0][0] = 1.0;
-			postViewRotation[1][1] = -1.0;
-			postViewRotation[2][2] = -1.0;
-			postViewRotation[3][3] = 1.0;
-
-			vec4 transformedPosition = mvp.proj * mvp.view * mvp.model * vec4(position, 1.0);
-
+			//mvp.proj * mvp.view * mvp.model * 
+			vec4 transformedPosition = mvp.view * vec4(inPosition, 1.0);
 			gl_Position = transformedPosition;
 
 
-
-			if(transformedPosition.y > 0.0)
+			if(compareMatrices(mvp.model, debugViewMatrix))
 			{
-				outFragColor = vec3(0.0, 1.0, 0.0);
+				outFragColor = vec3(0.0, 1.0, 1.0);
 			}
 			else
 			{
 				outFragColor = vec3(1.0, 0.0, 0.0);
-				// = vec3(mvp.view[0][0], mvp.view[1][1], mvp.view[2][2]);
 			}
 		}
     )";
