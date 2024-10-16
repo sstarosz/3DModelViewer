@@ -165,7 +165,8 @@ namespace st::renderer
 			std::vector<const char*> extensions = {
 				VK_KHR_SURFACE_EXTENSION_NAME,
 				VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
-				VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
+				VK_EXT_DEBUG_UTILS_EXTENSION_NAME
+				};
 
 			std::vector<const char*> layers = {
 				"VK_LAYER_KHRONOS_validation",
@@ -425,34 +426,17 @@ namespace st::renderer
 			spdlog::info("View matrix: {}", m_camera.getData()->getViewMatrix());
 			spdlog::info("Projection matrix: {}", m_camera.getData()->getProjectionMatrix());
 
-			Eigen::Matrix4f transporeView = m_camera.getData()->getViewMatrix().transpose();
-			Eigen::Matrix4f transporeProjection = m_camera.getData()->getProjectionMatrix().transpose();
-
-			spdlog::info("View matrix transposed: {}", transporeView);
-			spdlog::info("Projection matrix transposed: {}", transporeProjection);
+			//Eigen::Matrix4f transporeView = m_camera.getData()->getViewMatrix().transpose();
+			//Eigen::Matrix4f transporeProjection = m_camera.getData()->getProjectionMatrix().transpose();
+//
+			//spdlog::info("View matrix transposed: {}", transporeView);
+			//spdlog::info("Projection matrix transposed: {}", transporeProjection);
 
 
 			// TODO - Update uniform buffer
 			UniformBufferObject	ubo{};
 			ubo.model = Eigen::Matrix4f::Identity(); //TODO it should be matrix of model
-			ubo.model(0, 0) = 1.0f;
-			ubo.model(0, 1) = 2.0f;
-			ubo.model(0, 2) = 3.0f;
-			ubo.model(0, 3) = 4.0f;
-			ubo.model(1, 0) = 5.0f;
-			ubo.model(1, 1) = 6.0f;
-			ubo.model(1, 2) = 7.0f;
-			ubo.model(1, 3) = 8.0f;
-			ubo.model(2, 0) = 9.0f;
-			ubo.model(2, 1) = 10.0f;
-			ubo.model(2, 2) = 11.0f;
-			ubo.model(2, 3) = 12.0f;
-			ubo.model(3, 0) = 13.0f;
-			ubo.model(3, 1) = 14.0f;
-			ubo.model(3, 2) = 15.0f;
-			ubo.model(3, 3) = 16.0f;
 			
-
 			ubo.view = m_camera.getData()->getViewMatrix();
 
 			ubo.proj = m_camera.getData()->getProjectionMatrix();
@@ -526,7 +510,10 @@ namespace st::renderer
 			std::vector<const char*> validationLayers = {
 				"VK_LAYER_KHRONOS_validation"};
 
-			std::array m_deviceExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+			std::array m_deviceExtensions {
+				VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+				VK_KHR_MAINTENANCE1_EXTENSION_NAME
+			};
 
 			vk::PhysicalDeviceFeatures deviceFeatures{};
 			vk::DeviceCreateInfo createInfo{

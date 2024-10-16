@@ -400,7 +400,7 @@ namespace st::renderer
 																		   VK_FALSE,
 																		   VK_FALSE,
 																		   vk::PolygonMode::eFill,
-																		   vk::CullModeFlagBits::eFront,
+																		   vk::CullModeFlagBits::eBack,
 																		   vk::FrontFace::eCounterClockwise,
 																		   VK_FALSE,
 																		   0.0f,

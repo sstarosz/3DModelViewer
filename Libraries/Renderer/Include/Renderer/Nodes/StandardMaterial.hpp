@@ -78,6 +78,9 @@ namespace st::renderer
 				[0, 0, 0, 1]
 			*/
 
+			mat4 debugModelMatrix = mat4(1.0);
+			debugModelMatrix[3][2] = -1.0;
+
 			mat4 debugViewMatrix;
 			debugViewMatrix[0][0] = 1.0;
 			debugViewMatrix[1][0] = 0.0;
@@ -96,13 +99,22 @@ namespace st::renderer
 			debugViewMatrix[2][3] = 0.0;
 			debugViewMatrix[3][3] = 1.0;
 
+			
+			mat4 postViewMatrix = mat4(1.0);
+			postViewMatrix[1][1] = -1.0;
+			postViewMatrix[2][2] = -1.0;
+			
+
 
 			//mvp.proj * mvp.view * mvp.model * 
-			vec4 transformedPosition = mvp.view * vec4(inPosition, 1.0);
-			gl_Position = transformedPosition;
+			vec4 worldPosition = mvp.model * vec4(inPosition, 1.0);
+			vec4 viewPosition = mvp.view * worldPosition;
+			//vec4 postViewPosition = postViewMatrix * viewPosition;
+			vec4 projPosition = mvp.proj * viewPosition;
+			gl_Position = mvp.proj * postViewMatrix * mvp.view * mvp.model * vec4(inPosition, 1.0);
 
 
-			if(compareMatrices(mvp.model, debugViewMatrix))
+			if(inPosition.y > 0.0)
 			{
 				outFragColor = vec3(0.0, 1.0, 1.0);
 			}

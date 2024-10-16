@@ -67,78 +67,69 @@ namespace st::core
 		//viewMatrix(3, 1) = 0.0f;
 		//viewMatrix(3, 2) = 0.0f;
 		//viewMatrix(3, 3) = 1.0f;
+		spdlog::info("Camera position: {}", m_position);
+		spdlog::info("Camera target: {}", m_target);
+		spdlog::info("Camera up: {}", m_up);
 
 		glm::mat4 viewMatrixGlm = glm::lookAt(glm::vec3(m_position.x(), m_position.y(), m_position.z()),
 											glm::vec3(m_target.x(), m_target.y(), m_target.z()),
 											glm::vec3(m_up.x(), m_up.y(), m_up.z()));
 
 		Eigen::Matrix4f viewMatrix = Eigen::Matrix4f::Zero();
-		viewMatrix(0, 0) = viewMatrixGlm[0][0];
-		viewMatrix(0, 1) = viewMatrixGlm[0][1];
-		viewMatrix(0, 2) = viewMatrixGlm[0][2];
-		viewMatrix(0, 3) = viewMatrixGlm[0][3];
-		viewMatrix(1, 0) = viewMatrixGlm[1][0];
-		viewMatrix(1, 1) = viewMatrixGlm[1][1];
-		viewMatrix(1, 2) = viewMatrixGlm[1][2];
-		viewMatrix(1, 3) = viewMatrixGlm[1][3];
-		viewMatrix(2, 0) = viewMatrixGlm[2][0];
-		viewMatrix(2, 1) = viewMatrixGlm[2][1];
-		viewMatrix(2, 2) = viewMatrixGlm[2][2];
-		viewMatrix(2, 3) = viewMatrixGlm[2][3];
-		viewMatrix(3, 0) = viewMatrixGlm[3][0];
-		viewMatrix(3, 1) = viewMatrixGlm[3][1];
-		viewMatrix(3, 2) = viewMatrixGlm[3][2];
-		viewMatrix(3, 3) = viewMatrixGlm[3][3];
 
+		for(int row = 0; row < 4; row++)
+		{
+			for(int col = 0; col < 4; col++)
+			{
+				viewMatrix(row, col) = viewMatrixGlm[col][row];
+			}
+		}
 
 		return viewMatrix;
     }
 
     Eigen::Matrix4f Camera::getProjectionMatrix() const
 	{
+		spdlog::info("Camera width: {}", m_width);
+		spdlog::info("Camera height: {}", m_height);
+		spdlog::info("Camera angle of view: {}", m_angleOfView);
 		float aspectRatio = m_width / m_height;
-		float tanHalfFov = std::tan(m_angleOfView / 2.0f);
-		glm::mat4 projectionMatrixGlm = glm::perspectiveRH_ZO(m_angleOfView, aspectRatio, m_nearClippingPlane, m_farClippingPlane);
+		float radAngleOfView = m_angleOfView * std::numbers::pi_v<float> / 180.0f;
+		float tanHalfFov = std::tan(radAngleOfView / 2.0f);
+		spdlog::info("Aspect Ratio: {}", aspectRatio);
+		spdlog::info("Tan Half Fov: {}", tanHalfFov);
+		glm::mat4 projectionMatrixGlm = glm::perspectiveRH_ZO(glm::radians(m_angleOfView), aspectRatio, m_nearClippingPlane, m_farClippingPlane);
 
 		Eigen::Matrix4f projectionMatrix = Eigen::Matrix4f::Zero();
 		projectionMatrix(0, 0) = 1.0f / (aspectRatio * tanHalfFov);
 		projectionMatrix(1, 1) = 1.0f / tanHalfFov;
-		projectionMatrix(2, 2) = m_farClippingPlane / (m_nearClippingPlane - m_farClippingPlane);
-		projectionMatrix(2, 3) = -1.0f;
-		projectionMatrix(3, 2) = -(m_farClippingPlane * m_nearClippingPlane) / (m_farClippingPlane - m_nearClippingPlane);
+		projectionMatrix(2, 2) = m_farClippingPlane / (m_farClippingPlane - m_nearClippingPlane);
+		projectionMatrix(2, 3) = -(m_nearClippingPlane * m_farClippingPlane) / (m_farClippingPlane - m_nearClippingPlane);
+		projectionMatrix(3, 2) = 1.0f;
 
 
 		//Since vulkan clip space has inverted Y and half Z, we need to apply a post view rotation
-		Eigen::Matrix4f postViewRotation = Eigen::Matrix4f::Identity();
-		postViewRotation(1, 1) = 1.0f;
-		postViewRotation(2, 2) = 1.0f;
+		//Eigen::Matrix4f postViewRotation = Eigen::Matrix4f::Identity();
+		//postViewRotation(1, 1) = 1.0f;
+		//postViewRotation(2, 2) = 1.0f;
 //
-		projectionMatrix = projectionMatrix * postViewRotation;
+		//projectionMatrix = projectionMatrix * postViewRotation;
 		spdlog::info("!!!Projection Matrix: {}", projectionMatrix);
 
-
-		projectionMatrix(0, 0) = projectionMatrixGlm[0][0];
-		projectionMatrix(0, 1) = projectionMatrixGlm[0][1];
-		projectionMatrix(0, 2) = projectionMatrixGlm[0][2];
-		projectionMatrix(0, 3) = projectionMatrixGlm[0][3];
-		projectionMatrix(1, 0) = projectionMatrixGlm[1][0];
-		projectionMatrix(1, 1) = projectionMatrixGlm[1][1];
-		projectionMatrix(1, 2) = projectionMatrixGlm[1][2];
-		projectionMatrix(1, 3) = projectionMatrixGlm[1][3];
-		projectionMatrix(2, 0) = projectionMatrixGlm[2][0];
-		projectionMatrix(2, 1) = projectionMatrixGlm[2][1];
-		projectionMatrix(2, 2) = projectionMatrixGlm[2][2];
-		projectionMatrix(2, 3) = projectionMatrixGlm[2][3];
-		projectionMatrix(3, 0) = projectionMatrixGlm[3][0];
-		projectionMatrix(3, 1) = projectionMatrixGlm[3][1];
-		projectionMatrix(3, 2) = projectionMatrixGlm[3][2];
-		projectionMatrix(3, 3) = projectionMatrixGlm[3][3];
+		Eigen::Matrix4f f = Eigen::Matrix4f::Identity();
+		for(int row = 0; row < 4; row++)
+		{
+			for(int col = 0; col < 4; col++)
+			{
+				f(row, col) = projectionMatrixGlm[col][row];
+			}
+		}
+		spdlog::info("!!!Projection Matrix glm: {}", f);
 		
 
-		projectionMatrix(1, 1) *= -1.0f;
-		projectionMatrix(2, 2) *= -1.0f;
+		//projectionMatrix(1, 1) *= -1.0f;
+		//projectionMatrix(2, 2) *= -1.0f;
 
-		//projectionMatrix()
 
 
 		return projectionMatrix;

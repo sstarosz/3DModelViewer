@@ -93,7 +93,7 @@ class Plane:
 
     
 if __name__ == "__main__":
-    camera = Camera(2467/901, 60, 0.1, 100, np.array([0, 0, 5]), np.array([0, 0, 0]), np.array([0, 1, 0]))
+    camera = Camera(2467/901, 60, 0.1, 100, np.array([1, 0, 0]), np.array([0, 0, 0]), np.array([0, 1, 0]))
 
 
     camera.update()

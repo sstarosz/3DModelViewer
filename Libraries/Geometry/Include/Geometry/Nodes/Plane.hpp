@@ -52,6 +52,8 @@ namespace st::geometry
 
 		Inputs m_inputs;
 		Outputs m_outputs;
+
+		geometry::Mesh generateDebugMesh();
 	};
 
 	static core::RegisterNode<Plane> plane("Plane");
