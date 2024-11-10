@@ -112,25 +112,9 @@ namespace st::core
 		//Eigen::Matrix4f postViewRotation = Eigen::Matrix4f::Identity();
 		//postViewRotation(1, 1) = 1.0f;
 		//postViewRotation(2, 2) = 1.0f;
-//
+
 		//projectionMatrix = projectionMatrix * postViewRotation;
 		spdlog::info("!!!Projection Matrix: {}", projectionMatrix);
-
-		Eigen::Matrix4f f = Eigen::Matrix4f::Identity();
-		for(int row = 0; row < 4; row++)
-		{
-			for(int col = 0; col < 4; col++)
-			{
-				f(row, col) = projectionMatrixGlm[col][row];
-			}
-		}
-		spdlog::info("!!!Projection Matrix glm: {}", f);
-		
-
-		//projectionMatrix(1, 1) *= -1.0f;
-		//projectionMatrix(2, 2) *= -1.0f;
-
-
 
 		return projectionMatrix;
 	}

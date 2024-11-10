@@ -135,11 +135,11 @@ namespace st::ui
 		{
 			spdlog::info("Mouse Pressed");
 
-			auto pos = event->position();
-
 			if(event->modifiers() & Qt::AltModifier)
 			{
 				spdlog::info("Alt Modifier Pressed");
+
+				m_lastMousePosition = event->position();
 				if(event->button() == Qt::LeftButton)
 				{
 					spdlog::info("Alt + Left Button Pressed");
@@ -158,22 +158,21 @@ namespace st::ui
 					m_camera->setCameraCurrentState(core::Camera::State::eZoom);
 				}
 
-				m_camera->setClickPosition(pos.x(), pos.y());
 			}
 		}
 
 		void mouseMoveEvent(QMouseEvent* event) override
 		{
 			spdlog::info("Mouse Moved");
+
+			if(m_camera->getCameraCurrentState() == core::Camera::State::eIdle)
+			{
+				return;
+			}
+
 			auto pos = event->position();
-
-			float cameraX{0.0f};
-			float cameraY{0.0f};
-
-			m_camera->getClickPosition(cameraX, cameraY);
-
-			float deltaX = pos.x() - cameraX;
-			float deltaY = pos.y() - cameraY;
+			float deltaX = pos.x() - m_lastMousePosition.x();
+			float deltaY = pos.y() - m_lastMousePosition.y();
 
 			
 			if(m_camera->getCameraCurrentState() == core::Camera::State::eOrbit)
@@ -191,16 +190,20 @@ namespace st::ui
 				m_camera->dolly(deltaX, deltaY);
 			}
 
-			m_camera->setClickPosition(pos.x(), pos.y());
+			m_lastMousePosition = pos;
+
+
+			// Evaluate the node graph
+			//m_contentManager->getMainNodeGraph().evaluate();
+			m_camera->compute();
 		}
 
 		void mouseReleaseEvent(QMouseEvent* event) override
 		{
 			spdlog::info("Mouse Released");
-
-			auto pos = event->position();
-
+			update();
 			m_camera->setCameraCurrentState(core::Camera::State::eIdle);
+			m_camera->compute();
 		}
 
 
@@ -222,6 +225,8 @@ namespace st::ui
 		std::shared_ptr<renderer::Renderer> m_renderer;
 		std::shared_ptr<core::CameraNode> m_camera; //Current active camera
 		QLabel* m_fallbackLabel{nullptr};
+
+		QPointF m_lastMousePosition;
 	};
 
 	/*---------------------*/

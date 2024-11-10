@@ -139,17 +139,23 @@ namespace st::core
 	{
 		constexpr float sensitivity = 0.01f;
 
-		Eigen::Vector3f right = (m_camera.m_position - m_camera.m_target).cross(m_camera.m_up).normalized();
-		Eigen::Vector3f up = right.cross(m_camera.m_position - m_camera.m_target).normalized();
+        Eigen::Vector3f direction = (m_camera.m_target - m_camera.m_position).normalized();
+        Eigen::Vector3f right = direction.cross(m_camera.m_up).normalized();
+        Eigen::Vector3f up = right.cross(direction).normalized();
 
-		m_camera.m_position += -right * deltaX * sensitivity + up * deltaY * sensitivity;
-	}
+        Eigen::Matrix3f rotationMatrix;
+        rotationMatrix = Eigen::AngleAxisf(deltaX * sensitivity, up) * Eigen::AngleAxisf(deltaY * sensitivity, right);
+
+        m_camera.m_position = rotationMatrix * (m_camera.m_position - m_camera.m_target) + m_camera.m_target;
+
+        
+    }
 		
 	void CameraNode::pan(float deltaX, float deltaY)
 	{
 		constexpr float sensitivity = 0.01f;
 
-		Eigen::Vector3f right = (m_camera.m_position - m_camera.m_target).cross(m_camera.m_up).normalized();
+		Eigen::Vector3f right = (m_camera.m_target - m_camera.m_position).cross(m_camera.m_up).normalized();
 		Eigen::Vector3f up = right.cross(m_camera.m_position - m_camera.m_target).normalized();
 
 		m_camera.m_position += -right * deltaX * sensitivity + up * deltaY * sensitivity;
@@ -160,7 +166,9 @@ namespace st::core
 	{
 		constexpr float sensitivity = 0.01f;
 
-		m_camera.m_focalLength += deltaY * sensitivity;
+        Eigen::Vector3f direction = (m_camera.m_target - m_camera.m_position).normalized();
+        m_camera.m_position += direction * deltaY * sensitivity;
+
 	}
 
 	Eigen::Matrix4f CameraNode::getViewMatrix() const
