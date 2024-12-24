@@ -29,6 +29,20 @@ namespace st::core
 		m_mouseClickY(0.0f)
 	{
 		spdlog::info("Camera created");
+
+		center = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
+		radius = 0.75f;
+		vDown = vNow = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
+		qDown = qNow = Eigen::Quaternionf::Identity();
+
+		mNow = Eigen::Matrix3f::Identity();
+		mDown = Eigen::Matrix3f::Identity();
+
+		showResult = false;
+		dragging = false;
+
+
+
 	}
 
 	void Camera::setPosition(const Eigen::Vector3f& position)
@@ -117,6 +131,26 @@ namespace st::core
 		spdlog::info("!!!Projection Matrix: {}", projectionMatrix);
 
 		return projectionMatrix;
+	}
+
+	Eigen::Vector3f Camera::mapToSphere(float x, float y)
+	{
+		Eigen::Vector3f v;
+		
+		v.x() = (2.0f * x / m_width) - 1.0f;
+		v.y() = 1.0f - (2.0f * y / m_height);
+
+		float magnitude = v.x() * v.x() + v.y() * v.y();
+		if (magnitude <= 1.0f)
+		{
+			v.z() = std::sqrt(1.0f - magnitude);
+		}
+		else
+		{
+			v = v.normalized();
+		}
+
+		return v;
 	}
 
 

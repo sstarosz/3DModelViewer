@@ -120,11 +120,19 @@ namespace st::core
 		return m_camera.m_currentState;
 	}
 
-	void CameraNode::setClickPosition(float x, float y)
+	void CameraNode::beginDrag()
 	{
-        m_camera.m_mouseClickX = x;
-        m_camera.m_mouseClickY = y;
+        m_camera.dragging = true;
+        m_camera.vDown = m_camera.vNow;
+
 	}
+
+    void CameraNode::endDrag()
+    {
+        m_camera.dragging = false;
+        m_camera.qDown = m_camera.qNow;
+        m_camera.mDown = m_camera.mNow;
+    }
 
 	void CameraNode::getClickPosition(float& x, float& y) const
 	{
@@ -132,28 +140,79 @@ namespace st::core
         y = m_camera.m_mouseClickY;
 	}
 
+
+
+    Eigen::Vector3f mouseOnSphere(Eigen::Vector3f mouse, Eigen::Vector3f center, float radius)
+    {
+        Eigen::Vector3f spherePos;
+
+        spherePos.x() = (mouse.x() - center.x()) / radius;
+        spherePos.y() = (mouse.y() - center.y()) / radius;
+
+        float mag = spherePos.x() * spherePos.x() + spherePos.y() * spherePos.y();
+        if (mag > 1.0f)
+        {
+            float scale = 1.0f / std::sqrt(mag);
+            spherePos.x() *= scale;
+            spherePos.y() *= scale;
+            spherePos.z() = 0.0f;
+        }
+        else
+        {
+            spherePos.z() = std::sqrt(1.0f - mag);
+        }
+
+        return spherePos;
+    }
+
+    void quaterionToBallPoints(const Eigen::Quaternionf& q, Eigen::Vector3f& arcFrom, Eigen::Vector3f& arcTo)
+    {
+        float s = std::sqrt(q.x() * q.x() + q.y() * q.y());
+        if(s == 0.0f)
+        {
+            arcFrom = Eigen::Vector3f(0.0f, 1.0f, 0.0);
+        }
+        {
+            arcFrom = Eigen::Vector3f(-q.y() / s, q.x() / s, 0.0f);
+        }
+
+        //TODO is this just quaternion multiplication?
+        arcTo.x() = q.w() * arcFrom.x() - q.z() * arcFrom.y();
+        arcTo.y() = q.w() * arcFrom.y() + q.z() * arcFrom.x();
+        arcTo.z() = q.x() * arcFrom.y() - q.y() * arcFrom.x();
+    }
+
 	/*----------------------*/
 	/*-------Operators------*/
 	/*----------------------*/
 	void CameraNode::orbit(float deltaX, float deltaY)
 	{
-		constexpr float sensitivity = 0.01f;
+        m_camera.vNow.x() = deltaX;
+        m_camera.vNow.y() = deltaY;
 
-        Eigen::Vector3f direction = (m_camera.m_target - m_camera.m_position).normalized();
-        Eigen::Vector3f right = direction.cross(m_camera.m_up).normalized();
-        Eigen::Vector3f up = right.cross(direction).normalized();
+        m_camera.vFrom = mouseOnSphere(m_camera.vDown, m_camera.center, m_camera.radius);
+        m_camera.vTo = mouseOnSphere(m_camera.vNow, m_camera.center, m_camera.radius);
 
-        Eigen::Matrix3f rotationMatrix;
-        rotationMatrix = Eigen::AngleAxisf(deltaX * sensitivity, up) * Eigen::AngleAxisf(deltaY * sensitivity, right);
+        std::printf("vFrom: %f, %f, %f\n", m_camera.vFrom.x(), m_camera.vFrom.y(), m_camera.vFrom.z());
+        std::printf("vTo: %f, %f, %f\n", m_camera.vTo.x(), m_camera.vTo.y(), m_camera.vTo.z());
 
-        m_camera.m_position = rotationMatrix * (m_camera.m_position - m_camera.m_target) + m_camera.m_target;
+        m_camera.qDrag = Eigen::Quaternionf::FromTwoVectors(m_camera.vFrom, m_camera.vTo);
+        m_camera.qNow = m_camera.qDrag * m_camera.qDown;
 
-        
+        //Convert a unit quaternion to two points on a unit sphere
+        //quaterionToBallPoints(m_camera.qDown, m_camera.vectorRotatedFrom, m_camera.vectorRotatedTo);
+
+        //Quaterion to matrix
+        m_camera.mNow =  m_camera.qNow.toRotationMatrix();
+
+        //Transform the camera position
+        m_camera.m_position = m_camera.mNow * m_camera.m_position;
+
     }
 		
 	void CameraNode::pan(float deltaX, float deltaY)
 	{
-		constexpr float sensitivity = 0.01f;
+		constexpr float sensitivity = 0.001f;
 
 		Eigen::Vector3f right = (m_camera.m_target - m_camera.m_position).cross(m_camera.m_up).normalized();
 		Eigen::Vector3f up = right.cross(m_camera.m_position - m_camera.m_target).normalized();

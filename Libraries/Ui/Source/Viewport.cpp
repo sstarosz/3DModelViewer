@@ -144,6 +144,7 @@ namespace st::ui
 				{
 					spdlog::info("Alt + Left Button Pressed");
 					m_camera->setCameraCurrentState(core::Camera::State::eOrbit);
+					m_camera->beginDrag();
 				}
 
 				if(event->button() == Qt::MiddleButton)
@@ -157,9 +158,11 @@ namespace st::ui
 					spdlog::info("Alt + Right Button Pressed");
 					m_camera->setCameraCurrentState(core::Camera::State::eZoom);
 				}
-
 			}
 		}
+
+
+
 
 		void mouseMoveEvent(QMouseEvent* event) override
 		{
@@ -174,10 +177,13 @@ namespace st::ui
 			float deltaX = pos.x() - m_lastMousePosition.x();
 			float deltaY = pos.y() - m_lastMousePosition.y();
 
-			
+			float ndcNowX = (2.0f * pos.x() / width()) - 1.0f;
+			float ndcNowY = 1.0f - (2.0f * pos.y() / height());
+
+
 			if(m_camera->getCameraCurrentState() == core::Camera::State::eOrbit)
 			{
-				m_camera->orbit(deltaX, deltaY);
+				m_camera->orbit(ndcNowX, ndcNowY);
 			}
 
 			if(m_camera->getCameraCurrentState() == core::Camera::State::ePan)
@@ -202,6 +208,7 @@ namespace st::ui
 		{
 			spdlog::info("Mouse Released");
 			update();
+			m_camera->endDrag();
 			m_camera->setCameraCurrentState(core::Camera::State::eIdle);
 			m_camera->compute();
 		}

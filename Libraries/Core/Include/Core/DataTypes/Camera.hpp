@@ -2,6 +2,8 @@
 #define ST_CORE_CAMERA_HPP
 
 #include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <Eigen/Dense>
 
 #include <spdlog/spdlog.h>
 
@@ -29,6 +31,10 @@ namespace st::core
 		Eigen::Vector3f m_target;
 		Eigen::Vector3f m_up;
 
+		Eigen::Vector3f m_startSpherePosition;
+		Eigen::Vector3f m_endSpherePosition;
+		Eigen::Quaternionf m_orientation;
+
 		// Camera parameters
 		float m_angleOfView;
 		float m_focalLength;
@@ -50,6 +56,30 @@ namespace st::core
 		State m_currentState = State::eIdle;
 		float m_mouseClickX;
 		float m_mouseClickY;
+
+		Eigen::Vector3f mapToSphere(float x, float y);
+
+		/*Arcball prototype*/
+		Eigen::Vector3f center;
+		float radius;
+		Eigen::Quaternionf qNow;
+		Eigen::Quaternionf qDown;
+		Eigen::Quaternionf qDrag;
+
+		Eigen::Vector3f vNow;
+		Eigen::Vector3f vDown;
+		Eigen::Vector3f vFrom;
+		Eigen::Vector3f vTo;
+		Eigen::Vector3f vectorRotatedFrom;
+		Eigen::Vector3f vectorRotatedTo;
+
+		Eigen::Matrix3f mNow;
+		Eigen::Matrix3f mDown;
+
+		bool showResult = false;
+		bool dragging = false;
+
+
 
 	};
 

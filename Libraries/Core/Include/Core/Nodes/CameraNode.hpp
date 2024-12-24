@@ -46,7 +46,8 @@ namespace st::core
 		void setCameraCurrentState(Camera::State state);
 		Camera::State getCameraCurrentState() const;
 
-		void setClickPosition(float x, float y);
+		void beginDrag();
+		void endDrag();
 		void getClickPosition(float& x, float& y) const;
 
 		
