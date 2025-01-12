@@ -177,13 +177,10 @@ namespace st::ui
 			float deltaX = pos.x() - m_lastMousePosition.x();
 			float deltaY = pos.y() - m_lastMousePosition.y();
 
-			float ndcNowX = (2.0f * pos.x() / width()) - 1.0f;
-			float ndcNowY = 1.0f - (2.0f * pos.y() / height());
-
 
 			if(m_camera->getCameraCurrentState() == core::Camera::State::eOrbit)
 			{
-				m_camera->orbit(ndcNowX, ndcNowY);
+				m_camera->orbit(deltaX, deltaY);
 			}
 
 			if(m_camera->getCameraCurrentState() == core::Camera::State::ePan)

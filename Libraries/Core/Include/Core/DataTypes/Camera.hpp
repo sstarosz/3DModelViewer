@@ -30,6 +30,7 @@ namespace st::core
 		Eigen::Vector3f m_position;
 		Eigen::Vector3f m_target;
 		Eigen::Vector3f m_up;
+		Eigen::Vector3f m_direction;
 
 		Eigen::Vector3f m_startSpherePosition;
 		Eigen::Vector3f m_endSpherePosition;
@@ -78,6 +79,14 @@ namespace st::core
 
 		bool showResult = false;
 		bool dragging = false;
+
+
+		/*Three js approach*/
+		
+		Eigen::Quaternionf quaterion;
+		Eigen::Vector3f eyeDirection;
+		Eigen::Vector3f objectUpDirection;
+		Eigen::Vector3f objectSidewaysDirection;
 
 
 

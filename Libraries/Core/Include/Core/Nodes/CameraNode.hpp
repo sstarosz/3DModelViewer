@@ -32,6 +32,9 @@ namespace st::core
 		void setWidth(float width);
 		void setHeight(float height);
 
+
+		void setPosition(const Eigen::Vector3f& position);
+		void setTarget(const Eigen::Vector3f& target);
 		/*----------------------*/
 		/*-------Getters--------*/
 		/*----------------------*/
@@ -48,6 +51,7 @@ namespace st::core
 
 		void beginDrag();
 		void endDrag();
+		void setClickPosition(float x, float y);
 		void getClickPosition(float& x, float& y) const;
 
 		

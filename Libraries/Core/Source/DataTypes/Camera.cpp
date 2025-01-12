@@ -91,6 +91,7 @@ namespace st::core
 
 		Eigen::Matrix4f viewMatrix = Eigen::Matrix4f::Zero();
 
+		//Convert glm matrix to Eigen matrix since glm uses column major and Eigen uses row major
 		for(int row = 0; row < 4; row++)
 		{
 			for(int col = 0; col < 4; col++)

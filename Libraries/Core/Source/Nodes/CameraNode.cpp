@@ -4,6 +4,9 @@
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
 
+#include <numbers>
+#include <string>
+
 namespace st::core
 {
     /*----------------------*/
@@ -87,6 +90,16 @@ namespace st::core
         m_camera.m_height = height;
     }
 
+    void CameraNode::setPosition(const Eigen::Vector3f & position)
+    {
+        m_camera.m_position = position;
+    }
+
+    void CameraNode::setTarget(const Eigen::Vector3f & target)
+    {
+        m_camera.m_target = target;
+    }
+
 	/*----------------------*/
     /*-------Getters--------*/
     /*----------------------*/
@@ -132,6 +145,12 @@ namespace st::core
         m_camera.dragging = false;
         m_camera.qDown = m_camera.qNow;
         m_camera.mDown = m_camera.mNow;
+    }
+
+    void CameraNode::setClickPosition(float x, float y)
+    {
+        m_camera.m_mouseClickX = x;
+        m_camera.m_mouseClickY = y;
     }
 
 	void CameraNode::getClickPosition(float& x, float& y) const
@@ -186,30 +205,30 @@ namespace st::core
 	/*-------Operators------*/
 	/*----------------------*/
 	void CameraNode::orbit(float deltaX, float deltaY)
-	{
-        m_camera.vNow.x() = deltaX;
-        m_camera.vNow.y() = deltaY;
+    {
+    // Calculate the rotation angle based on the mouse movement
+        float width = m_camera.m_width; // Assuming the width of the viewport is 1000 pixels
+        float halfWidth = width / 2.0f;
+        float rotationAngleY = (deltaX / (halfWidth / 4.0f)) * (std::numbers::pi / 2.0f); // 90 degrees in radians
+        float rotationAngleX = (deltaY / (halfWidth / 4.0f)) * (std::numbers::pi / 2.0f); // 90 degrees in radians
 
-        m_camera.vFrom = mouseOnSphere(m_camera.vDown, m_camera.center, m_camera.radius);
-        m_camera.vTo = mouseOnSphere(m_camera.vNow, m_camera.center, m_camera.radius);
+        // Create quaternions for the rotations
+        Eigen::Quaternionf qYaw(Eigen::AngleAxisf(rotationAngleY, Eigen::Vector3f::UnitY()));
+        Eigen::Quaternionf qPitch(Eigen::AngleAxisf(rotationAngleX, Eigen::Vector3f::UnitX()));
 
-        std::printf("vFrom: %f, %f, %f\n", m_camera.vFrom.x(), m_camera.vFrom.y(), m_camera.vFrom.z());
-        std::printf("vTo: %f, %f, %f\n", m_camera.vTo.x(), m_camera.vTo.y(), m_camera.vTo.z());
+        // Calculate the new camera position
+        Eigen::Vector3f offset = m_camera.m_position - m_camera.m_target;
+        Eigen::Vector3f newOffset = qYaw * qPitch * offset;
 
-        m_camera.qDrag = Eigen::Quaternionf::FromTwoVectors(m_camera.vFrom, m_camera.vTo);
-        m_camera.qNow = m_camera.qDrag * m_camera.qDown;
+        // Update the camera position
+        m_camera.m_position = m_camera.m_target + newOffset;
 
-        //Convert a unit quaternion to two points on a unit sphere
-        //quaterionToBallPoints(m_camera.qDown, m_camera.vectorRotatedFrom, m_camera.vectorRotatedTo);
-
-        //Quaterion to matrix
-        m_camera.mNow =  m_camera.qNow.toRotationMatrix();
-
-        //Transform the camera position
-        m_camera.m_position = m_camera.mNow * m_camera.m_position;
-
+        // Recalculate the up vector to avoid gimbal lock
+        Eigen::Vector3f newRelativeTarget = m_camera.m_target - m_camera.m_position;
+        Eigen::Vector3f right = newRelativeTarget.cross(m_camera.m_up).normalized();
+        m_camera.m_up = right.cross(newRelativeTarget).normalized();
     }
-		
+
 	void CameraNode::pan(float deltaX, float deltaY)
 	{
 		constexpr float sensitivity = 0.001f;

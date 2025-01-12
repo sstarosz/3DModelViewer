@@ -193,22 +193,22 @@ namespace st::core
 
 		NumericInputHandler& operator+= (const Type& rhs)
 		{
-			Type value = m_attribute->getData();
-			value += rhs;
+			Type* value = m_attribute->getData();
+			*value += rhs;
 			return *this;
 		}
 
 		NumericInputHandler& operator-= (const Type& rhs)
 		{
-			Type value = m_attribute->getData();
-			value -= rhs;
+			Type* value = m_attribute->getData();
+			*value -= rhs;
 			return *this;
 		}
 
 		NumericInputHandler& operator*= (const Type& rhs)
 		{
-			Type value = m_attribute->getData();
-			value *= rhs;
+			Type* value = m_attribute->getData();
+			*value *= rhs;
 			return *this;
 		}
 
