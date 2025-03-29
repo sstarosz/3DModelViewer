@@ -2,8 +2,6 @@
 #include "Eigen/Core"
 #include "Eigen/Geometry"
 #include "Eigen/Dense"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <spdlog/spdlog.h>
 

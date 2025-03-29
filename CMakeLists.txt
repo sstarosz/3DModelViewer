@@ -72,7 +72,6 @@ find_package(spirv_cross_core   CONFIG  REQUIRED)
 find_package(spirv_cross_glsl   CONFIG  REQUIRED)
 find_package(Eigen3             CONFIG  REQUIRED)
 find_package(spdlog             CONFIG  REQUIRED)
-find_package(glm                CONFIG  REQUIRED)
 
 #---------------------------------------------------------------------------------------#
 #----------------------------------Project Structure------------------------------------#
