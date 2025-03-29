@@ -7,20 +7,18 @@
 
 namespace st::renderer
 {
-	class CreateRendererCommand : public core::Command
+	class CreateRendererCommand : public core::Command<std::shared_ptr<renderer::Renderer>>
 	{
 	  public:
 		CreateRendererCommand(core::ContentManagerHandler contentManager, std::shared_ptr<core::Node> camera = nullptr);
 
-		void execute() override;
+		std::shared_ptr<renderer::Renderer> execute() override;
 		void undo() override;
-
-		std::shared_ptr<renderer::Renderer> getResult();
 
 	  private:
 		core::ContentManagerHandler m_contentManager;
 		std::shared_ptr<renderer::Renderer> m_renderer;
-    std::shared_ptr<core::Node> m_camera;
+    	std::shared_ptr<core::Node> m_camera;
 	};
 } // namespace st::renderer
 

@@ -3,13 +3,15 @@
 
 namespace st::core
 {
+	template <typename ResultT>
 	class Command
 	{
 	  public:
-		Command() = default;
+		using ResultType = ResultT;
+
 		virtual ~Command() = default;
 
-		virtual void execute() = 0;
+		virtual ResultT execute() = 0;
 		virtual void undo() = 0;
 	};
 } // namespace st::core

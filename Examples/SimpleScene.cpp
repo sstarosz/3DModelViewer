@@ -14,6 +14,11 @@ int main(int argc, char* argv[])
 							  0.1f,
 							  10000.0f);
 
+	// Modify Camera
+	//app.modify(camera)
+	//	.transform()
+	//	.translate(Eigen::Vector3f{0.0f, 0.0f, 6.0f})
+
 	// TODO revert -app.modify(camera).transform();
 	//.translate(Eigen::Vector3f{0.0f, 0.0f, 6.0f})
 	//.scale(Eigen::Vector3f{1.0f, 1.0f, 1.0f})

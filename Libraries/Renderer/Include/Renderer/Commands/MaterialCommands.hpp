@@ -7,7 +7,7 @@
 
 namespace st::renderer
 {
-    class CommandAssignMaterial : public core::Command
+    class CommandAssignMaterial : public core::Command<void>
     {
       public:
 		CommandAssignMaterial(core::ContentManagerHandler contentManager,

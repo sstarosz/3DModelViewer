@@ -12,7 +12,7 @@ namespace st::renderer
 	{
 	}
 
-	void CreateRendererCommand::execute()
+	std::shared_ptr<renderer::Renderer> CreateRendererCommand::execute()
 	{
 		m_renderer = std::make_shared<renderer::Renderer>();
 		m_renderer->initialize();
@@ -50,30 +50,32 @@ namespace st::renderer
 		}
 
 
-	//Connect the camera to the renderer
-	std::shared_ptr<core::Attribute> cameraInputAttribute = nullptr;
-	for (auto& attribute : m_renderer->getAttributes())
-	{
-		if (std::shared_ptr<core::TypedAttribute<core::Camera>> cameraInput = std::dynamic_pointer_cast<core::TypedAttribute<core::Camera>>(attribute))
+		//Connect the camera to the renderer
+		std::shared_ptr<core::Attribute> cameraInputAttribute = nullptr;
+		for (auto& attribute : m_renderer->getAttributes())
 		{
-			std::println("Found Camera Input");
-			cameraInputAttribute = attribute;
-		}
-	}
-
-
-
-	if (m_camera)
-	{
-		for (auto& attribute : m_camera->getAttributes())
-		{
-			if (std::shared_ptr<core::TypedAttribute<core::Camera>> cameraOutputAttribute = std::dynamic_pointer_cast<core::TypedAttribute<core::Camera>>(attribute))
+			if (std::shared_ptr<core::TypedAttribute<core::Camera>> cameraInput = std::dynamic_pointer_cast<core::TypedAttribute<core::Camera>>(attribute))
 			{
-				std::println("Found Camera Output");
-				nodeGraph.addConnection(m_camera, cameraOutputAttribute, m_renderer, cameraInputAttribute);
+				std::println("Found Camera Input");
+				cameraInputAttribute = attribute;
 			}
 		}
-	}
+
+
+
+		if (m_camera)
+		{
+			for (auto& attribute : m_camera->getAttributes())
+			{
+				if (std::shared_ptr<core::TypedAttribute<core::Camera>> cameraOutputAttribute = std::dynamic_pointer_cast<core::TypedAttribute<core::Camera>>(attribute))
+				{
+					std::println("Found Camera Output");
+					nodeGraph.addConnection(m_camera, cameraOutputAttribute, m_renderer, cameraInputAttribute);
+				}
+			}
+		}
+
+		return m_renderer;
 	}
 
 	void CreateRendererCommand::undo()
@@ -81,10 +83,5 @@ namespace st::renderer
 		// TODO implement
 		// m_contentManager.remove(m
 	}
-
-	std::shared_ptr<renderer::Renderer> CreateRendererCommand::getResult()
-	{
-		return m_renderer;
-	}
-
+	
 } // namespace st::renderer

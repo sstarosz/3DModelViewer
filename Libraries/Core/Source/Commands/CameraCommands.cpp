@@ -16,13 +16,18 @@ namespace st::core
 	{
 	}
 
-	void CreateCameraCommand::execute()
+	std::shared_ptr<CameraNode> CreateCameraCommand::execute()
 	{
 		m_camera = std::make_shared<CameraNode>(m_angleOfView, m_focalLength, m_nearClippingPlane, m_farClippingPlane);
 		m_camera->initialize();
 
+		m_transfrom = std::make_shared<TransformNode>();
+		m_transfrom->initialize();
+
 		core::NodeGraph& nodeGraph = m_contentManager->getMainNodeGraph();
 		nodeGraph.addNode(m_camera);
+
+		return m_camera;
 	}
 
 	void CreateCameraCommand::undo()
@@ -30,8 +35,4 @@ namespace st::core
 		// TODO implement undo
 	}
 
-	std::shared_ptr<CameraNode> CreateCameraCommand::getResult()
-	{
-		return m_camera;
-	}
 } // namespace st::core

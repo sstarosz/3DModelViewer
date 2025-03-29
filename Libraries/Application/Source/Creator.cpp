@@ -27,11 +27,11 @@ namespace st::application
 																											focalLength,
 																											nearClippingPlane,
 																											farClippingPlane);
-		core::CreateCameraCommand* commandPtr = command.get();
-		m_commandManager->execute(std::move(command));
+		auto result = m_commandManager->execute(std::move(command));
 
 
-		return std::weak_ptr<core::Node>{commandPtr->getResult()};
+
+		return std::weak_ptr<core::Node>{result};
 	}
 
 	std::weak_ptr<core::Node> Creator::plane(
@@ -42,9 +42,10 @@ namespace st::application
 		// Create Plane command
 		std::unique_ptr<geometry::CreatePlaneCommand> command = std::make_unique<geometry::CreatePlaneCommand>(m_contentManager);
 		geometry::CreatePlaneCommand* commandPtr = command.get();
-		m_commandManager->execute(std::move(command));
+		
+		geometry::CreatePlaneCommand::ResultType result = m_commandManager->execute(std::move(command));
 
-		return std::weak_ptr<core::Node>{commandPtr->getResult()};
+		return std::weak_ptr<core::Node>{result};
 	}
 
 	std::weak_ptr<renderer::StandardMaterial> Creator::standardMaterial()
@@ -52,9 +53,10 @@ namespace st::application
 		spdlog::info("Creator::standardMaterial()");
 		std::unique_ptr<renderer::CreateStandardMaterialCommand> command = std::make_unique<renderer::CreateStandardMaterialCommand>(m_contentManager);
 		renderer::CreateStandardMaterialCommand* commandPtr = command.get();
-		m_commandManager->execute(std::move(command));
+		
+		auto result = m_commandManager->execute(std::move(command));
 
-		return std::weak_ptr<renderer::StandardMaterial>{commandPtr->getResult()};
+		return std::weak_ptr<renderer::StandardMaterial>{result};
 	}
 
 	std::weak_ptr<renderer::Renderer> Creator::renderer(std::weak_ptr<core::Node> camera)
@@ -62,8 +64,9 @@ namespace st::application
 		spdlog::info("Creator::renderer()");
 		std::unique_ptr<renderer::CreateRendererCommand> command = std::make_unique<renderer::CreateRendererCommand>(m_contentManager, camera.lock());
 		renderer::CreateRendererCommand* commandPtr = command.get();
-		m_commandManager->execute(std::move(command));
-		return std::weak_ptr<renderer::Renderer>{commandPtr->getResult()};
+		auto result = m_commandManager->execute(std::move(command));
+		
+		return std::weak_ptr<renderer::Renderer>{result};
 	}
 
 } // namespace st::application

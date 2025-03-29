@@ -17,6 +17,7 @@ set(Sources
     "Source/CommandManager.cpp"
     "Source/DataTypes/Camera.cpp"
     "Source/Commands/CameraCommands.cpp"
+    "Source/Nodes/TransformNode.cpp"
     )
 
 set(Public_Headers
@@ -31,6 +32,8 @@ set(Public_Headers
     "Include/Core/CommandManager.hpp"
     "Include/Core/Command.hpp"
     "Include/Core/Commands/CameraCommands.hpp"
+    "Include/Core/DataTypes/Transform.hpp"
+    "Include/Core/Nodes/TransformNode.hpp"
     )
 
 set(Private_Headers
