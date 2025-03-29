@@ -68,7 +68,7 @@ jobs:
       uses: jurplel/install-qt-action@v4
       with:
         version: '6.6'
-        cache: true
+        cache: false
 
     ### Run CMake
       #TODO Investigate how to run tests on GPU
