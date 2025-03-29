@@ -32,15 +32,9 @@ namespace st::core
 
     Eigen::Matrix4f Camera::getProjectionMatrix() const
 	{
-		spdlog::info("Camera width: {}", m_width);
-		spdlog::info("Camera height: {}", m_height);
-		spdlog::info("Camera angle of view: {}", m_angleOfView);
 		float aspectRatio = m_width / m_height;
 		float radAngleOfView = m_angleOfView * std::numbers::pi_v<float> / 180.0f;
 		float tanHalfFov = std::tan(radAngleOfView / 2.0f);
-		spdlog::info("Aspect Ratio: {}", aspectRatio);
-		spdlog::info("Tan Half Fov: {}", tanHalfFov);
-		glm::mat4 projectionMatrixGlm = glm::perspectiveRH_ZO(glm::radians(m_angleOfView), aspectRatio, m_nearClippingPlane, m_farClippingPlane);
 
 		Eigen::Matrix4f projectionMatrix = Eigen::Matrix4f::Zero();
 		projectionMatrix(0, 0) = 1.0f / (aspectRatio * tanHalfFov);
@@ -55,7 +49,6 @@ namespace st::core
 		//postViewRotation(1, 1) = 1.0f;
 		//postViewRotation(2, 2) = 1.0f;
 
-		//projectionMatrix = projectionMatrix * postViewRotation;
 		spdlog::info("!!!Projection Matrix: {}", projectionMatrix);
 
 		return projectionMatrix;

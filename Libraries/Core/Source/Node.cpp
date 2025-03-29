@@ -29,13 +29,12 @@ namespace st::core
 		m_attributes.push_back(attribute);
 	}
 
-
     Eigen::Matrix4f Node::getLocalMatrix() const
 	{
 		return Eigen::Matrix4f::Identity();
 	}
 
-Node::NodeState Node::getState() const
+	Node::NodeState Node::getState() const
     {
         return m_state;
     }
@@ -77,10 +76,6 @@ Node::NodeState Node::getState() const
 
 		return matrix;
 	}
-
-
-
-
 
     bool Node::isUninitialized() const
     {

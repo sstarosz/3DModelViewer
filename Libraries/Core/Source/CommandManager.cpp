@@ -12,13 +12,6 @@ namespace st::core
         spdlog::info("CommandManager::initialize()");
     }
 
-    //void CommandManager::execute(std::unique_ptr<Command> command)
-    //{
-    //    command->execute();
-    //    m_undoStack.push_back(std::move(command));
-    //    m_redoStack.clear();
-    //}
-
     void CommandManager::undo()
     {
         if (!commands.empty()) {

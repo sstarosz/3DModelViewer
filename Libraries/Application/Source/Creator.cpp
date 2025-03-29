@@ -20,7 +20,6 @@ namespace st::application
 		const float nearClippingPlane,
 		const float farClippingPlane)
 	{
-		// TODO
 		spdlog::info("Creator::camera()");
 		std::unique_ptr<core::CreateCameraCommand> command = std::make_unique<core::CreateCameraCommand>(m_contentManager,
 																											angleOfView,
@@ -28,8 +27,6 @@ namespace st::application
 																											nearClippingPlane,
 																											farClippingPlane);
 		auto result = m_commandManager->execute(std::move(command));
-
-
 
 		return std::weak_ptr<core::Node>{result};
 	}

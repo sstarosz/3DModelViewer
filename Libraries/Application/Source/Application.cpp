@@ -12,7 +12,7 @@ namespace st::application
         m_guiManager(core::ContentManagerHandler(&m_contentManager)),
         m_creator(core::ContentManagerHandler(&m_contentManager), core::CommandManagerHandler(&m_commandManager))
     {
-        spdlog::set_level(spdlog::level::warn);
+        spdlog::set_level(spdlog::level::wa);
         spdlog::info("Application::Application()");
         spdlog::info("Application::Application() - Done");
         spdlog::info("----------------------");
@@ -33,13 +33,13 @@ namespace st::application
     int Application::run()
     {
         spdlog::info("Application::run()");
+
         initialize();
-
-
         m_contentManager.onStart();
-
         m_guiManager.show();
 
+        spdlog::info("Application::run() - Done");
+        spdlog::info("----------------------");
         return m_app.exec();
     }
 
