@@ -65,10 +65,10 @@ jobs:
         cache: true
 
     - name: Install Qt
-      uses: jurplel/install-qt-action@v4
+      uses: Kidev/install-qt-action@master
       with:
         version: '6.6'
-        cache: false
+        cache: true
 
     ### Run CMake
       #TODO Investigate how to run tests on GPU
