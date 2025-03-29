@@ -64,8 +64,20 @@ jobs:
       with:
         cache: true
 
+    - name: Set up cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ runner.temp }}/Qt
+          ${{ github.workspace }}/Qt
+          ~/.cache/Qt
+        key: ${{ runner.os }}-QtCache-${{ hashFiles('**/CMakeLists.txt') }}-${{ github.run_number }}
+        restore-keys: |
+          ${{ runner.os }}-QtCache-${{ hashFiles('**/CMakeLists.txt') }}-
+          ${{ runner.os }}-QtCache-
+
     - name: Install Qt
-      uses: Kidev/install-qt-action@master
+      uses: jurplel/install-qt-action@
       with:
         version: '6.6'
         cache: true
