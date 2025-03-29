@@ -17,24 +17,10 @@ namespace st::core
 		Camera(float angleOfView, float focalLength,
 			   float nearClippingPlane, float farClippingPlane);
 
-		void setPosition(const Eigen::Vector3f& position);
-
 		Eigen::Matrix4f getViewMatrix() const;
 		Eigen::Matrix4f getProjectionMatrix() const;
 
-
-
-
-		// private:
-		// Camera location
-		Eigen::Vector3f m_position;
-		Eigen::Vector3f m_target;
-		Eigen::Vector3f m_up;
-		Eigen::Vector3f m_direction;
-
-		Eigen::Vector3f m_startSpherePosition;
-		Eigen::Vector3f m_endSpherePosition;
-		Eigen::Quaternionf m_orientation;
+		Eigen::Matrix4f m_cameraTransform = Eigen::Matrix4f::Identity();
 
 		// Camera parameters
 		float m_angleOfView;
@@ -44,52 +30,6 @@ namespace st::core
 
 		float m_width;
 		float m_height;
-
-		// Camera state
-		enum class State
-		{
-			eIdle,
-			eOrbit,
-			ePan,
-			eZoom
-		};
-
-		State m_currentState = State::eIdle;
-		float m_mouseClickX;
-		float m_mouseClickY;
-
-		Eigen::Vector3f mapToSphere(float x, float y);
-
-		/*Arcball prototype*/
-		Eigen::Vector3f center;
-		float radius;
-		Eigen::Quaternionf qNow;
-		Eigen::Quaternionf qDown;
-		Eigen::Quaternionf qDrag;
-
-		Eigen::Vector3f vNow;
-		Eigen::Vector3f vDown;
-		Eigen::Vector3f vFrom;
-		Eigen::Vector3f vTo;
-		Eigen::Vector3f vectorRotatedFrom;
-		Eigen::Vector3f vectorRotatedTo;
-
-		Eigen::Matrix3f mNow;
-		Eigen::Matrix3f mDown;
-
-		bool showResult = false;
-		bool dragging = false;
-
-
-		/*Three js approach*/
-		
-		Eigen::Quaternionf quaterion;
-		Eigen::Vector3f eyeDirection;
-		Eigen::Vector3f objectUpDirection;
-		Eigen::Vector3f objectSidewaysDirection;
-
-
-
 	};
 
 } // namespace st::core

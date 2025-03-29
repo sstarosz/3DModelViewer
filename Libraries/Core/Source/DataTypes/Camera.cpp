@@ -15,92 +15,19 @@ namespace st::core
 
 	Camera::Camera(float angleOfView, float focalLength,
 				   float nearClippingPlane, float farClippingPlane) :
-		m_position(Eigen::Vector3f::Zero()),
-		m_target(Eigen::Vector3f::Zero()),
-		m_up(Eigen::Vector3f::UnitY()),
 		m_angleOfView(angleOfView),
 		m_focalLength(focalLength),
 		m_nearClippingPlane(nearClippingPlane),
 		m_farClippingPlane(farClippingPlane),
 		m_width(900.0f),
-		m_height(600.0f),
-		m_currentState(State::eIdle),
-		m_mouseClickX(0.0f),
-		m_mouseClickY(0.0f)
+		m_height(600.0f)
 	{
 		spdlog::info("Camera created");
-
-		center = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
-		radius = 0.75f;
-		vDown = vNow = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
-		qDown = qNow = Eigen::Quaternionf::Identity();
-
-		mNow = Eigen::Matrix3f::Identity();
-		mDown = Eigen::Matrix3f::Identity();
-
-		showResult = false;
-		dragging = false;
-
-
-
 	}
-
-	void Camera::setPosition(const Eigen::Vector3f& position)
-	{
-		m_position = position;
-	}
-
-
 
 	Eigen::Matrix4f Camera::getViewMatrix() const
 	{
-		//Eigen::Vector3f forward = (m_target - m_position).normalized();
-//
-		//Eigen::Vector3f right = m_up.cross(forward).normalized();
-//
-		//Eigen::Vector3f up = forward.cross(right);
-//
-		//Eigen::Matrix4f viewMatrix = Eigen::Matrix4f::Identity();
-//
-		//viewMatrix(0, 0) = right.x();
-		//viewMatrix(0, 1) = right.y();
-		//viewMatrix(0, 2) = right.z();
-		//viewMatrix(0, 3) = -right.dot(m_position);
-//
-		//viewMatrix(1, 0) = up.x();
-		//viewMatrix(1, 1) = up.y();
-		//viewMatrix(1, 2) = up.z();
-		//viewMatrix(1, 3) = -up.dot(m_position);
-//
-		//viewMatrix(2, 0) = -forward.x();
-		//viewMatrix(2, 1) = -forward.y();
-		//viewMatrix(2, 2) = -forward.z();
-		//viewMatrix(2, 3) = forward.dot(m_position);
-//
-		//viewMatrix(3, 0) = 0.0f;
-		//viewMatrix(3, 1) = 0.0f;
-		//viewMatrix(3, 2) = 0.0f;
-		//viewMatrix(3, 3) = 1.0f;
-		spdlog::info("Camera position: {}", m_position);
-		spdlog::info("Camera target: {}", m_target);
-		spdlog::info("Camera up: {}", m_up);
-
-		glm::mat4 viewMatrixGlm = glm::lookAt(glm::vec3(m_position.x(), m_position.y(), m_position.z()),
-											glm::vec3(m_target.x(), m_target.y(), m_target.z()),
-											glm::vec3(m_up.x(), m_up.y(), m_up.z()));
-
-		Eigen::Matrix4f viewMatrix = Eigen::Matrix4f::Zero();
-
-		//Convert glm matrix to Eigen matrix since glm uses column major and Eigen uses row major
-		for(int row = 0; row < 4; row++)
-		{
-			for(int col = 0; col < 4; col++)
-			{
-				viewMatrix(row, col) = viewMatrixGlm[col][row];
-			}
-		}
-
-		return viewMatrix;
+		return Eigen::Inverse(m_cameraTransform);
     }
 
     Eigen::Matrix4f Camera::getProjectionMatrix() const
@@ -133,27 +60,6 @@ namespace st::core
 
 		return projectionMatrix;
 	}
-
-	Eigen::Vector3f Camera::mapToSphere(float x, float y)
-	{
-		Eigen::Vector3f v;
-		
-		v.x() = (2.0f * x / m_width) - 1.0f;
-		v.y() = 1.0f - (2.0f * y / m_height);
-
-		float magnitude = v.x() * v.x() + v.y() * v.y();
-		if (magnitude <= 1.0f)
-		{
-			v.z() = std::sqrt(1.0f - magnitude);
-		}
-		else
-		{
-			v = v.normalized();
-		}
-
-		return v;
-	}
-
 
 } // namespace st::core
 

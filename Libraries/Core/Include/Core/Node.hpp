@@ -17,13 +17,16 @@
 #include <vector>
 
 #include <spdlog/spdlog.h>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include <Eigen/Core>
 
 namespace st::core
 {
 	/*----------------------*/
 	/*-------Node----------*/
 	/*----------------------*/
-	class Node
+	class Node : public std::enable_shared_from_this<Node>
 	{
 	  public:
 		enum class NodeState
@@ -74,6 +77,7 @@ namespace st::core
 
 		virtual bool initialize() = 0;
 		virtual bool compute() = 0;
+		virtual Eigen::Matrix4f getLocalMatrix() const; 
 
 		std::string getName() const
 		{
@@ -87,6 +91,14 @@ namespace st::core
 
 		NodeState getState() const;
 
+		void addChildNode(std::shared_ptr<Node> childNode);
+		void removeChildNode(std::shared_ptr<Node> childNode);
+		std::vector<std::shared_ptr<Node>> getChildNodes() const;
+		std::weak_ptr<Node> getParentNode() const;
+		Eigen::Matrix4f getInclusiveMatrix() const;
+
+
+
 		bool isDirty() const;
 		bool isUninitialized() const;
 
@@ -94,6 +106,8 @@ namespace st::core
 		std::string m_name;
 		std::vector<std::shared_ptr<Attribute>> m_attributes;
 		NodeState m_state;
+		std::weak_ptr<Node> m_parentNode;
+		std::vector<std::shared_ptr<Node>> m_childNodes;
 	};
 
 } // namespace st::core

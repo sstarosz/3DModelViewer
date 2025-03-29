@@ -23,6 +23,10 @@ namespace st::core
 
 		m_transfrom = std::make_shared<TransformNode>();
 		m_transfrom->initialize();
+		m_transfrom->addChildNode(m_camera);
+
+		m_transfrom->translateBy(Eigen::Vector4f(0.0f, 0.0f, 3.0f, 0.0f));
+		m_transfrom->compute();
 
 		core::NodeGraph& nodeGraph = m_contentManager->getMainNodeGraph();
 		nodeGraph.addNode(m_camera);

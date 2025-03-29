@@ -423,8 +423,8 @@ namespace st::renderer
 		void updateUniformBuffer(uint32_t currentImage)
 		{
 			spdlog::info("Renderer::updateUniformBuffer()");
-			spdlog::info("View matrix: {}", m_camera.getData()->getViewMatrix());
-			spdlog::info("Projection matrix: {}", m_camera.getData()->getProjectionMatrix());
+			spdlog::warn("View matrix: {}", m_camera.getData()->getViewMatrix());
+			spdlog::warn("Projection matrix: {}", m_camera.getData()->getProjectionMatrix());
 
 			//Eigen::Matrix4f transporeView = m_camera.getData()->getViewMatrix().transpose();
 			//Eigen::Matrix4f transporeProjection = m_camera.getData()->getProjectionMatrix().transpose();
@@ -956,13 +956,9 @@ namespace st::renderer
 			m_camera = camera;
 
 			//Camera
-			spdlog::info("Renderer::updateScene() - Camera");
-			spdlog::info("Camera Projection Matrix: {}", m_camera.getData()->getProjectionMatrix());
-			spdlog::info("Camera View Matrix: {}", m_camera.getData()->getViewMatrix());
-			spdlog::info("Camera Position: {}", m_camera.getData()->m_position);
-			spdlog::info("Camera Up: {}", m_camera.getData()->m_up);
-			spdlog::info("Camera Target: {}", m_camera.getData()->m_target);
-
+			spdlog::warn("Renderer::updateScene() - Camera");
+			spdlog::warn("Camera Projection Matrix: {}", m_camera.getData()->getProjectionMatrix());
+			spdlog::warn("Camera View Matrix: {}", m_camera.getData()->getViewMatrix());
 
 
 			// Initialize Shader
@@ -1072,8 +1068,6 @@ namespace st::renderer
 			spdlog::info("RendererNoPrivate::updateScene() - Camera");
 			spdlog::info("Camera Projection Matrix: {}", m_input.camera.getData()->getProjectionMatrix());
 			spdlog::info("Camera View Matrix: {}", m_input.camera.getData()->getViewMatrix());
-			spdlog::info("Camera Position: {}", m_input.camera.getData()->m_position);
-
 
 			m_privateRenderer->updateScene(m_input.renderable, m_input.camera);
 		}
@@ -1082,7 +1076,6 @@ namespace st::renderer
 			spdlog::info("RendererNoPrivate::updateScene() - Camera");
 			spdlog::info("Camera Projection Matrix: {}", m_input.camera.getData()->getProjectionMatrix());
 			spdlog::info("Camera View Matrix: {}", m_input.camera.getData()->getViewMatrix());
-			spdlog::info("Camera Position: {}", m_input.camera.getData()->m_position);
 			m_privateRenderer->m_input = m_input.renderable;
 			m_privateRenderer->m_camera = m_input.camera;
 		}

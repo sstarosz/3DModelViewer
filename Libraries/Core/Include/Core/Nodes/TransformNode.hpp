@@ -19,18 +19,20 @@ namespace st::core
 		/*----------------------*/
 		virtual bool initialize() override;
 		virtual bool compute() override;
+		virtual Eigen::Matrix4f getLocalMatrix() const override; 
 
 		/*----------------------*/
 		/*-------Setters--------*/
 		/*----------------------*/
-		void translateBy(const Eigen::Vector3f& translation);
+		void translateBy(const Eigen::Vector4f& translation);
 
-
+		void rotateX(const float angle);
+		void rotateY(const float angle);
+		void rotateZ(const float angle);
 
 		/*----------------------*/
 		/*-------Getters--------*/
 		/*----------------------*/
-		Eigen::Matrix4f getMatrix() const;
 
 
     private:
@@ -44,7 +46,7 @@ namespace st::core
 			//TODO: Add output attributes
 		} m_output;
 
-		Transformation m_camera;
+		Transformation m_transformation;
 
 
         Eigen::Matrix4f createRotationXMatrix(const float angle);

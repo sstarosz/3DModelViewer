@@ -22,23 +22,18 @@ namespace st::core
             ZYX
         };
 
+        float x{0.0f};
+        float y{0.0f};
+        float z{0.0f};
 
-        float x;
-        float y;
-        float z;
-
-        RotationOrder order;
+        RotationOrder order{RotationOrder::XYZ};
     };
 
 	struct Transformation
 	{
-	  public:
-        Transformation() = default;
-
-        
-        Eigen::Vector4f translation;
-        EulerRotation rotation;
-        Eigen::Matrix4f matrix;
+        Eigen::Vector4f translation = Eigen::Vector4f::Zero();
+        EulerRotation rotation = {0.0f, 0.0f, 0.0f, EulerRotation::RotationOrder::XYZ};
+        Eigen::Matrix4f matrix = Eigen::Matrix4f::Identity();
 	};
 
 

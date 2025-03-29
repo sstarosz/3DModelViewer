@@ -9,6 +9,9 @@
 #include "Renderer/Renderer.hpp"
 
 #include "Core/Nodes/CameraNode.hpp"
+#include "Core/Nodes/TransformNode.hpp"
+
+#include <numbers>
 
 namespace st::ui
 {
@@ -34,6 +37,15 @@ namespace st::ui
 	/*---------------------*/
 	class Viewport::PrivateWindow : public QWindow
 	{
+		enum class CameraState
+		{
+			eIdle,
+			eOrbit,
+			ePan,
+			eZoom
+		};
+
+
 	  public:
 		PrivateWindow(core::ContentManagerHandler contentManager,
 					  QWindow* parent = nullptr) :
@@ -87,6 +99,17 @@ namespace st::ui
 				
 
 				spdlog::info("Window size: y:{}, x:{}", width(), height());
+				if(auto parentNode = m_camera->getParentNode().lock())
+				{
+					spdlog::info("Camera Parent Node found");
+					m_transform = std::dynamic_pointer_cast<core::TransformNode>(parentNode);
+				}
+				else
+				{
+					assert(false && "Camera Parent Node not found");
+				}
+
+
 				m_camera->setWidth(static_cast<float>(width()));
 				m_camera->setHeight(static_cast<float>(height()));
 
@@ -143,33 +166,30 @@ namespace st::ui
 				if(event->button() == Qt::LeftButton)
 				{
 					spdlog::info("Alt + Left Button Pressed");
-					m_camera->setCameraCurrentState(core::Camera::State::eOrbit);
-					m_camera->beginDrag();
+					m_cameraState = CameraState::eOrbit;
 				}
 
 				if(event->button() == Qt::MiddleButton)
 				{
 					spdlog::info("Alt + Middle Button Pressed");
-					m_camera->setCameraCurrentState(core::Camera::State::ePan);
+					m_cameraState = CameraState::ePan;
 				}
 
 				if(event->button() == Qt::RightButton)
 				{
 					spdlog::info("Alt + Right Button Pressed");
-					m_camera->setCameraCurrentState(core::Camera::State::eZoom);
+					m_cameraState = CameraState::eZoom;
 				}
 			}
 		}
 
-
-
-
 		void mouseMoveEvent(QMouseEvent* event) override
 		{
-			spdlog::info("Mouse Moved");
+			spdlog::warn("Mouse Moved");
 
-			if(m_camera->getCameraCurrentState() == core::Camera::State::eIdle)
+			if(m_cameraState == CameraState::eIdle)
 			{
+				spdlog::warn("Camera State is Idle");
 				return;
 			}
 
@@ -178,38 +198,71 @@ namespace st::ui
 			float deltaY = pos.y() - m_lastMousePosition.y();
 
 
-			if(m_camera->getCameraCurrentState() == core::Camera::State::eOrbit)
+			if(m_cameraState == CameraState::eOrbit)
 			{
-				m_camera->orbit(deltaX, deltaY);
+				spdlog::warn("Orbiting: deltaX: {}, deltaY: {}", deltaX, deltaY);
+				orbit(deltaX, deltaY);
 			}
 
-			if(m_camera->getCameraCurrentState() == core::Camera::State::ePan)
+			if(m_cameraState == CameraState::ePan)
 			{
-				m_camera->pan(deltaX, deltaY);
+				spdlog::warn("Panning: deltaX: {}, deltaY: {}", deltaX, deltaY);
+				pan(deltaX, deltaY);
 			}
 
-			if(m_camera->getCameraCurrentState() == core::Camera::State::eZoom)
+			if(m_cameraState == CameraState::eZoom)
 			{
-				m_camera->dolly(deltaX, deltaY);
+				spdlog::warn("Zooming: deltaX: {}, deltaY: {}", deltaX, deltaY);
+				dolly(deltaX, deltaY);
 			}
 
 			m_lastMousePosition = pos;
 
 
 			// Evaluate the node graph
-			//m_contentManager->getMainNodeGraph().evaluate();
+			m_transform->compute();
 			m_camera->compute();
 		}
 
-		void mouseReleaseEvent(QMouseEvent* event) override
+		void mouseReleaseEvent([[maybe_unused]] QMouseEvent* event) override
 		{
 			spdlog::info("Mouse Released");
 			update();
-			m_camera->endDrag();
-			m_camera->setCameraCurrentState(core::Camera::State::eIdle);
-			m_camera->compute();
+			m_cameraState = CameraState::eIdle;
 		}
 
+		float degreeToRadian(float degree) const
+		{
+			return degree * (std::numbers::pi_v<float> / 180.0f);
+		}
+
+		void orbit(float deltaX, float deltaY)
+		{
+			float width = static_cast<float>(this->width());
+			float height = static_cast<float>(this->height());
+
+			float angleX = -deltaX / (width / 2.0) * 360.0f;
+			float angleY = -deltaY / (height / 2.0) * 360.0f;
+
+			spdlog::warn("Orbit: angleX: {}, angleY: {}", angleX, angleY);
+
+			m_transform->rotateX(angleY);
+			m_transform->rotateY(angleX);
+		}
+
+		void pan(float deltaX, float deltaY)
+		{
+			constexpr float sensitivity = 0.01f;
+			spdlog::warn("Panning: deltaX: {}, deltaY: {}", deltaX, deltaY);	
+			m_transform->translateBy(Eigen::Vector4f{-deltaX * sensitivity, -deltaY * sensitivity, 0.0f, 0.0f});
+		}
+
+		void dolly(float deltaX, float deltaY)
+		{
+			constexpr float sensitivity = 0.01f;
+			spdlog::warn("Zooming: deltaX: {}, deltaY: {}", deltaX, deltaY);
+			m_transform->translateBy(Eigen::Vector4f{0.0f, 0.0f, -deltaY * sensitivity, 0.0f});
+		}
 
 
 	  private:
@@ -228,7 +281,9 @@ namespace st::ui
 		QTimer m_timer;
 		std::shared_ptr<renderer::Renderer> m_renderer;
 		std::shared_ptr<core::CameraNode> m_camera; //Current active camera
+		std::shared_ptr<core::TransformNode> m_transform; //Transform node of the camera
 		QLabel* m_fallbackLabel{nullptr};
+		CameraState m_cameraState{CameraState::eIdle};
 
 		QPointF m_lastMousePosition;
 	};
