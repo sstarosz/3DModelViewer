@@ -4,8 +4,14 @@
 #include <QVulkanInstance>
 #include <QWindow>
 #include <QLabel>
+#include <QMouseEvent>
 
 #include "Renderer/Renderer.hpp"
+
+#include "Core/Nodes/CameraNode.hpp"
+#include "Core/Nodes/TransformNode.hpp"
+
+#include <numbers>
 
 namespace st::ui
 {
@@ -25,12 +31,20 @@ namespace st::ui
 		}
 	};
 
-
 	/*---------------------*/
 	/*-------Private-------*/
 	/*---------------------*/
 	class Viewport::PrivateWindow : public QWindow
 	{
+		enum class CameraState
+		{
+			eIdle,
+			eOrbit,
+			ePan,
+			eZoom
+		};
+
+
 	  public:
 		PrivateWindow(core::ContentManagerHandler contentManager,
 					  QWindow* parent = nullptr) :
@@ -66,7 +80,38 @@ namespace st::ui
 					spdlog::error("Renderer Node not found");
 					return;
 				}
+
+				for(auto node : nodeGraph.getNodes())
+				{
+					if(std::shared_ptr<core::CameraNode> camera = std::dynamic_pointer_cast<core::CameraNode>(node))
+					{
+						spdlog::info("Camera Node found");
+						m_camera = camera;
+					}
+				}
+
+				if(m_camera == nullptr)
+				{
+					spdlog::error("Camera Node not found");
+					return;
+				}
 				
+
+				spdlog::info("Window size: y:{}, x:{}", width(), height());
+				if(auto parentNode = m_camera->getParentNode().lock())
+				{
+					spdlog::info("Camera Parent Node found");
+					m_transform = std::dynamic_pointer_cast<core::TransformNode>(parentNode);
+				}
+				else
+				{
+					assert(false && "Camera Parent Node not found");
+				}
+
+
+				m_camera->setWidth(static_cast<float>(width()));
+				m_camera->setHeight(static_cast<float>(height()));
+
 				// Create Vulkan Instance for QVulkanWindow
 				QVulkanInstance vulkanInstance;
 				vulkanInstance.setVkInstance(m_renderer->getVulkanInstance());
@@ -95,12 +140,129 @@ namespace st::ui
 
 			QWindow::resizeEvent(event);
 			m_renderer->changeSwapchainExtent(width(), height());
+			m_camera->setWidth(static_cast<float>(width()));
+			m_camera->setHeight(static_cast<float>(height()));
+			m_camera->compute();
 		}
 
 		void setRenderer(std::shared_ptr<renderer::Renderer> renderer)
 		{
 			m_renderer = renderer;
 		}
+
+		/*----------------------*/
+		/*----Event Handlers----*/
+		/*----------------------*/
+		void mousePressEvent(QMouseEvent* event) override
+		{
+			spdlog::info("Mouse Pressed");
+
+			if(event->modifiers() & Qt::AltModifier)
+			{
+				spdlog::info("Alt Modifier Pressed");
+
+				m_lastMousePosition = event->position();
+				if(event->button() == Qt::LeftButton)
+				{
+					spdlog::info("Alt + Left Button Pressed");
+					m_cameraState = CameraState::eOrbit;
+				}
+
+				if(event->button() == Qt::MiddleButton)
+				{
+					spdlog::info("Alt + Middle Button Pressed");
+					m_cameraState = CameraState::ePan;
+				}
+
+				if(event->button() == Qt::RightButton)
+				{
+					spdlog::info("Alt + Right Button Pressed");
+					m_cameraState = CameraState::eZoom;
+				}
+			}
+		}
+
+		void mouseMoveEvent(QMouseEvent* event) override
+		{
+			spdlog::warn("Mouse Moved");
+
+			if(m_cameraState == CameraState::eIdle)
+			{
+				spdlog::warn("Camera State is Idle");
+				return;
+			}
+
+			auto pos = event->position();
+			float deltaX = pos.x() - m_lastMousePosition.x();
+			float deltaY = pos.y() - m_lastMousePosition.y();
+
+
+			if(m_cameraState == CameraState::eOrbit)
+			{
+				spdlog::warn("Orbiting: deltaX: {}, deltaY: {}", deltaX, deltaY);
+				orbit(deltaX, deltaY);
+			}
+
+			if(m_cameraState == CameraState::ePan)
+			{
+				spdlog::warn("Panning: deltaX: {}, deltaY: {}", deltaX, deltaY);
+				pan(deltaX, deltaY);
+			}
+
+			if(m_cameraState == CameraState::eZoom)
+			{
+				spdlog::warn("Zooming: deltaX: {}, deltaY: {}", deltaX, deltaY);
+				dolly(deltaX, deltaY);
+			}
+
+			m_lastMousePosition = pos;
+
+
+			// Evaluate the node graph
+			m_transform->compute();
+			m_camera->compute();
+		}
+
+		void mouseReleaseEvent([[maybe_unused]] QMouseEvent* event) override
+		{
+			spdlog::info("Mouse Released");
+			update();
+			m_cameraState = CameraState::eIdle;
+		}
+
+		float degreeToRadian(float degree) const
+		{
+			return degree * (std::numbers::pi_v<float> / 180.0f);
+		}
+
+		void orbit(float deltaX, float deltaY)
+		{
+			float width = static_cast<float>(this->width());
+			float height = static_cast<float>(this->height());
+
+			float angleX = -deltaX / (width / 2.0) * 360.0f;
+			float angleY = -deltaY / (height / 2.0) * 360.0f;
+
+			spdlog::warn("Orbit: angleX: {}, angleY: {}", angleX, angleY);
+
+			m_transform->rotateX(angleY);
+			m_transform->rotateY(angleX);
+		}
+
+		void pan(float deltaX, float deltaY)
+		{
+			constexpr float sensitivity = 0.01f;
+			spdlog::warn("Panning: deltaX: {}, deltaY: {}", deltaX, deltaY);	
+			m_transform->translateBy(Eigen::Vector4f{-deltaX * sensitivity, -deltaY * sensitivity, 0.0f, 0.0f});
+		}
+
+		void dolly(float deltaX, float deltaY)
+		{
+			constexpr float sensitivity = 0.01f;
+			spdlog::warn("Zooming: deltaX: {}, deltaY: {}", deltaX, deltaY);
+			m_transform->translateBy(Eigen::Vector4f{0.0f, 0.0f, -deltaY * sensitivity, 0.0f});
+		}
+
 
 	  private:
 		// Main loop
@@ -117,7 +279,12 @@ namespace st::ui
 		bool m_initialized{false};
 		QTimer m_timer;
 		std::shared_ptr<renderer::Renderer> m_renderer;
+		std::shared_ptr<core::CameraNode> m_camera; //Current active camera
+		std::shared_ptr<core::TransformNode> m_transform; //Transform node of the camera
 		QLabel* m_fallbackLabel{nullptr};
+		CameraState m_cameraState{CameraState::eIdle};
+
+		QPointF m_lastMousePosition;
 	};
 
 	/*---------------------*/
@@ -131,15 +298,21 @@ namespace st::ui
 		m_contentManager(contentManager),
 		m_window(nullptr)
 	{
+	}
+
+	void Viewport::initialize()
+	{
 		QWidget* renderWidget{nullptr};
 
 		if(isRendererSpecified())
 		{
-			m_window = new PrivateWindow(contentManager);
+			spdlog::info("Renderer Node found");
+			m_window = new PrivateWindow(m_contentManager);
 			renderWidget = QWidget::createWindowContainer(m_window, this);
 		}
 		else
 		{
+			spdlog::error("Renderer Node not found");
 			renderWidget = new FallBackWidget(this);
 		}
 
@@ -147,7 +320,6 @@ namespace st::ui
 		layout->setContentsMargins(0, 0, 0, 0);
 		layout->addWidget(renderWidget);
 	}
-
 
 	bool Viewport::isRendererSpecified() const
 	{

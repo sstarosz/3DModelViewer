@@ -8,14 +8,13 @@
 
 namespace st::geometry
 {
-    class CreatePlaneCommand : public core::Command
+    class CreatePlaneCommand : public core::Command<std::shared_ptr<geometry::Plane>>
 	{
 		public:
 		CreatePlaneCommand(core::ContentManagerHandler contentManager);
 
-		void execute() override;
+		std::shared_ptr<geometry::Plane> execute() override;
 		void undo() override;
-		std::shared_ptr<geometry::Plane> getResult();
 
 	  private:
 		core::ContentManagerHandler m_contentManager;

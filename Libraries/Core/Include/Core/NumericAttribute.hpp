@@ -79,7 +79,12 @@ namespace st::core
 		NumericAttribute() = default;
 
 	  public:
-		Type getData() const
+		Type* getData()
+		{
+			return Attribute::getData<Type>();
+		}
+
+		const Type* getData() const
 		{
 			return Attribute::getData<Type>();
 		}
@@ -173,10 +178,12 @@ namespace st::core
 		{
 		}
 
-		operator Type () const
+		operator Type& () const
 		{
-			return m_attribute->getData();
+			return *m_attribute->getData();
 		}
+
+
 
 		NumericInputHandler<Type>& operator= (const Type& rhs)
 		{
@@ -186,29 +193,29 @@ namespace st::core
 
 		NumericInputHandler& operator+= (const Type& rhs)
 		{
-			Type value = m_attribute->getData();
-			value += rhs;
+			Type* value = m_attribute->getData();
+			*value += rhs;
 			return *this;
 		}
 
 		NumericInputHandler& operator-= (const Type& rhs)
 		{
-			Type value = m_attribute->getData();
-			value -= rhs;
+			Type* value = m_attribute->getData();
+			*value -= rhs;
 			return *this;
 		}
 
 		NumericInputHandler& operator*= (const Type& rhs)
 		{
-			Type value = m_attribute->getData();
-			value *= rhs;
+			Type* value = m_attribute->getData();
+			*value *= rhs;
 			return *this;
 		}
 
 		NumericInputHandler& operator/= (const Type& rhs)
 		{
-			Type value = m_attribute->getData();
-			value /= rhs;
+			Type* value = m_attribute->getData();
+			*value /= rhs;
 			return *this;
 		}
 

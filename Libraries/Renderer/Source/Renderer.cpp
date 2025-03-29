@@ -20,6 +20,17 @@
 #include <sstream>
 #include <vector>
 
+//TODO refactor
+class UniformBufferObject
+{
+  public:
+	Eigen::Matrix4f model;
+	Eigen::Matrix4f view;
+	Eigen::Matrix4f proj;
+};
+
+
+
 PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT;
 PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
 
@@ -64,60 +75,66 @@ namespace st::renderer
 						   const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 						   void*)
 	{
-		std::ostringstream message;
 
-		message << vk::to_string(static_cast<vk::DebugUtilsMessageSeverityFlagBitsEXT>(messageSeverity)) << ": "
+		std::string messageIdName = pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "null";
+		std::string message = pCallbackData->pMessage ? pCallbackData->pMessage : "null";
+
+
+
+		std::ostringstream logMessage;
+
+		logMessage << vk::to_string(static_cast<vk::DebugUtilsMessageSeverityFlagBitsEXT>(messageSeverity)) << ": "
 				<< vk::to_string(static_cast<vk::DebugUtilsMessageTypeFlagsEXT>(messageType)) << ":\n";
-		message << "\t"
-				<< "messageIDName   = <" << pCallbackData->pMessageIdName << ">\n";
-		message << "\t"
+		logMessage << "\t"
+				<< "messageIDName   = <" << messageIdName << ">\n";
+		logMessage << "\t"
 				<< "messageIdNumber = " << pCallbackData->messageIdNumber << "\n";
-		message << "\t"
-				<< "message         = <" << pCallbackData->pMessage << ">\n";
+		logMessage << "\t"
+				<< "message         = <" << message << ">\n";
 
 		if (0 < pCallbackData->queueLabelCount)
 		{
-			message << "\t"
+			logMessage << "\t"
 					<< "Queue Labels:\n";
 			for (uint32_t i = 0; i < pCallbackData->queueLabelCount; i++)
 			{
-				message << "\t\t"
+				logMessage << "\t\t"
 						<< "labelName = <" << pCallbackData->pQueueLabels[i].pLabelName << ">\n";
 			}
 		}
 
 		if (0 < pCallbackData->cmdBufLabelCount)
 		{
-			message << "\t"
+			logMessage << "\t"
 					<< "CommandBuffer Labels:\n";
 			for (uint32_t i = 0; i < pCallbackData->cmdBufLabelCount; i++)
 			{
-				message << "\t\t"
+				logMessage << "\t\t"
 						<< "labelName = <" << pCallbackData->pCmdBufLabels[i].pLabelName << ">\n";
 			}
 		}
 
 		if (0 < pCallbackData->objectCount)
 		{
-			message << "\t"
+			logMessage << "\t"
 					<< "Objects:\n";
 			for (uint32_t i = 0; i < pCallbackData->objectCount; i++)
 			{
-				message << "\t\t"
+				logMessage << "\t\t"
 						<< "Object " << i << "\n";
-				message << "\t\t\t"
+				logMessage << "\t\t\t"
 						<< "objectType   = " << vk::to_string(static_cast<vk::ObjectType>(pCallbackData->pObjects[i].objectType)) << "\n";
-				message << "\t\t\t"
+				logMessage << "\t\t\t"
 						<< "objectHandle = " << pCallbackData->pObjects[i].objectHandle << "\n";
 				if (pCallbackData->pObjects[i].pObjectName)
 				{
-					message << "\t\t\t"
+					logMessage << "\t\t\t"
 							<< "objectName   = <" << pCallbackData->pObjects[i].pObjectName << ">\n";
 				}
 			}
 		}
 
-		std::cout << message.str() << std::endl;
+		std::cout << logMessage.str() << std::endl;
 
 		return false;
 	}
@@ -148,7 +165,8 @@ namespace st::renderer
 			std::vector<const char*> extensions = {
 				VK_KHR_SURFACE_EXTENSION_NAME,
 				VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
-				VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
+				VK_EXT_DEBUG_UTILS_EXTENSION_NAME
+				};
 
 			std::vector<const char*> layers = {
 				"VK_LAYER_KHRONOS_validation",
@@ -199,7 +217,7 @@ namespace st::renderer
 
 			createRenderPass();
 
-			updateScene(m_input);
+			updateScene(m_input, m_camera);
 			updateVertexBuffer();
 			updateIndexBuffer();
 
@@ -278,6 +296,9 @@ namespace st::renderer
 
 			// Reset the command buffer for the current frame
 			resetCommandBuffer(m_currentFrame);
+
+			// Update uniform buffer
+			updateUniformBuffer(m_currentFrame);
 
 			// Record command for the current frame
 			recordCommandBuffer(m_vulkanContext.m_commandBuffers[m_currentFrame], imageIndex);
@@ -384,7 +405,7 @@ namespace st::renderer
 			commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.pipeline);
 
 			// Object
-			auto indicesSize = m_input.getData().m_meshData.getIndicesPointList().size();
+			auto indicesSize = m_input.getData()->m_meshData.getIndicesPointList().size();
 			vk::Buffer vertexBuffers[] = {m_pipeline.resources.vertexBuffer};
 			vk::DeviceSize offsets[] = {0};
 			commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
@@ -395,6 +416,36 @@ namespace st::renderer
 
 			commandBuffer.endRenderPass();
 			commandBuffer.end();
+		}
+
+
+
+		void updateUniformBuffer(uint32_t currentImage)
+		{
+			spdlog::info("Renderer::updateUniformBuffer()");
+			spdlog::warn("View matrix: {}", m_camera.getData()->getViewMatrix());
+			spdlog::warn("Projection matrix: {}", m_camera.getData()->getProjectionMatrix());
+
+			//Eigen::Matrix4f transporeView = m_camera.getData()->getViewMatrix().transpose();
+			//Eigen::Matrix4f transporeProjection = m_camera.getData()->getProjectionMatrix().transpose();
+//
+			//spdlog::info("View matrix transposed: {}", transporeView);
+			//spdlog::info("Projection matrix transposed: {}", transporeProjection);
+
+
+			// TODO - Update uniform buffer
+			UniformBufferObject	ubo{};
+			ubo.model = Eigen::Matrix4f::Identity(); //TODO it should be matrix of model
+			
+			ubo.view = m_camera.getData()->getViewMatrix();
+
+			ubo.proj = m_camera.getData()->getProjectionMatrix();
+
+
+			void* data = m_vulkanContext.m_device.mapMemory(m_pipeline.resources.uniformBuffersMemory[currentImage], 0, sizeof(ubo));
+			memcpy(data, &ubo, sizeof(ubo));
+			m_vulkanContext.m_device.unmapMemory(m_pipeline.resources.uniformBuffersMemory[currentImage]);
+
 		}
 
 		// Implementation
@@ -459,7 +510,10 @@ namespace st::renderer
 			std::vector<const char*> validationLayers = {
 				"VK_LAYER_KHRONOS_validation"};
 
-			std::array m_deviceExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+			std::array m_deviceExtensions {
+				VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+				VK_KHR_MAINTENANCE1_EXTENSION_NAME
+			};
 
 			vk::PhysicalDeviceFeatures deviceFeatures{};
 			vk::DeviceCreateInfo createInfo{
@@ -847,7 +901,7 @@ namespace st::renderer
 		// Temporary
 		void updateVertexBuffer()
 		{
-			auto vertices = m_input.getData().m_meshData.getVertexPointList();
+			auto vertices = m_input.getData()->m_meshData.getVertexPointList();
 
 			vk::BufferCreateInfo bufferInfo{{},
 											sizeof(vertices[0]) * vertices.size(),
@@ -873,7 +927,7 @@ namespace st::renderer
 
 		void updateIndexBuffer()
 		{
-			auto m_indices = m_input.getData().m_meshData.getIndicesPointList();
+			auto m_indices = m_input.getData()->m_meshData.getIndicesPointList();
 			vk::BufferCreateInfo bufferInfo{{},
 											sizeof(m_indices[0]) * m_indices.size(),
 											vk::BufferUsageFlagBits::eIndexBuffer,
@@ -896,20 +950,29 @@ namespace st::renderer
 			m_vulkanContext.m_device.unmapMemory(m_pipeline.resources.indexBufferMemory);
 		}
 
-		void updateScene(core::TypedInputHandler<Renderable> input)
+		void updateScene(core::TypedInputHandler<Renderable> input, core::TypedInputHandler<core::Camera> camera)
 		{
 			m_input = input;
+			m_camera = camera;
+
+			//Camera
+			spdlog::warn("Renderer::updateScene() - Camera");
+			spdlog::warn("Camera Projection Matrix: {}", m_camera.getData()->getProjectionMatrix());
+			spdlog::warn("Camera View Matrix: {}", m_camera.getData()->getViewMatrix());
+
 
 			// Initialize Shader
 			spdlog::info("Renderer::updateScene() - Initialize Shader");
-			spdlog::info("Vertex Shader: {}", m_input.getData().m_vertexShader);
-			spdlog::info("Fragment Shader: {}", m_input.getData().m_fragmentShader);
-			spdlog::info("Mesh: {}", m_input.getData().m_meshData.getVertexPointList().size());
-			spdlog::info("Mesh: {}", m_input.getData().m_meshData.getIndicesPointList().size());
+			spdlog::info("Vertex Shader: {}", m_input.getData()->m_vertexShader);
+			spdlog::info("Fragment Shader: {}", m_input.getData()->m_fragmentShader);
+			spdlog::info("Mesh Vertexes: {}", m_input.getData()->m_meshData.getVertexPointList());
+			spdlog::info("Mesh Indices: {}", m_input.getData()->m_meshData.getIndicesPointList());
+			spdlog::info("Mesh Vertex Count: {}", m_input.getData()->m_meshData.getVertexPointList().size());
+			spdlog::info("Mesh Indices Count: {}", m_input.getData()->m_meshData.getIndicesPointList().size());
 
 			m_pipeline = PipelineBuilder(m_vulkanContext)
-							 .setVertexShader(m_input.getData().m_vertexShader)
-							 .setFragmentShader(m_input.getData().m_fragmentShader)
+							 .setVertexShader(m_input.getData()->m_vertexShader)
+							 .setFragmentShader(m_input.getData()->m_fragmentShader)
 							 .build();
 		}
 
@@ -928,6 +991,7 @@ namespace st::renderer
 	
 		std::unique_ptr<MaterialManager> m_materialManager;
 		core::TypedInputHandler<Renderable> m_input;
+		core::TypedInputHandler<core::Camera> m_camera;
 	};
 
 	/*---------------------*/
@@ -1000,11 +1064,20 @@ namespace st::renderer
 
 		if(m_privateRenderer->m_initialized)
 		{
-			m_privateRenderer->updateScene(m_input.renderable);
+			//Camera
+			spdlog::info("RendererNoPrivate::updateScene() - Camera");
+			spdlog::info("Camera Projection Matrix: {}", m_input.camera.getData()->getProjectionMatrix());
+			spdlog::info("Camera View Matrix: {}", m_input.camera.getData()->getViewMatrix());
+
+			m_privateRenderer->updateScene(m_input.renderable, m_input.camera);
 		}
 		else
 		{
+			spdlog::info("RendererNoPrivate::updateScene() - Camera");
+			spdlog::info("Camera Projection Matrix: {}", m_input.camera.getData()->getProjectionMatrix());
+			spdlog::info("Camera View Matrix: {}", m_input.camera.getData()->getViewMatrix());
 			m_privateRenderer->m_input = m_input.renderable;
+			m_privateRenderer->m_camera = m_input.camera;
 		}
 		// Initialize Pipeline
 

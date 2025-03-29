@@ -7,21 +7,18 @@ namespace st::renderer
     {
     }
 
-    void CreateStandardMaterialCommand::execute()
+    std::shared_ptr<StandardMaterial> CreateStandardMaterialCommand::execute()
     {
         m_standardMaterial = std::make_shared<renderer::StandardMaterial>();
         m_standardMaterial->initialize();
         m_contentManager->getMainNodeGraph().addNode(m_standardMaterial);
+
+        return m_standardMaterial;
     }
 
     void CreateStandardMaterialCommand::undo()
     {
         // TODO implement
-    }
-
-    std::shared_ptr<renderer::StandardMaterial> CreateStandardMaterialCommand::getResult()
-    {
-        return m_standardMaterial;
     }
 
 } // namespace st::renderer

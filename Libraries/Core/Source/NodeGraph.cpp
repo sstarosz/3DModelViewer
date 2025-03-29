@@ -6,8 +6,6 @@ namespace st::core
 	{
 	}
 
-
-
 	void NodeGraph::addNode(std::shared_ptr<Node> node)
 	{
 		m_nodes.push_back(node);
@@ -29,8 +27,6 @@ namespace st::core
         targetAttrName->setData(sourceAttrName);
     }
 
-
-
     void NodeGraph::evaluate()
     {
         // TODO
@@ -49,7 +45,7 @@ namespace st::core
 		return m_nodes;
 	}
 
-     std::vector<std::shared_ptr<Connection>> NodeGraph::getConnections() const
+    std::vector<std::shared_ptr<Connection>> NodeGraph::getConnections() const
     {
         return m_connections;
     }

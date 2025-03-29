@@ -78,16 +78,16 @@ namespace st::core
 		/*-------Getters--------*/
 		/*----------------------*/
 		template <typename Type>
-		Type getData() const
+		Type* getData()
 		{
 			try
 			{
 				if (m_isConnected)
 				{
-					return std::any_cast<Type>(m_connectedAttribute->getData<Type>());
+					return m_connectedAttribute->getData<Type>();
 				}
 
-				return std::any_cast<Type>(m_data);
+				return std::any_cast<Type>(&m_data);
 			}
 			catch (const std::bad_any_cast&)
 			{

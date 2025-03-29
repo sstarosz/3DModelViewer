@@ -2,6 +2,7 @@
 #define ST_RENDERER_RENDERER_HPP
 
 #include "Core/Node.hpp"
+#include "Core/DataTypes/Camera.hpp"
 #include "Renderer/DataTypes/Renderable.hpp"
 #include "MaterialManager.hpp"
 
@@ -33,8 +34,13 @@ namespace st::renderer
 									  .setWritable(true)
 									  .build();
 
+			m_input.camera = core::TypedAttribute<core::Camera>::Builder("Camera")
+								   .setReadable(false)
+								   .setWritable(true)
+								   .build();
 
 			addAttribute(m_input.renderable);
+			addAttribute(m_input.camera);
 
 			init();
 			
@@ -65,8 +71,10 @@ namespace st::renderer
 
 		void updateScene();
 
+
 		struct Input
 		{
+			core::TypedInputHandler<core::Camera> camera;
 			core::TypedInputHandler<Renderable> renderable;
 		};
 

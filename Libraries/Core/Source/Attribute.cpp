@@ -3,13 +3,10 @@
 namespace st::core
 {
 
-
-
     std::string Attribute::getName() const
     {
         return m_name;
     }
-
 
     bool Attribute::isReadable() const
     {

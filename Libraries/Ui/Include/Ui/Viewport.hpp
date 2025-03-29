@@ -16,6 +16,8 @@ namespace st::ui
 						  QWidget* parent = nullptr,
 						  Qt::WindowFlags flags = {});
 
+		void initialize();
+
 	  private:
 		class PrivateWindow;
 		PrivateWindow* m_window;

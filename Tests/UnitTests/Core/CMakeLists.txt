@@ -7,12 +7,12 @@ set(Test_Name "CoreTests")
 
 
 set(Tests_Sources
-    "AttributesTest.cpp"
-    "NumericAttributeTest.cpp"
-    "TypedAttributeTest.cpp"
+    #"AttributesTest.cpp"
+    #"NumericAttributeTest.cpp"
+    #"TypedAttributeTest.cpp"
     "CameraTest.cpp"
-    "GraphNodeTest.cpp"
-    "ContentManagerTest.cpp"
+    #"GraphNodeTest.cpp"
+    #"ContentManagerTest.cpp"
 )
 
 

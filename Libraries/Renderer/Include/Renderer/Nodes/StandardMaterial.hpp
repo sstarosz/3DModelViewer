@@ -13,7 +13,6 @@ namespace st::renderer
 		#version 450
 
 		layout(location = 0) in vec3 inPosition;
-		//layout(location = 1) in vec3 inColor;
 
 		layout(location = 0) out vec3 outFragColor;
 
@@ -26,8 +25,11 @@ namespace st::renderer
 
 		void main()
 		{
-			gl_Position = vec4(inPosition, 1.0);
-			outFragColor = vec3(1.0, 0.0, 0.0);
+			mat4 postViewMatrix = mat4(1.0);
+			postViewMatrix[1][1] = -1.0;
+			postViewMatrix[2][2] = -1.0;
+			
+			gl_Position = mvp.proj * postViewMatrix * mvp.view * mvp.model * vec4(inPosition, 1.0);
 		}
     )";
 

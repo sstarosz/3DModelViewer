@@ -43,7 +43,12 @@ namespace st::core
 		friend class Builder;
 		~TypedAttribute() = default;
 
-		Type getData() const
+		Type* getData() 
+		{
+			return Attribute::getData<Type>();
+		}
+
+		const Type* getData() const
 		{
 			return Attribute::getData<Type>();
 		}
@@ -77,6 +82,11 @@ namespace st::core
 			return m_attribute->getValue();
 		}
 
+		Type* operator->()
+		{
+			return m_attribute->getData();
+		}
+
 		TypedInputHandler<Type>& operator= (const TypedInputHandler<Type>& rhs)
 		{
 			m_attribute = rhs.m_attribute;
@@ -89,7 +99,12 @@ namespace st::core
 			return *this;
 		}
 
-		Type getData() const
+		Type* getData()
+		{
+			return m_attribute->getData();
+		}
+
+		const Type* getData() const
 		{
 			return m_attribute->getData();
 		}
@@ -114,10 +129,10 @@ namespace st::core
 		{
 		}
 
-		operator Type () const
-		{
-			return m_attribute->getData();
-		}
+		//operator Type () const
+		//{
+		//	return m_attribute->getData();
+		//}
 
 		TypedOutputHandler<Type>& operator= (const Type& rhs)
 		{
@@ -126,7 +141,7 @@ namespace st::core
 			return *this;
 		}
 
-		Type getData() const
+		Type* getData() const
 		{
 			return m_attribute->getData();
 		}

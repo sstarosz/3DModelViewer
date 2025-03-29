@@ -7,13 +7,12 @@
 
 namespace st::renderer
 {
-    class CreateStandardMaterialCommand : public core::Command
+    class CreateStandardMaterialCommand : public core::Command<std::shared_ptr<StandardMaterial>>
     {
         public:
         CreateStandardMaterialCommand(core::ContentManagerHandler contentManager);
-        void execute() override;
+        std::shared_ptr<StandardMaterial> execute() override;
         void undo() override;
-        std::shared_ptr<StandardMaterial> getResult();
 
       private:
         core::ContentManagerHandler m_contentManager;
