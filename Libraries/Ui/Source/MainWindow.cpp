@@ -7,6 +7,7 @@
 #include "Core/ContentManager.hpp"
 #include "NodeEditor.hpp"
 #include "Viewport.hpp"
+#inlcude "AttributeEditor.hpp"
 
 #include <spdlog/spdlog.h>
 

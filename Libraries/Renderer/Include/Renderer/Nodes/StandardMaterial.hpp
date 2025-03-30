@@ -30,6 +30,15 @@ namespace st::renderer
 			postViewMatrix[2][2] = -1.0;
 			
 			gl_Position = mvp.proj * postViewMatrix * mvp.view * mvp.model * vec4(inPosition, 1.0);
+
+			if(inPosition.y > 0.0)
+			{
+				outFragColor = vec3(0.0, 1.0, 1.0);
+			}
+			else
+			{
+				outFragColor = vec3(1.0, 0.0, 0.0);
+			}
 		}
     )";
 
