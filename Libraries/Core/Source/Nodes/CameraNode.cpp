@@ -44,13 +44,7 @@ namespace st::core
 
     bool CameraNode::compute()
     {
-        spdlog::warn("CameraNode::compute()");
-        //m_camera.
-
-
         m_camera.m_cameraTransform = getInclusiveMatrix();
-        spdlog::warn("CameraNode::compute() - Camera transform: {}", m_camera.m_cameraTransform);
-
         m_output.camera = m_camera;
         return true;
     }

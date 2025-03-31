@@ -56,6 +56,8 @@ namespace st::ui
 	constexpr QColor NodeColor = QColor(55, 59, 62);
 	// #5A676B
 	constexpr QColor NodeBorderColor = QColor(90, 103, 107);
+	// #87E5CF
+	constexpr QColor NodeHighlightBorderColor = QColor(135, 229, 207);
 
 	class NodeNameBase : public QAbstractGraphicsShapeItem
 	{
@@ -68,8 +70,19 @@ namespace st::ui
 				   const QStyleOptionGraphicsItem* option,
 				   QWidget* widget) override;
 
+		void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+		void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+
+		void setSelected(bool state);
+		bool isSelected() const;
+
+		void setHovered(bool state);
+		bool isHovered() const;
+
 	  private:
 		QString m_name;
+		bool m_isHovered{false};
+		bool m_isSelected{false};
 	};
 
 	/**
@@ -179,7 +192,7 @@ namespace st::ui
 		static constexpr int32_t NodeWidth = 300;
 		static constexpr int32_t NodeHeight = 400;
 
-	  public:
+	public:
 		NodeItem(std::weak_ptr<core::Node> node, QGraphicsItem* parent = nullptr);
 
 		virtual QRectF boundingRect() const override;
@@ -194,9 +207,12 @@ namespace st::ui
 		std::vector<NodeAttribute*> getAttributes() const;
 		std::weak_ptr<core::Node> getNode() const;
 
-	  private:
+		void setSelected(bool state);
+
+	private:
 		std::weak_ptr<core::Node> m_node;
 		std::vector<NodeAttribute*> m_attributes;
+		bool m_isSelected = false;
 	};
 
 	class PlugConnection : public QAbstractGraphicsShapeItem
@@ -383,6 +399,10 @@ namespace st::ui
 		void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
 		void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
 
+		void selectNode(NodeItem* nodeItem);
+		void deselectCurrentNode();
+		NodeItem* getSelectedNode() const;
+
 	  private:
 		core::NodeGraph* m_nodeGraph;
 		std::unordered_map<std::weak_ptr<core::Node>, NodeItem*, WeakPtrHash, WeakPtrEqual> m_nodes;
@@ -393,6 +413,8 @@ namespace st::ui
 		QPointF currentLineStart;
 		QPointF currentLineEnd;
 		State m_state;
+
+		NodeItem* m_pSelectedNode = nullptr;
 	};
 
 	/**

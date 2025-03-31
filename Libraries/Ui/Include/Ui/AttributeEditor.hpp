@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QLabel>
-
+#include "Core/ContentManager.hpp"
 namespace st::ui
 {
     /**
@@ -17,10 +17,13 @@ namespace st::ui
         Q_OBJECT
 
       public:
-        explicit AttributeEditor(QWidget* parent = nullptr);
+        explicit AttributeEditor(core::ContentManagerHandler contentManager, 
+                                 QWidget* parent = nullptr);
 
       private:
-        void setupUi();
+        void initialize();
+
+        core::ContentManagerHandler m_contentManager;
     };
 } // namespace st::ui
 

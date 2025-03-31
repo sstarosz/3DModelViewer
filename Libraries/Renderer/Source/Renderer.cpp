@@ -423,14 +423,6 @@ namespace st::renderer
 		void updateUniformBuffer(uint32_t currentImage)
 		{
 			spdlog::info("Renderer::updateUniformBuffer()");
-			spdlog::warn("View matrix: {}", m_camera.getData()->getViewMatrix());
-			spdlog::warn("Projection matrix: {}", m_camera.getData()->getProjectionMatrix());
-
-			//Eigen::Matrix4f transporeView = m_camera.getData()->getViewMatrix().transpose();
-			//Eigen::Matrix4f transporeProjection = m_camera.getData()->getProjectionMatrix().transpose();
-//
-			//spdlog::info("View matrix transposed: {}", transporeView);
-			//spdlog::info("Projection matrix transposed: {}", transporeProjection);
 
 
 			// TODO - Update uniform buffer
@@ -440,7 +432,6 @@ namespace st::renderer
 			ubo.view = m_camera.getData()->getViewMatrix();
 
 			ubo.proj = m_camera.getData()->getProjectionMatrix();
-
 
 			void* data = m_vulkanContext.m_device.mapMemory(m_pipeline.resources.uniformBuffersMemory[currentImage], 0, sizeof(ubo));
 			memcpy(data, &ubo, sizeof(ubo));

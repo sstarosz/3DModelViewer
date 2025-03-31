@@ -184,11 +184,8 @@ namespace st::ui
 
 		void mouseMoveEvent(QMouseEvent* event) override
 		{
-			spdlog::warn("Mouse Moved");
-
 			if(m_cameraState == CameraState::eIdle)
 			{
-				spdlog::warn("Camera State is Idle");
 				return;
 			}
 
@@ -199,19 +196,16 @@ namespace st::ui
 
 			if(m_cameraState == CameraState::eOrbit)
 			{
-				spdlog::warn("Orbiting: deltaX: {}, deltaY: {}", deltaX, deltaY);
 				orbit(deltaX, deltaY);
 			}
 
 			if(m_cameraState == CameraState::ePan)
 			{
-				spdlog::warn("Panning: deltaX: {}, deltaY: {}", deltaX, deltaY);
 				pan(deltaX, deltaY);
 			}
 
 			if(m_cameraState == CameraState::eZoom)
 			{
-				spdlog::warn("Zooming: deltaX: {}, deltaY: {}", deltaX, deltaY);
 				dolly(deltaX, deltaY);
 			}
 
@@ -225,7 +219,6 @@ namespace st::ui
 
 		void mouseReleaseEvent([[maybe_unused]] QMouseEvent* event) override
 		{
-			spdlog::info("Mouse Released");
 			update();
 			m_cameraState = CameraState::eIdle;
 		}

@@ -8,6 +8,7 @@ namespace st::ui
 {
 	class Viewport;
 	class NodeEditor;
+	class AttributeEditor;
 
 	class MainWindow : public QMainWindow
 	{
@@ -24,6 +25,7 @@ namespace st::ui
 		core::ContentManagerHandler m_contentManager;
 		Viewport* m_viewport;
 		NodeEditor* m_nodeEditor;
+		AttributeEditor* m_attributeEditor;
 	};
 
 } // namespace st::ui

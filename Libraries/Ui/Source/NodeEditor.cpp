@@ -19,6 +19,10 @@ namespace st::ui
 		QAbstractGraphicsShapeItem(parent),
 		m_name(name)
 	{
+		setAcceptHoverEvents(true);
+		
+		setBrush(NodeBorderColor);
+		setPen(QPen(NodeBorderColor, 3));
 	}
 
 	QRectF NodeNameBase::boundingRect() const
@@ -27,12 +31,13 @@ namespace st::ui
 	}
 
 	void NodeNameBase::paint(QPainter* painter,
-							 const QStyleOptionGraphicsItem* option,
-							 QWidget* widget)
+							 [[maybe_unused]] const QStyleOptionGraphicsItem* option,
+							 [[maybe_unused]] QWidget* widget)
 	{
+		painter->setPen(pen());
+		painter->setBrush(brush());
+		
 		// Draw black
-		painter->setPen(QPen(NodeBorderColor, 3));
-		painter->setBrush(NodeBorderColor);
 		painter->drawRoundedRect(0, 0, 300, 45, 20, 20);
 		painter->drawRect(0, 20, 300, 25);
 
@@ -43,6 +48,81 @@ namespace st::ui
 		QRectF textRect(20, 10, 280, 35);
 		painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, m_name);
 	}
+
+	void NodeNameBase::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
+	{
+		if(m_isSelected)
+		{
+			return;
+		}
+
+		setBrush(NodeHighlightBorderColor);
+		setPen(QPen(NodeHighlightBorderColor, 3));
+
+		update();
+		QAbstractGraphicsShapeItem::hoverEnterEvent(event);
+	}
+
+	void NodeNameBase::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
+	{
+		if(m_isSelected)
+		{
+			return;
+		}
+
+		setBrush(NodeBorderColor);
+		setPen(QPen(NodeBorderColor, 3));
+		update();
+		QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
+	}
+
+	void NodeNameBase::setSelected(bool state)
+	{
+		m_isSelected = state;
+		if (m_isSelected)
+		{
+			setPen(QPen(NodeHighlightBorderColor, 3));
+			setBrush(NodeHighlightBorderColor);
+		}
+		else
+		{
+			setPen(QPen(NodeBorderColor, 3));
+			setBrush(NodeBorderColor);
+		}
+
+		update();
+	}
+
+	bool NodeNameBase::isSelected() const
+	{
+		return m_isSelected;
+	}
+
+	void NodeNameBase::setHovered(bool state)
+	{
+		m_isHovered = state;
+		if (m_isHovered)
+		{
+			setBrush(NodeHighlightBorderColor);
+			setPen(QPen(NodeHighlightBorderColor, 3));
+		}
+		else
+		{
+			setBrush(NodeBorderColor);
+			setPen(QPen(NodeBorderColor, 3));
+		}
+
+		update();
+	}
+
+	bool NodeNameBase::isHovered() const
+	{
+		return m_isHovered;
+	}
+
+	/*-------------------------------------------*/
+	/*-----------MARK: NodeItem------------------*/
+	/*-------------------------------------------*/
 
 	/*-------------------------------------------*/
     /*-----------MARK: NodePlug------------------*/
@@ -249,9 +329,11 @@ namespace st::ui
 					   QGraphicsItem* parent) :
 		QAbstractGraphicsShapeItem(parent),
 		m_node(node),
-		m_attributes()
+		m_attributes(),
+		m_isSelected(false)
 	{
 		setAcceptHoverEvents(true);
+		setFlags(flags() | QGraphicsItem::ItemIsSelectable);
 		setBrush(NodeColor);
 		setPen(QPen(NodeBorderColor, 4));
 
@@ -300,18 +382,49 @@ namespace st::ui
 
         painter->setBrush(brush());
         painter->setPen(pen());
+
         painter->drawRoundedRect(0, 0, NodeWidth, NodeHeight, 20, 20);
     }
 
     void NodeItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
     {
-        //TODO implement
+        if(m_isSelected)
+		{
+			return;
+		}
+
+		setPen(QPen(NodeHighlightBorderColor, 4));
+
+		for(QGraphicsItem* child : childItems())
+		{
+			if (NodeNameBase* nodeName = dynamic_cast<NodeNameBase*>(child))
+			{
+				nodeName->setHovered(true);
+			}
+		}
+
+		update();
         QAbstractGraphicsShapeItem::hoverEnterEvent(event);
     }
 
     void NodeItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
     {
-        //TODO implement
+       	if (m_isSelected)
+		{
+			return;
+		}
+
+		setPen(QPen(NodeBorderColor, 4));
+
+		for(QGraphicsItem* child : childItems())
+		{
+			if (NodeNameBase* nodeName = dynamic_cast<NodeNameBase*>(child))
+			{
+				nodeName->setHovered(false);
+			}
+		}
+
+		update();
         QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
     }
 
@@ -324,6 +437,29 @@ namespace st::ui
     {
         return m_node;
     }
+
+	void NodeItem::setSelected(bool state)
+	{
+		m_isSelected = state;
+		if (m_isSelected)
+		{
+			setPen(QPen(NodeHighlightBorderColor, 4));
+		}
+		else
+		{
+			setPen(QPen(NodeBorderColor, 4));
+		}
+
+		for(QGraphicsItem* child : childItems())
+		{
+			if (NodeNameBase* nodeName = dynamic_cast<NodeNameBase*>(child))
+			{
+				nodeName->setSelected(state);
+			}
+		}
+
+		update();
+	}
 
 
 	/*-------------------------------------------*/
@@ -535,6 +671,48 @@ namespace st::ui
 			update();
 		}
 
+		if (event->button() == Qt::LeftButton) {
+			spdlog::warn("NodeScene::Left button pressed");
+			QGraphicsItem* clickedItem = itemAt(event->scenePos(), QTransform());
+			spdlog::warn("Clicked item: {}", clickedItem ? "Found" : "Not found");
+			
+			// Check if we clicked on a node or part of a node
+			NodeItem* clickedNode = nullptr;
+			
+			if (clickedItem) {
+				// Check if we clicked directly on a NodeItem
+				clickedNode = dynamic_cast<NodeItem*>(clickedItem);
+				
+				// If not, check if we clicked on a child of a NodeItem
+				if (!clickedNode) {
+					QGraphicsItem* parent = clickedItem->parentItem();
+					while (parent && !clickedNode) {
+						clickedNode = dynamic_cast<NodeItem*>(parent);
+						if (!clickedNode) {
+							parent = parent->parentItem();
+						}
+					}
+				}
+			}
+
+			spdlog::warn("Clicked node: {}", clickedNode ? "Found" : "Not found");
+			if (clickedNode) {
+				selectNode(clickedNode);
+
+				for(QGraphicsItem* child : clickedNode->childItems())
+				{
+					if (NodeNameBase* nodeName = dynamic_cast<NodeNameBase*>(child))
+					{
+						nodeName->setPen(QPen(NodeHighlightBorderColor, 4));
+						nodeName->setBrush(NodeHighlightBorderColor);
+					}
+				}
+			} else {
+				// We clicked on the background, deselect current node
+				deselectCurrentNode();
+			}
+		}
+
 		QGraphicsScene::mousePressEvent(event);
 	}
 
@@ -565,10 +743,10 @@ namespace st::ui
 			{
 				m_pTempConnection->finalizeConnection(nodePlug);
 
-				NodePlug* sourcePlug = m_pTempConnection->getSourcePlug();
-				NodePlug* targetPlug = m_pTempConnection->getTargetPlug();
-				NodeItem* sourceNode = sourcePlug->getParentAttribute()->getParentNode();
-				NodeItem* targetNode = targetPlug->getParentAttribute()->getParentNode();
+				[[maybe_unused]] NodePlug* sourcePlug = m_pTempConnection->getSourcePlug();
+				[[maybe_unused]] NodePlug* targetPlug = m_pTempConnection->getTargetPlug();
+				[[maybe_unused]] NodeItem* sourceNode = sourcePlug->getParentAttribute()->getParentNode();
+				[[maybe_unused]] NodeItem* targetNode = targetPlug->getParentAttribute()->getParentNode();
 
 				//TODO add connection to node graph
 				update();
@@ -587,6 +765,39 @@ namespace st::ui
 
 		QGraphicsScene::mouseReleaseEvent(event);
 	}
+
+	void NodeScene::selectNode(NodeItem* nodeItem)
+	{
+		if(m_pSelectedNode && m_pSelectedNode != nodeItem)
+		{
+			deselectCurrentNode();
+		}
+
+		m_pSelectedNode = nodeItem;
+		if (nodeItem)
+		{
+			spdlog::warn("NodeItem: {} is selected", nodeItem->getNode().lock()->getName());
+			nodeItem->setSelected(true);
+		}
+	}
+
+	void NodeScene::deselectCurrentNode()
+	{
+		if (m_pSelectedNode)
+		{
+			m_pSelectedNode->setSelected(false);
+			m_pSelectedNode = nullptr;
+		}
+	}
+
+	NodeItem* NodeScene::getSelectedNode() const
+	{
+		return m_pSelectedNode;
+	}
+
+	/*------------------------------------*/
+	/*---------MARK:NodeEditor------------*/
+	/*------------------------------------*/
 
 	/*------------------------------------*/
 	/*---------MARK:NodeEditor------------*/

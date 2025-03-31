@@ -3,10 +3,20 @@
 
 #include "Handlers.hpp"
 #include "NodeGraph.hpp"
+#include "EventRegistry.hpp"
 
 namespace st::core
 {
+	/*----------------------*/
+	/*-------Events--------*/
+	/*----------------------*/
+	constexpr EventId SelectionChanged = EventRegistry::instance().registerEvent("SelectionChanged");
 
+
+
+	/*-----------------------------*/
+	/*-------ContentManager--------*/
+	/*-----------------------------*/
 	class ContentManager
 	{
 	  public:
@@ -27,6 +37,7 @@ namespace st::core
 
 	  private:
 		NodeGraph m_nodeGraph;
+		EventRegistry m_eventRegistry;
 	};
 
 	using ContentManagerHandler = Handler<ContentManager>;

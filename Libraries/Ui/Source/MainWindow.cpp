@@ -7,7 +7,7 @@
 #include "Core/ContentManager.hpp"
 #include "NodeEditor.hpp"
 #include "Viewport.hpp"
-#inlcude "AttributeEditor.hpp"
+#include "AttributeEditor.hpp"
 
 #include <spdlog/spdlog.h>
 
@@ -36,6 +36,10 @@ namespace st::ui
 		m_nodeEditor->setContentsMargins(0, 0, 0, 0);
 		m_nodeEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
+		m_attributeEditor = new AttributeEditor(contentManager);
+		m_attributeEditor->setContentsMargins(0, 0, 0, 0);
+		m_attributeEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
 		QVBoxLayout* vBoxLayout = new QVBoxLayout();
 		vBoxLayout->setContentsMargins(10, 10, 10, 10);
 		vBoxLayout->addWidget(m_viewport);
@@ -43,8 +47,17 @@ namespace st::ui
 		vBoxLayout->setStretchFactor(m_viewport, 2);
 		vBoxLayout->setStretchFactor(m_nodeEditor, 1);
 
+		QVBoxLayout* attributeLayout = new QVBoxLayout();
+		attributeLayout->setContentsMargins(10, 10, 10, 10);
+		attributeLayout->addWidget(m_attributeEditor);
+		attributeLayout->setStretchFactor(m_attributeEditor, 1);
+		attributeLayout->addStretch(1);
+		attributeLayout->addWidget(new QLabel("Attribute Editor"));
+
+
 		centralLayout->addLayout(vBoxLayout);
-		centralLayout->addWidget(new QLabel("Hello World!"));
+		centralLayout->addLayout(attributeLayout);
+
 
 		setCentralWidget(centralWidget);
 		setWindowState(Qt::WindowMaximized);
