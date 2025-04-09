@@ -40,26 +40,35 @@ namespace st::ui
 		m_attributeEditor->setContentsMargins(0, 0, 0, 0);
 		m_attributeEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
+		QWidget* leftPanel = new QWidget(this);
 		QVBoxLayout* vBoxLayout = new QVBoxLayout();
 		vBoxLayout->setContentsMargins(10, 10, 10, 10);
 		vBoxLayout->addWidget(m_viewport);
 		vBoxLayout->addWidget(m_nodeEditor);
 		vBoxLayout->setStretchFactor(m_viewport, 2);
 		vBoxLayout->setStretchFactor(m_nodeEditor, 1);
+		leftPanel->setLayout(vBoxLayout);
 
+		QWidget* rightPanel = new QWidget(this);
 		QVBoxLayout* attributeLayout = new QVBoxLayout();
 		attributeLayout->setContentsMargins(10, 10, 10, 10);
+		attributeLayout->addWidget(new QLabel("Attribute Editor"));
 		attributeLayout->addWidget(m_attributeEditor);
 		attributeLayout->setStretchFactor(m_attributeEditor, 1);
 		attributeLayout->addStretch(1);
-		attributeLayout->addWidget(new QLabel("Attribute Editor"));
+		rightPanel->setLayout(attributeLayout);
 
 
-		centralLayout->addLayout(vBoxLayout);
-		centralLayout->addLayout(attributeLayout);
+		QSplitter* splitter = new QSplitter(Qt::Horizontal);
+		splitter->addWidget(leftPanel);
+		splitter->addWidget(rightPanel);
 
+		splitter->setSizes(QList<int> { 700, 300 });
+
+		centralLayout->addWidget(splitter);
 
 		setCentralWidget(centralWidget);
+
 		setWindowState(Qt::WindowMaximized);
 	}
 
@@ -68,6 +77,7 @@ namespace st::ui
 		spdlog::info("MainWindow::initialize()");
 		m_viewport->initialize();
 		m_nodeEditor->initialize();
+		m_attributeEditor->initialize();
 	}
 
 } // namespace st::ui

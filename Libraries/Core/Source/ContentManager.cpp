@@ -41,5 +41,25 @@ namespace st::core
 		return m_nodeGraph;
 	}
 
+	void ContentManager::updateSelection(std::weak_ptr<Node> node)
+	{
+		spdlog::info("ContentManager::updateSelection()");
+
+		if (node.expired())
+		{
+			spdlog::warn("ContentManager::updateSelection() - Node is expired");
+			return;
+		}
+
+		m_selectedNode = node;
+
+		EventRegistry::sendEvent(core::CoreEvents::SelectionChanged);
+		spdlog::info("ContentManager::updateSelection() - Done");
+	}
+
+	std::weak_ptr<Node> ContentManager::getSelectedNode() const
+	{
+		return m_selectedNode;
+	}
 
 } // namespace st::core

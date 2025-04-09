@@ -31,7 +31,7 @@ namespace st::core
     /*----------------------*/
     bool CameraNode::initialize() 
     {
-        m_input.angleOfView = NumericAttribute<float>::Builder("Angle of View", 45.0F).setReadable(true).build();
+        m_input.angleOfView = NumericAttribute<float>::Builder("Angle of View", 45.0F).setReadable(true).setWritable(true).build();
         addAttribute(m_input.angleOfView);
 
         m_output.camera = TypedAttribute<Camera>::Builder("Camera").setReadable(true).build();

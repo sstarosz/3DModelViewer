@@ -8,6 +8,20 @@
 
 namespace st::core
 {
+	enum class DataType
+	{
+		eUnknown,
+		eBool,
+		eInt32,
+		eUInt32,
+		eInt64,
+		eUInt64,
+		eFloat,
+		eDouble,
+		eString,
+	};
+
+
 
 	// TODO Attribute need redesign
 	class Attribute

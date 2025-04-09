@@ -7,11 +7,11 @@ namespace st::core
 {
 
 	template <typename Type>
-	concept NumericAttributeType = std::is_same<Type, bool>::value ||
-								   std::is_same<Type, int32_t>::value ||
-								   std::is_same<Type, uint32_t>::value ||
-								   std::is_same<Type, float>::value ||
-								   std::is_same<Type, double>::value;
+	concept NumericAttributeType = std::is_same_v<Type, bool> ||
+								   std::is_same_v<Type, int32_t> ||
+								   std::is_same_v<Type, uint32_t> ||
+								   std::is_same_v<Type, float> ||
+								   std::is_same_v<Type, double>;
 
 	template <NumericAttributeType Type>
 	class NumericAttribute : public Attribute
@@ -148,8 +148,8 @@ namespace st::core
 		struct NumericAttributeProperties
 		{
 			Type defaultValue;
-			Type min;
-			Type max;
+			Type min;		//TODO - add optional
+			Type max;		//TODO - add optional
 			Type softMin;
 			Type softMax;
 		};

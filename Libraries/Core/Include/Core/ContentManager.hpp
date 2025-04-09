@@ -7,13 +7,6 @@
 
 namespace st::core
 {
-	/*----------------------*/
-	/*-------Events--------*/
-	/*----------------------*/
-	constexpr EventId SelectionChanged = EventRegistry::instance().registerEvent("SelectionChanged");
-
-
-
 	/*-----------------------------*/
 	/*-------ContentManager--------*/
 	/*-----------------------------*/
@@ -34,10 +27,12 @@ namespace st::core
 		NodeGraph& getMainNodeGraph();
 		const NodeGraph& getMainNodeGraph() const;
 
+		void updateSelection(std::weak_ptr<Node> node);
+		std::weak_ptr<Node> getSelectedNode() const;
 
 	  private:
 		NodeGraph m_nodeGraph;
-		EventRegistry m_eventRegistry;
+		std::weak_ptr<Node> m_selectedNode; //TODO implement selection system
 	};
 
 	using ContentManagerHandler = Handler<ContentManager>;

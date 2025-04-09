@@ -4,7 +4,11 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QScrollArea>
+#include <QScrollBar>
 #include "Core/ContentManager.hpp"
+
+
 namespace st::ui
 {
     /**
@@ -20,10 +24,15 @@ namespace st::ui
         explicit AttributeEditor(core::ContentManagerHandler contentManager, 
                                  QWidget* parent = nullptr);
 
-      private:
         void initialize();
+      private:
+        void onSelectionChanged();
+        void clearControls();
+        QWidget* createControlAttributeWidget(const std::shared_ptr<core::Attribute>& attribute);
 
         core::ContentManagerHandler m_contentManager;
+        QScrollArea* m_scrollArea;
+        QWidget* m_scrollAreaWidgetContents;
     };
 } // namespace st::ui
 

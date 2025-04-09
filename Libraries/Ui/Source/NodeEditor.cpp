@@ -2,6 +2,7 @@
 #include "Core/ContentManager.hpp"
 #include "Core/Node.hpp"
 #include "Core/NodeGraph.hpp"
+#include "Core/EventRegistry.hpp"
 #include <QGraphicsScene>
 #include <QMouseEvent>
 #include <QScrollArea>
@@ -562,8 +563,9 @@ namespace st::ui
 	/*-------------------------------------------*/
 	/*-----------MARK: NodeScene-----------------*/
 	/*-------------------------------------------*/
-	NodeScene::NodeScene(QObject* parent) :
+	NodeScene::NodeScene(core::ContentManagerHandler contentManager, QObject* parent) :
 		QGraphicsScene(parent),
+		m_contentManager(contentManager),
 		currentLineStart(),
 		currentLineEnd(),
 		m_state(State::eIdle)
@@ -779,6 +781,8 @@ namespace st::ui
 			spdlog::warn("NodeItem: {} is selected", nodeItem->getNode().lock()->getName());
 			nodeItem->setSelected(true);
 		}
+
+		m_contentManager->updateSelection(nodeItem->getNode());
 	}
 
 	void NodeScene::deselectCurrentNode()
@@ -804,7 +808,7 @@ namespace st::ui
 	/*------------------------------------*/
 	NodeEditor::NodeEditor(core::ContentManagerHandler contentManager, QWidget* parent) :
 		QGraphicsView(parent),
-		m_scene(new NodeScene(this)),
+		m_scene(new NodeScene(contentManager, this)),
 		m_contentManager(contentManager),
 		m_panning(false),
 		m_lastPanPoint(QPoint(0, 0))

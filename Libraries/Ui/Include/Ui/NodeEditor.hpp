@@ -372,7 +372,7 @@ namespace st::ui
 		};
 
 	  public:
-		explicit NodeScene(QObject* parent = nullptr);
+		explicit NodeScene(core::ContentManagerHandler contentManager, QObject* parent = nullptr);
 
 		void setNodeGraph(core::NodeGraph* nodeGraph);
 		void updateScene();
@@ -404,6 +404,7 @@ namespace st::ui
 		NodeItem* getSelectedNode() const;
 
 	  private:
+	  	core::ContentManagerHandler m_contentManager;
 		core::NodeGraph* m_nodeGraph;
 		std::unordered_map<std::weak_ptr<core::Node>, NodeItem*, WeakPtrHash, WeakPtrEqual> m_nodes;
 
