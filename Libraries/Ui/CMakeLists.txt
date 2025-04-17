@@ -18,6 +18,7 @@ set(Sources
     "Source/NodeEditor.cpp"
     "Source/GuiManager.cpp"
     "Source/AttributeEditor.cpp"
+    "Source/Outliner.cpp"
     )
 
 set(Public_Headers
@@ -26,6 +27,7 @@ set(Public_Headers
     "Include/Ui/NodeEditor.hpp"
     "Include/Ui/GuiManager.hpp"
     "Include/Ui/AttributeEditor.hpp"
+    "Include/Ui/Outliner.hpp"
     )
 
 set(Private_Headers)

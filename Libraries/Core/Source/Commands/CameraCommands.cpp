@@ -29,6 +29,7 @@ namespace st::core
 		m_transfrom->compute();
 
 		core::NodeGraph& nodeGraph = m_contentManager->getMainNodeGraph();
+		nodeGraph.addNode(m_transfrom);
 		nodeGraph.addNode(m_camera);
 
 		return m_camera;

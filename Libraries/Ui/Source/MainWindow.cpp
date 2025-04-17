@@ -3,11 +3,13 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QSplitter>
+#include <QPushButton>
 
 #include "Core/ContentManager.hpp"
 #include "NodeEditor.hpp"
 #include "Viewport.hpp"
 #include "AttributeEditor.hpp"
+#include "Outliner.hpp"
 
 #include <spdlog/spdlog.h>
 
@@ -41,13 +43,21 @@ namespace st::ui
 		m_attributeEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 		QWidget* leftPanel = new QWidget(this);
+		QVBoxLayout* leftPanelLayout = new QVBoxLayout(leftPanel);
+		leftPanelLayout->setContentsMargins(10, 10, 10, 10);
+		leftPanelLayout->addWidget(new Outliner(contentManager));
+		leftPanel->setLayout(leftPanelLayout);
+
+
+
+		QWidget* centralPanel = new QWidget(this);
 		QVBoxLayout* vBoxLayout = new QVBoxLayout();
 		vBoxLayout->setContentsMargins(10, 10, 10, 10);
 		vBoxLayout->addWidget(m_viewport);
 		vBoxLayout->addWidget(m_nodeEditor);
 		vBoxLayout->setStretchFactor(m_viewport, 2);
 		vBoxLayout->setStretchFactor(m_nodeEditor, 1);
-		leftPanel->setLayout(vBoxLayout);
+		centralPanel->setLayout(vBoxLayout);
 
 		QWidget* rightPanel = new QWidget(this);
 		QVBoxLayout* attributeLayout = new QVBoxLayout();
@@ -61,9 +71,11 @@ namespace st::ui
 
 		QSplitter* splitter = new QSplitter(Qt::Horizontal);
 		splitter->addWidget(leftPanel);
+		splitter->addWidget(centralPanel);
 		splitter->addWidget(rightPanel);
+		splitter->setStyleSheet("QSplitter::handle { background: #2E2E2E; }");
 
-		splitter->setSizes(QList<int> { 700, 300 });
+		splitter->setSizes(QList<int> { 200, 600, 200 });
 
 		centralLayout->addWidget(splitter);
 
