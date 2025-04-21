@@ -48,24 +48,46 @@ void AttributeEditor::onSelectionChanged()
 {
     clearControls();
 
-    if (std::shared_ptr<core::Node> selectedNode = m_contentManager->getSelectedNode().lock())
+    QVBoxLayout* layout = static_cast<QVBoxLayout*>(m_scrollAreaWidgetContents->layout());
+
+    //Experimental Selection
+    layout->addWidget(new QLabel("Experimental Selection", this));
+    layout->addWidget(new QLabel("Selection: ", this));
+    for (const auto& selection : m_contentManager->getSelection().m_paths)
     {
-        auto layout = static_cast<QVBoxLayout*>(m_scrollAreaWidgetContents->layout());
-        QString nodeName = QString::fromStdString(selectedNode->getName());
-        layout->addWidget(new QLabel("Node: " + nodeName, this));
-        for (const auto& attribute : selectedNode->getAttributes())
+        if(selection.isNode())
         {
-            layout->addWidget(new QLabel(QString::fromStdString(attribute->getName()), this));
-            if (auto controlWidget = createControlAttributeWidget(attribute))
+            //TODO add node widget
+            auto node = m_contentManager->getMainNodeGraph().getNodeByPath(selection);
+            if(auto nodePtr = node.lock())
             {
-                layout->addWidget(controlWidget);
+                layout->addWidget(new QLabel(QString::fromStdString(nodePtr->getName()), this));
+                for (const auto& attribute : nodePtr->getAttributes())
+                {
+                    layout->addWidget(new QLabel(QString::fromStdString(attribute->getName()), this));
+                    if (auto controlWidget = createControlAttributeWidget(attribute))
+                    {
+                        layout->addWidget(controlWidget);
+                    }
+                    else
+                    {
+                        layout->addWidget(new QLabel("No control available", this));
+                    }
+                }
             }
             else
             {
-                layout->addWidget(new QLabel("No control available", this));
+                layout->addWidget(new QLabel("Node not found", this));
             }
         }
+        else if(selection.isAttribute())
+        {
+            //TODO add attribute widget
+
+        }
     }
+
+
 }
 
 void AttributeEditor::clearControls()
@@ -135,9 +157,70 @@ QWidget* AttributeEditor::createControlAttributeWidget(const std::shared_ptr<cor
         layout->addWidget(spinBox);
         return container;
     }
+    else if(auto vector3F = std::dynamic_pointer_cast<core::TypedAttribute<Eigen::Vector3f>>(attribute))
+    {
+        QDoubleSpinBox* xSpinBox = new QDoubleSpinBox(container);
+        xSpinBox->setRange(-100000.0, 100000.0);
+        xSpinBox->setSingleStep(0.1);
+        xSpinBox->setValue(vector3F->getData()->x());
+
+        QDoubleSpinBox* ySpinBox = new QDoubleSpinBox(container);
+        ySpinBox->setRange(-100000.0, 100000.0);
+        ySpinBox->setSingleStep(0.1);
+        ySpinBox->setValue(vector3F->getData()->y());
+
+        QDoubleSpinBox* zSpinBox = new QDoubleSpinBox(container);
+        zSpinBox->setRange(-100000.0, 100000.0);
+        zSpinBox->setSingleStep(0.1);
+        zSpinBox->setValue(vector3F->getData()->z());
+
+        connect(xSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [vector3F](double value) {
+            vector3F->setData(Eigen::Vector3f(static_cast<float>(value), vector3F->getData()->y(), vector3F->getData()->z()));
+        });
+
+        connect(ySpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [vector3F](double value) {
+            vector3F->setData(Eigen::Vector3f(vector3F->getData()->x(), static_cast<float>(value), vector3F->getData()->z()));
+        });
+
+        connect(zSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [vector3F](double value) {
+            vector3F->setData(Eigen::Vector3f(vector3F->getData()->x(), vector3F->getData()->y(), static_cast<float>(value)));
+        });
+
+        core::EventRegistry::addAttributeChangedCallback(attribute->getPath(), [this, xSpinBox, ySpinBox, zSpinBox](core::AttributeMessage msg, core::Path path) {
+
+            if (msg == core::AttributeMessage::eAttributeChanged)
+            {
+                auto attribute = m_contentManager->getMainNodeGraph().getAttributeByPath(path);
+
+                if (auto attributePtr = attribute.lock())
+                {
+                    auto vector3F = std::dynamic_pointer_cast<core::TypedAttribute<Eigen::Vector3f>>(attributePtr);
+                    if (vector3F)
+                    {
+                        xSpinBox->setValue(vector3F->getData()->x());
+                        ySpinBox->setValue(vector3F->getData()->y());
+                        zSpinBox->setValue(vector3F->getData()->z());
+                    }
+                }
+            }
+        });
+
+        
+        layout->addWidget(xSpinBox);
+        layout->addWidget(ySpinBox);
+        layout->addWidget(zSpinBox);
+
+        return container;
+    }
 
 
 	return nullptr;
+}
+
+QWidget* createControlAttributeWidget(core::Path path)
+{
+    //TODO create control widget for attribute
+    return nullptr;
 }
 
 } // namespace st::ui

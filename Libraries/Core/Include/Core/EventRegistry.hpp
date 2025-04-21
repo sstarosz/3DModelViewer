@@ -1,6 +1,8 @@
 #ifndef ST_CORE_EVENTREGISTRY_HPP
 #define ST_CORE_EVENTREGISTRY_HPP
 
+#include "Path.hpp"
+
 #include <cstdint>
 #include <string>
 #include <unordered_map>
@@ -29,8 +31,20 @@ struct std::hash<st::core::EventId>
 };
 
 
+
+
 namespace st::core
 {
+    enum class AttributeMessage
+    {
+        eAttributeChanged
+    };
+
+    class Attriabute;
+
+    using AttributeChangedCallback = std::function<void(AttributeMessage, Path)>;
+
+
     class EventRegistry
     {
       public:
@@ -91,9 +105,37 @@ namespace st::core
             m_eventCallbacks[eventId].push_back(callback);
         }
 
+        static void addAttributeChangedCallback(Path attributePath, const AttributeChangedCallback& callback)
+        {
+            EventRegistry::instance().addAttributeChangedCallbackPrivate(attributePath, callback);
+        }
+
+        void addAttributeChangedCallbackPrivate(Path attributePath, const AttributeChangedCallback& callback)
+        {
+            m_attributeCallbacks[attributePath].push_back(callback);
+        }
+
+        static void sendAttributeChangedEvent(Path attributePath, AttributeMessage msg)
+        {
+            EventRegistry::instance().sendAttributeChangedEventPrivate(attributePath, msg);
+        }
+
+        void sendAttributeChangedEventPrivate(Path attributePath, AttributeMessage msg)
+        {
+            auto it = m_attributeCallbacks.find(attributePath);
+            if (it != m_attributeCallbacks.end())
+            {
+                for (const auto& callback : it->second)
+                {
+                    callback(msg, attributePath);
+                }
+            }
+        }
+
       private:
         std::unordered_map<EventId, std::string> m_eventMap;
         std::unordered_map<EventId, std::vector<EventCallback>> m_eventCallbacks;
+        std::unordered_map<Path, std::vector<AttributeChangedCallback>> m_attributeCallbacks;
     };
 
     class CoreEvents

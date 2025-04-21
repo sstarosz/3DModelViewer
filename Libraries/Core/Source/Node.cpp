@@ -24,11 +24,6 @@ namespace st::core
 		m_name = name;
 	}
 
-	void Node::addAttribute(std::shared_ptr<Attribute> attribute)
-	{
-		m_attributes.push_back(attribute);
-	}
-
     Eigen::Matrix4f Node::getLocalMatrix() const
 	{
 		return Eigen::Matrix4f::Identity();

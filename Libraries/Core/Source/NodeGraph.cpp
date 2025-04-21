@@ -1,13 +1,45 @@
 #include "NodeGraph.hpp"
 
+#include <ranges>
+#include <algorithm>
+
 namespace st::core
 {
 	NodeGraph::NodeGraph()
 	{
 	}
 
+    Path calculatePath(std::weak_ptr<Node> node)
+    {
+        
+        std::vector<std::string> segments;
+        std::shared_ptr<Node> currentNode = node.lock();
+        while (currentNode != nullptr)
+        {
+            segments.push_back(currentNode->getName());
+            currentNode = currentNode->getParentNode().lock();
+        }
+
+        std::string path = "/World";
+        for(const auto& part : std::views::reverse(segments))
+        {
+            path += "/" + part;
+        }
+
+
+        return Path(path);
+    }
+
+
 	void NodeGraph::addNode(std::shared_ptr<Node> node)
 	{
+        //Calculate all the paths for the node and its attributes
+        node->setPath(calculatePath(node));
+        for (const auto& attribute : node->getAttributes())
+        {
+            attribute->setPath(node->getPath().getPath() + "." + attribute->getName());
+        }
+
 		m_nodes.push_back(node);
 	}
 

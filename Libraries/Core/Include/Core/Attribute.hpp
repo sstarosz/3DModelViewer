@@ -5,6 +5,8 @@
 #include <cassert>
 #include <memory>
 #include <string>
+#include "Path.hpp"
+#include "EventRegistry.hpp"
 
 namespace st::core
 {
@@ -20,6 +22,9 @@ namespace st::core
 		eDouble,
 		eString,
 	};
+
+	using AttributeHandle = std::uint64_t;
+	static constexpr AttributeHandle InvalidAttributeHandle = 0;
 
 
 
@@ -114,6 +119,10 @@ namespace st::core
 		std::string getName() const;
 		bool isReadable() const;
 		bool isWritable() const;
+		AttributeHandle getHandle() const
+		{
+			return m_handle;
+		}
 
 		/*----------------------*/
 		/*-------Setters--------*/
@@ -125,6 +134,16 @@ namespace st::core
 		void setReadable(bool state);
 		void setWritable(bool state);
 
+		void setPath(const Path& path)
+		{
+			m_path = path;
+		}
+
+		Path getPath() const
+		{
+			return m_path;
+		}
+
 	  private:
 		std::any m_data;
 		std::shared_ptr<Attribute> m_connectedAttribute;
@@ -133,6 +152,9 @@ namespace st::core
 		bool m_writable;
 		bool m_array;
 		bool m_isConnected;
+
+		AttributeHandle m_handle{InvalidAttributeHandle};
+		Path m_path;
 	};
 
 	// TODO Attribute need redesign
@@ -141,6 +163,8 @@ namespace st::core
 	{
 		m_data = data;
 		m_isConnected = false;
+
+		EventRegistry::sendAttributeChangedEvent(m_path, AttributeMessage::eAttributeChanged);
 	}
 
 	template <>

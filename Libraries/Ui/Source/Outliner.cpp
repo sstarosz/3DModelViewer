@@ -2,6 +2,8 @@
 
 #include "Core/EventRegistry.hpp"
 
+#include <QLabel>
+
 namespace st::ui
 {
     Outliner::Outliner(core::ContentManagerHandler contentManager, QWidget* parent)
@@ -17,6 +19,7 @@ namespace st::ui
         m_treeWidget->setColumnWidth(0, 200);
 
         m_layout->addWidget(m_treeWidget);
+
         setLayout(m_layout);
 
         connect(m_treeWidget, &QTreeWidget::itemClicked, this, &Outliner::onItemClicked);
@@ -29,6 +32,18 @@ namespace st::ui
         {
             populateTree(node);
         }
+
+        std::string displayPaths = "Paths:\n";
+        for (const auto& node : m_contentManager->getMainNodeGraph().getNodes())
+        {
+            displayPaths += node->getPath().getPath() + "\n";
+            for(const auto& attribute : node->getAttributes())
+            {
+                displayPaths += "\n\t" + attribute->getPath().getPath() + "\n";
+            }
+        }
+
+        m_layout->addWidget(new QLabel(QString::fromStdString(displayPaths), this));
 	}
 
 	void Outliner::populateTree(const std::shared_ptr<core::Node>& node, QTreeWidgetItem* parentItem)

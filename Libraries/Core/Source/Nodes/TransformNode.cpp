@@ -78,6 +78,52 @@ namespace st::core
         //TODO: Add default values
         defineNode("TransformNode");
 
+        m_input.translation = core::TypedAttribute<Eigen::Vector3f>::Builder("Translation")
+            .setReadable(true)
+            .setWritable(true)
+            .setDefaultValue(Eigen::Vector3f(0.0f, 0.0f, 0.0f))
+            .build();
+        addAttribute(m_input.translation);
+
+        m_input.rotation = core::TypedAttribute<Eigen::Vector3f>::Builder("Rotation")
+            .setReadable(true)
+            .setWritable(true)
+            .setDefaultValue(Eigen::Vector3f(0.0f, 0.0f, 0.0f))
+            .build();
+        addAttribute(m_input.rotation);
+
+        m_input.scale = core::TypedAttribute<Eigen::Vector3f>::Builder("Scale")
+            .setReadable(true)
+            .setWritable(true)
+            .setDefaultValue(Eigen::Vector3f(1.0f, 1.0f, 1.0f))
+            .build();
+        addAttribute(m_input.scale);
+        
+        m_output.translation = core::TypedAttribute<Eigen::Vector3f>::Builder("Translation")
+            .setReadable(true)
+            .setWritable(false)
+            .setDefaultValue(Eigen::Vector3f(0.0f, 0.0f, 0.0f))
+            .build();
+
+        addAttribute(m_output.translation);
+
+        m_output.rotation = core::TypedAttribute<Eigen::Vector3f>::Builder("Rotation")
+            .setReadable(true)
+            .setWritable(false)
+            .setDefaultValue(Eigen::Vector3f(0.0f, 0.0f, 0.0f))
+            .build();
+
+        addAttribute(m_output.rotation);
+
+        m_output.scale = core::TypedAttribute<Eigen::Vector3f>::Builder("Scale")
+            .setReadable(true)
+            .setWritable(false)
+            .setDefaultValue(Eigen::Vector3f(1.0f, 1.0f, 1.0f))
+            .build();
+        addAttribute(m_output.scale);
+
+        
+
         return true;
     }
 
@@ -85,34 +131,23 @@ namespace st::core
     {
         spdlog::info("TransformNode::execute()");
 
-        //Eigen::Matrix4f translationMatrix = Eigen::Matrix4f::Identity();
-        //translationMatrix(0, 3) = m_input.translation->value().x();
-        //translationMatrix(1, 3) = m_input.translation->value().y();
-        //translationMatrix(2, 3) = m_input.translation->value().z();
 
-        Eigen::Matrix4f rotationMatrixX = createRotationXMatrix(m_transformation.rotation.x);
-        Eigen::Matrix4f rotationMatrixY = createRotationYMatrix(m_transformation.rotation.y);
-        Eigen::Matrix4f rotationMatrixZ = createRotationZMatrix(m_transformation.rotation.z);
+        Eigen::Matrix4f rotationMatrixX = createRotationXMatrix(m_input.rotation->x());
+        Eigen::Matrix4f rotationMatrixY = createRotationYMatrix(m_input.rotation->y());
+        Eigen::Matrix4f rotationMatrixZ = createRotationZMatrix(m_input.rotation->z());
 
         Eigen::Matrix4f rotationMatrix = rotationMatrixZ * rotationMatrixY * rotationMatrixX;
 
         Eigen::Matrix4f translationMatrix = Eigen::Matrix4f::Identity();
-        translationMatrix(0, 3) = m_transformation.translation.x();
-        translationMatrix(1, 3) = m_transformation.translation.y();
-        translationMatrix(2, 3) = m_transformation.translation.z();
+        translationMatrix(0, 3) =  m_input.translation->x();
+        translationMatrix(1, 3) =  m_input.translation->y();
+        translationMatrix(2, 3) =  m_input.translation->z();
 
-        spdlog::warn("TransformNode::compute() - Translation: {}", m_transformation.translation);
+        spdlog::warn("TransformNode::compute() - Translation: {}",  *m_input.translation);
 
 
         m_transformation.matrix = rotationMatrix * translationMatrix;
 
-        //
-        //Eigen::Matrix4f rotationMatrix = Eigen::Matrix4f::Identity();
-        //rotationMatrix.block<3, 3>(0, 0) = Eigen::AngleAxisf(m_input.rotation->value().x(), Eigen::Vector3f::UnitX()).toRotationMatrix();
-        //rotationMatrix.block<3, 3>(0, 0) = Eigen::AngleAxisf(m_input.rotation->value().y(), Eigen::Vector3f::UnitY()).toRotationMatrix();
-        //rotationMatrix.block<3, 3>(0, 0) = Eigen::AngleAxisf(m_input.rotation->value().z(), Eigen::Vector3f::UnitZ()).toRotationMatrix();
-        //
-        //m_output.matrix->setValue(translationMatrix * rotationMatrix);
 
         return true;
     }
@@ -124,22 +159,26 @@ namespace st::core
 
     void TransformNode::translateBy(const Eigen::Vector4f & translation)
     {
-        m_transformation.translation += translation;
+        //m_input.translation->x() += translation.x();
+        //m_input.translation->y() += translation.y();
+        //m_input.translation->z() += translation.z();
+        m_input.translation = Eigen::Vector3f(translation.x(), translation.y(), translation.z());
     }
 
-void TransformNode::rotateX(const float angle)
+    void TransformNode::rotateX(const float angle)
     {
-        m_transformation.rotation.x += angle;
+        m_input.rotation = Eigen::Vector3f(m_input.rotation->x() + angle, m_input.rotation->y(), m_input.rotation->z());
     }
 
     void TransformNode::rotateY(const float angle)
     {
-        m_transformation.rotation.y += angle;
+        m_input.rotation = Eigen::Vector3f(m_input.rotation->x(), m_input.rotation->y() + angle, m_input.rotation->z());
     }
 
     void TransformNode::rotateZ(const float angle)
     {
-        m_transformation.rotation.z += angle;
+        m_input.rotation = Eigen::Vector3f(m_input.rotation->x(), m_input.rotation->y(), m_input.rotation->z() + angle);
+        
     }
 
 

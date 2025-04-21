@@ -52,6 +52,9 @@ namespace st::core
 		}
 
 		m_selectedNode = node;
+		m_selection.m_paths.clear();
+		m_selection.m_paths.push_back(m_nodeGraph.getPathFromNode(node));
+
 
 		EventRegistry::sendEvent(core::CoreEvents::SelectionChanged);
 		spdlog::info("ContentManager::updateSelection() - Done");

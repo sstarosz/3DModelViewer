@@ -82,6 +82,11 @@ namespace st::core
 			return m_attribute->getValue();
 		}
 
+		operator Type* ()
+		{
+			return m_attribute->getData();
+		}
+
 		Type* operator->()
 		{
 			return m_attribute->getData();
