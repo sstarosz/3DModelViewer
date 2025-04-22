@@ -1,6 +1,7 @@
 #ifndef ST_CORE_NODES_NODE_HPP
 #define ST_CORE_NODES_NODE_HPP
 
+#include "Core.hpp"
 #include "Attribute.hpp"
 #include "NumericAttribute.hpp"
 #include "TypedAttribute.hpp"
@@ -23,11 +24,14 @@
 
 namespace st::core
 {
+	class NodeGraph;
+
 	/*----------------------*/
 	/*-------Node----------*/
 	/*----------------------*/
 	class Node : public std::enable_shared_from_this<Node>
 	{
+		
 	  public:
 		enum class NodeState
 		{
@@ -75,6 +79,8 @@ namespace st::core
 
 		void addAttribute(std::shared_ptr<Attribute> attribute)
 		{
+			attribute->setParentHandle(shared_from_this());
+
 			m_attributes.push_back(attribute);
 		}
 
@@ -102,8 +108,15 @@ namespace st::core
 		Eigen::Matrix4f getInclusiveMatrix() const;
 
 
+		void markDirty();
+
+		void markClean()
+		{
+			m_state = NodeState::eClean;
+		}
 
 		bool isDirty() const;
+
 		bool isUninitialized() const;
 
 		void setPath(const Path& path)
@@ -116,13 +129,35 @@ namespace st::core
 			return m_path;
 		}
 
+		void setHandle(NodeHandle handle)
+		{
+			m_handle = handle;
+		}
+
+		NodeHandle getHandle() const
+		{
+			return m_handle;
+		}
+
+		NodeGraph* getNodeGraph() const
+		{
+			return m_nodeGraph;
+		}
+
+		void addNodeGraph(NodeGraph* nodeGraph)
+		{
+			m_nodeGraph = nodeGraph;
+		}
+
 	  private:
 		std::string m_name;
 		std::vector<std::shared_ptr<Attribute>> m_attributes;
 		NodeState m_state;
 		std::weak_ptr<Node> m_parentNode;
 		std::vector<std::shared_ptr<Node>> m_childNodes;
+		NodeGraph* m_nodeGraph{nullptr};
 		Path m_path;
+		NodeHandle m_handle{InvalidNodeHandle};
 	};
 
 } // namespace st::core

@@ -1,4 +1,5 @@
 #include "Node.hpp"
+#include "NodeGraph.hpp"
 
 #include "Eigen/Dense"
 
@@ -80,6 +81,16 @@ namespace st::core
     bool Node::isDirty() const
     {
         return m_state == NodeState::eDirty;
+    }
+
+	void Node::markDirty()
+    {
+        m_state = NodeState::eDirty;
+
+        if(m_nodeGraph)
+        {
+            m_nodeGraph->evaluate2();
+        }
     }
 
 } // namespace st::core

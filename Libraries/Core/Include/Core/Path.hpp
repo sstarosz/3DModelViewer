@@ -31,13 +31,13 @@ namespace st::core
             if (m_path.starts_with("/World/"))
             {
                 auto parts = std::views::split(m_path, "/"sv);
-                std::print("Parts: {}\n", parts);
+                //std::print("Parts: {}\n", parts);
                 // Skip the first part (World) and check the rest
                 auto it = std::ranges::drop_view(parts, 2);
 
                 for (const auto& part : it)
                 {
-                    std::print("Part: {}\n", part);
+                    //std::print("Part: {}\n", part);
                     // Check if each part is a valid name (alphanumeric)
                     if (!std::ranges::all_of(part, [](char c) { return std::isalnum(c);}))
                     {
@@ -89,7 +89,7 @@ namespace st::core
 
         bool isStringValidPath(const std::string& path) const
         {
-            
+            return std::all_of(path.begin(), path.end(), [](char c) { return std::isalnum(c) || c == '/' || c == '.'; });
         }
 
 

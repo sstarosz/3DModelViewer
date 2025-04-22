@@ -89,5 +89,8 @@
         "source_location": "cpp",
         "core": "cpp",
         "regex": "cpp"
-    }
+    },
+    "cSpell.words": [
+        "Outliner"
+    ]
 }

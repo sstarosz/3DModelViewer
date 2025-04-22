@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <ranges>
 #include <print>
+#include <unordered_set>
 
 namespace st::core
 {
@@ -50,7 +51,9 @@ namespace st::core
 						   std::shared_ptr<Node> targetNode,
 						   std::shared_ptr<Attribute> targetAttrName);
 
+		void initialize();
 		void evaluate();
+		void evaluate2();
 
 		std::vector<std::shared_ptr<Node>> getNodes() const;
 		std::vector<std::shared_ptr<Connection>> getConnections() const;
@@ -144,6 +147,54 @@ namespace st::core
 	  private:
 		std::vector<std::shared_ptr<Node>> m_nodes;
 		std::vector<std::shared_ptr<Connection>> m_connections;
+
+		std::vector<std::shared_ptr<Node>> buildExecutionOrder()
+		{
+			std::vector<std::shared_ptr<Node>> executionOrder;
+			
+			std::unordered_set<std::shared_ptr<Node>> visitedNodes;
+			std::unordered_set<std::shared_ptr<Node>> inProcess;
+
+			for(const auto& node : m_nodes)
+			{
+				if (visitedNodes.find(node) == visitedNodes.end())
+				{
+					topologicalSort(node, visitedNodes, inProcess, executionOrder);
+				}
+			}
+
+			std::reverse(executionOrder.begin(), executionOrder.end());
+			return executionOrder;
+		}
+
+		void topologicalSort(std::shared_ptr<Node> node,
+							 std::unordered_set<std::shared_ptr<Node>>& visitedNodes,
+							 std::unordered_set<std::shared_ptr<Node>>& inProcess,
+							 std::vector<std::shared_ptr<Node>>& executionOrder)
+		{
+			// Check if the node is in process (to detect cycles)
+			if (inProcess.find(node) != inProcess.end())
+			{
+				throw std::runtime_error("Cyclic dependency detected in node graph.");
+			}
+
+			// Check if the node is already visited or in process
+			if (visitedNodes.find(node) != visitedNodes.end())
+			{
+				return;
+			}
+
+			inProcess.insert(node);
+
+			for (const auto& childNode : node->getChildNodes())
+			{
+				topologicalSort(childNode, visitedNodes, inProcess, executionOrder);
+			}
+
+			inProcess.erase(node);
+			visitedNodes.insert(node);
+			executionOrder.push_back(node);
+		}
 	};
 
 

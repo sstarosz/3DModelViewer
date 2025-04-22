@@ -30,7 +30,6 @@ namespace st::core
         return Path(path);
     }
 
-
 	void NodeGraph::addNode(std::shared_ptr<Node> node)
 	{
         //Calculate all the paths for the node and its attributes
@@ -39,6 +38,10 @@ namespace st::core
         {
             attribute->setPath(node->getPath().getPath() + "." + attribute->getName());
         }
+
+        //Generate a unique handle for the node
+        node->setHandle(NodeHandle{m_nodes.size() + 1});
+        node->addNodeGraph(this);
 
 		m_nodes.push_back(node);
 	}
@@ -59,9 +62,19 @@ namespace st::core
         targetAttrName->setData(sourceAttrName);
     }
 
+    void NodeGraph::initialize()
+    {
+        for(auto& node : m_nodes)
+        {
+            if(node->isUninitialized() || node->isDirty()) 
+            {
+                node->initialize();
+            }
+        }
+    }
+
     void NodeGraph::evaluate()
     {
-        // TODO
         for(auto& node : m_nodes)
         {
             if(node->isUninitialized() || node->isDirty())
@@ -69,7 +82,31 @@ namespace st::core
                 node->compute();
             }
         }
+    }
 
+    void NodeGraph::evaluate2()
+    {
+        auto executionOrder = buildExecutionOrder();
+
+        for(auto& node : executionOrder)
+        {
+            if(node->isUninitialized() || node->isDirty())
+            {
+                node->compute();
+
+                // Mark all connected nodes as dirty
+                for (const auto& connection : m_connections)
+                {
+                    if (connection->sourceNode == node)
+                    {
+                        connection->targetNode->markDirty();
+                    }
+                }
+
+                // Mark the node as clean
+                node->markClean();
+            }
+        }
     }
 
 	std::vector<std::shared_ptr<Node>> NodeGraph::getNodes() const

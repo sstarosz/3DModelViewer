@@ -5,11 +5,14 @@
 #include <cassert>
 #include <memory>
 #include <string>
+#include "Core.hpp"
 #include "Path.hpp"
 #include "EventRegistry.hpp"
 
 namespace st::core
 {
+	class Node;
+
 	enum class DataType
 	{
 		eUnknown,
@@ -22,9 +25,6 @@ namespace st::core
 		eDouble,
 		eString,
 	};
-
-	using AttributeHandle = std::uint64_t;
-	static constexpr AttributeHandle InvalidAttributeHandle = 0;
 
 
 
@@ -144,6 +144,18 @@ namespace st::core
 			return m_path;
 		}
 
+		void setParentHandle(std::weak_ptr<Node> handle)
+		{
+			m_parentNode = handle;
+		}
+
+		std::weak_ptr<Node> getParentHandle() const
+		{
+			return m_parentNode;
+		}
+
+		void markParentDirty();
+
 	  private:
 		std::any m_data;
 		std::shared_ptr<Attribute> m_connectedAttribute;
@@ -154,6 +166,8 @@ namespace st::core
 		bool m_isConnected;
 
 		AttributeHandle m_handle{InvalidAttributeHandle};
+		std::weak_ptr<Node> m_parentNode;
+	
 		Path m_path;
 	};
 
@@ -164,6 +178,7 @@ namespace st::core
 		m_data = data;
 		m_isConnected = false;
 
+		markParentDirty();
 		EventRegistry::sendAttributeChangedEvent(m_path, AttributeMessage::eAttributeChanged);
 	}
 
@@ -174,6 +189,7 @@ namespace st::core
 		m_isConnected = true;
 	}
 
+	
 	/*----------------------*/
 	/*-------Handlers-------*/
 	/*----------------------*/

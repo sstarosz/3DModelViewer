@@ -159,10 +159,7 @@ namespace st::core
 
     void TransformNode::translateBy(const Eigen::Vector4f & translation)
     {
-        //m_input.translation->x() += translation.x();
-        //m_input.translation->y() += translation.y();
-        //m_input.translation->z() += translation.z();
-        m_input.translation = Eigen::Vector3f(translation.x(), translation.y(), translation.z());
+        m_input.translation =  *m_input.translation + Eigen::Vector3f(translation.x(), translation.y(), translation.z());
     }
 
     void TransformNode::rotateX(const float angle)

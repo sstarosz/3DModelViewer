@@ -36,6 +36,7 @@ set(Public_Headers
     "Include/Core/DataTypes/Transform.hpp"
     "Include/Core/Nodes/TransformNode.hpp"
     "Include/Core/Path.hpp"
+    "Include/Core/Core.hpp"
     )
 
 set(Private_Headers
