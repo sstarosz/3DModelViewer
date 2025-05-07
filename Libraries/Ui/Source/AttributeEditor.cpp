@@ -9,6 +9,27 @@
 
 namespace st::ui
 {
+template<typename AttributeType>
+class TypedAttributeController
+{
+    public:
+        TypedAttributeController(std::shared_ptr<core::TypedAttribute<AttributeType>> attribute) : m_attribute(attribute) {}
+
+        void setData(const AttributeType& data)
+        {
+            m_attribute->setData(data);
+        }
+
+        AttributeType getData() const
+        {
+            return *m_attribute->getData();
+        }
+
+    private:
+        std::shared_ptr<core::TypedAttribute<AttributeType>> m_attribute;
+};
+
+
 
 AttributeEditor::AttributeEditor(st::core::ContentManagerHandler contentManager, QWidget* parent):
     QWidget(parent),
@@ -36,12 +57,15 @@ AttributeEditor::AttributeEditor(st::core::ContentManagerHandler contentManager,
     setLayout(mainLayout);
 }
 
-void AttributeEditor::initialize()
+void AttributeEditor::showEvent(QShowEvent* event)
 {
+    QWidget::showEvent(event);
+    
     core::EventRegistry::subscribeToEvent(core::CoreEvents::SelectionChanged,
         [this]() {
             onSelectionChanged();
         });
+
 }
 
 void AttributeEditor::onSelectionChanged()

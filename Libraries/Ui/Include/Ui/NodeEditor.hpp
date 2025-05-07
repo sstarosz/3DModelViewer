@@ -430,9 +430,7 @@ namespace st::ui
 
 	  public:
 		explicit NodeEditor(core::ContentManagerHandler contentManager, QWidget* parent = nullptr);
-
-		void initialize();
-
+		
 	  protected:
 		/*--------------------------------*/
 		/*---------Event Handlers---------*/

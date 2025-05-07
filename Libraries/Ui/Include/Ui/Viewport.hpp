@@ -16,7 +16,7 @@ namespace st::ui
 						  QWidget* parent = nullptr,
 						  Qt::WindowFlags flags = {});
 
-		void initialize();
+		void showEvent(QShowEvent* event) override;
 
 	  private:
 		class PrivateWindow;

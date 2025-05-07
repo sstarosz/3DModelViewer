@@ -23,8 +23,7 @@ namespace st::ui
       public:
         explicit AttributeEditor(core::ContentManagerHandler contentManager, 
                                  QWidget* parent = nullptr);
-
-        void initialize();
+        void showEvent(QShowEvent* event) override;
       private:
         void onSelectionChanged();
         void clearControls();

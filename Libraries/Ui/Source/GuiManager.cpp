@@ -9,12 +9,6 @@ namespace st::ui
         spdlog::info("GuiManager::GuiManager()");
     }
 
-    void GuiManager::initialize()
-    {
-        spdlog::info("GuiManager::initialize()");
-        m_mainWindow.initialize();
-    }
-
     void GuiManager::show()
     {
         m_mainWindow.show();

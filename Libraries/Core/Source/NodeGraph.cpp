@@ -66,10 +66,7 @@ namespace st::core
     {
         for(auto& node : m_nodes)
         {
-            if(node->isUninitialized() || node->isDirty()) 
-            {
-                node->initialize();
-            }
+            node->initialize();
         }
     }
 
@@ -77,9 +74,10 @@ namespace st::core
     {
         for(auto& node : m_nodes)
         {
-            if(node->isUninitialized() || node->isDirty())
+            if(node->isDirty())
             {
                 node->compute();
+                node->markClean();
             }
         }
     }
@@ -90,7 +88,7 @@ namespace st::core
 
         for(auto& node : executionOrder)
         {
-            if(node->isUninitialized() || node->isDirty())
+            if(node->isDirty())
             {
                 node->compute();
 

@@ -9,14 +9,14 @@ namespace st::core
 	Node::Node() :
 		m_name("Node"),
 		m_attributes(),
-		m_state(NodeState::eUninitialized)
+		m_state(NodeState::eDirty)
 	{
 	}
 
 	Node::Node(const std::string& name) :
 		m_name(name),
 		m_attributes(),
-		m_state(NodeState::eUninitialized)
+		m_state(NodeState::eDirty)
 	{
 	}
 
@@ -73,11 +73,6 @@ namespace st::core
 		return matrix;
 	}
 
-    bool Node::isUninitialized() const
-    {
-        return m_state == NodeState::eUninitialized;
-    }
-
     bool Node::isDirty() const
     {
         return m_state == NodeState::eDirty;
@@ -85,12 +80,20 @@ namespace st::core
 
 	void Node::markDirty()
     {
-        m_state = NodeState::eDirty;
+		if(m_state != NodeState::eDirty)
+		{
+			m_state = NodeState::eDirty;
 
-        if(m_nodeGraph)
-        {
-            m_nodeGraph->evaluate2();
-        }
+			for (auto& childNode : m_childNodes)
+			{
+				childNode->markDirty();
+			}
+
+			if(m_nodeGraph)
+			{
+				m_nodeGraph->evaluate2();
+			}
+		}
     }
 
 } // namespace st::core

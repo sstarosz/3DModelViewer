@@ -35,12 +35,9 @@ namespace st::core
 	  public:
 		enum class NodeState
 		{
-			eUninitialized,
-			eInitialized,
 			eDirty,
 			eClean
-
-		};
+		}; 
 
 		Node();
 		Node(const std::string& name);
@@ -109,7 +106,6 @@ namespace st::core
 
 
 		void markDirty();
-
 		void markClean()
 		{
 			m_state = NodeState::eClean;

@@ -13,7 +13,6 @@ class GuiManager
 		GuiManager(core::ContentManagerHandler contentManager);
 
 	  public:
-		void initialize();
 		void show();
 
 	  private:

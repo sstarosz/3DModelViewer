@@ -20,8 +20,6 @@ namespace st::ui
 							QWidget* parent = nullptr,
 							Qt::WindowFlags flags = {});
 
-		void initialize();
-
 	  private:
 		core::ContentManagerHandler m_contentManager;
 		Viewport* m_viewport;

@@ -821,11 +821,6 @@ namespace st::ui
 		centerOn(0, 0);
 	}
 
-	void NodeEditor::initialize()
-	{
-        m_scene->setNodeGraph(&m_contentManager->getMainNodeGraph());
-	}
-
 	/*--------------------------------*/
 	/*---------Event Handlers---------*/
 	/*--------------------------------*/
@@ -884,6 +879,7 @@ namespace st::ui
 
 	void NodeEditor::showEvent(QShowEvent* event)
 	{
+		m_scene->setNodeGraph(&m_contentManager->getMainNodeGraph());
 		m_scene->updateScene();
 		QGraphicsView::showEvent(event);
 	}

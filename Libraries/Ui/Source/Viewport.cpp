@@ -293,7 +293,7 @@ namespace st::ui
 	{
 	}
 
-	void Viewport::initialize()
+	void Viewport::showEvent([[maybe_unused]] QShowEvent* event)
 	{
 		QWidget* renderWidget{nullptr};
 

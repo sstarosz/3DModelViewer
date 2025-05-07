@@ -83,13 +83,4 @@ namespace st::ui
 
 		setWindowState(Qt::WindowMaximized);
 	}
-
-	void MainWindow::initialize()
-	{
-		spdlog::info("MainWindow::initialize()");
-		m_viewport->initialize();
-		m_nodeEditor->initialize();
-		m_attributeEditor->initialize();
-	}
-
 } // namespace st::ui

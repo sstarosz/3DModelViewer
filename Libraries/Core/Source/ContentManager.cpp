@@ -11,20 +11,11 @@ namespace st::core
 		spdlog::info("ContentManager::ContentManager() - Done");
 	}
 
-	bool ContentManager::initialize()
-	{
-		spdlog::info("ContentManager::initialize()");
-
-		spdlog::info("ContentManager::initialize() - Done");
-
-		return true;
-	}
-
 	bool ContentManager::onStart()
 	{
 		spdlog::info("ContentManager::onStart()");
 
-		//m_nodeGraph.initialize();
+		m_nodeGraph.initialize();
 		m_nodeGraph.evaluate();
 
 		spdlog::info("ContentManager::onStart() - Done");
