@@ -125,6 +125,8 @@ namespace st::core
 			return std::weak_ptr<Attribute>();
 		}
 
+		std::weak_ptr<Node> getNodeByAttributePath(const Path& path) const;
+
 		Path getPathFromNode(std::weak_ptr<Node> node) const
 		{
 			if (node.expired())
@@ -144,9 +146,15 @@ namespace st::core
 			return Path(path);
 		}
 
-	  private:
+		 void propagateDirty(std::shared_ptr<Node> node);
+	 	 void propagateDirtyRecursive(std::shared_ptr<Node> node, std::unordered_set<std::shared_ptr<Node>>& visitedNodes);
+	
+	private:
+		bool m_isEvaluating{false};
+		bool m_isDirtyPropagating{false};
 		std::vector<std::shared_ptr<Node>> m_nodes;
 		std::vector<std::shared_ptr<Connection>> m_connections;
+		std::vector<std::shared_ptr<Attribute>> m_attributes;
 
 		std::vector<std::shared_ptr<Node>> buildExecutionOrder()
 		{
@@ -163,7 +171,6 @@ namespace st::core
 				}
 			}
 
-			std::reverse(executionOrder.begin(), executionOrder.end());
 			return executionOrder;
 		}
 

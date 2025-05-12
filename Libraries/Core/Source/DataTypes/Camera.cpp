@@ -47,7 +47,7 @@ namespace st::core
 		//postViewRotation(1, 1) = 1.0f;
 		//postViewRotation(2, 2) = 1.0f;
 
-		spdlog::info("!!!Projection Matrix: {}", projectionMatrix);
+		//spdlog::info("!!!Projection Matrix: {}", projectionMatrix); TODO
 
 		return projectionMatrix;
 	}

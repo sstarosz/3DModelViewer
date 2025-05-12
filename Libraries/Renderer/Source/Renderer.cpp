@@ -422,7 +422,7 @@ namespace st::renderer
 
 		void updateUniformBuffer(uint32_t currentImage)
 		{
-			spdlog::info("Renderer::updateUniformBuffer()");
+			//spdlog::info("Renderer::updateUniformBuffer()"); TODO
 
 
 			// TODO - Update uniform buffer

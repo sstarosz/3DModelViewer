@@ -5,6 +5,7 @@
 #include "Attribute.hpp"
 #include "NumericAttribute.hpp"
 #include "TypedAttribute.hpp"
+#include "EventRegistry.hpp"
 
 #include <any>
 #include <cassert>
@@ -112,8 +113,6 @@ namespace st::core
 		}
 
 		bool isDirty() const;
-
-		bool isUninitialized() const;
 
 		void setPath(const Path& path)
 		{

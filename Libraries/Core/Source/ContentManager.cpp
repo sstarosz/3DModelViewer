@@ -15,8 +15,7 @@ namespace st::core
 	{
 		spdlog::info("ContentManager::onStart()");
 
-		m_nodeGraph.initialize();
-		m_nodeGraph.evaluate();
+		m_nodeGraph.evaluate2();
 
 		spdlog::info("ContentManager::onStart() - Done");
 

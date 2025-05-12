@@ -75,6 +75,7 @@ namespace st::core
 
     bool TransformNode::initialize()
     {
+        spdlog::warn("TransformNode::initialize()");
         //TODO: Add default values
         defineNode("TransformNode");
 

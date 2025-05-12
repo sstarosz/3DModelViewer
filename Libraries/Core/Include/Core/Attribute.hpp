@@ -178,7 +178,6 @@ namespace st::core
 		m_data = data;
 		m_isConnected = false;
 
-		markParentDirty();
 		EventRegistry::sendAttributeChangedEvent(m_path, AttributeMessage::eAttributeChanged);
 	}
 

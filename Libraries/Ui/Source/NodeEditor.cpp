@@ -13,118 +13,6 @@
 
 namespace st::ui
 {
-    /*-------------------------------------------*/
-    /*-----------MARK: NodeNameBase--------------*/
-    /*-------------------------------------------*/
-	NodeNameBase::NodeNameBase(const QString& name, QGraphicsItem* parent) :
-		QAbstractGraphicsShapeItem(parent),
-		m_name(name)
-	{
-		setAcceptHoverEvents(true);
-		
-		setBrush(NodeBorderColor);
-		setPen(QPen(NodeBorderColor, 3));
-	}
-
-	QRectF NodeNameBase::boundingRect() const
-	{
-		return QRectF(0, 0, 320, 45);
-	}
-
-	void NodeNameBase::paint(QPainter* painter,
-							 [[maybe_unused]] const QStyleOptionGraphicsItem* option,
-							 [[maybe_unused]] QWidget* widget)
-	{
-		painter->setPen(pen());
-		painter->setBrush(brush());
-		
-		// Draw black
-		painter->drawRoundedRect(0, 0, 300, 45, 20, 20);
-		painter->drawRect(0, 20, 300, 25);
-
-		// Draw text
-		painter->setPen(Qt::white);
-		painter->setFont(QFont("Inter", 24));
-
-		QRectF textRect(20, 10, 280, 35);
-		painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, m_name);
-	}
-
-	void NodeNameBase::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
-	{
-		if(m_isSelected)
-		{
-			return;
-		}
-
-		setBrush(NodeHighlightBorderColor);
-		setPen(QPen(NodeHighlightBorderColor, 3));
-
-		update();
-		QAbstractGraphicsShapeItem::hoverEnterEvent(event);
-	}
-
-	void NodeNameBase::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
-	{
-		if(m_isSelected)
-		{
-			return;
-		}
-
-		setBrush(NodeBorderColor);
-		setPen(QPen(NodeBorderColor, 3));
-		update();
-		QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
-	}
-
-	void NodeNameBase::setSelected(bool state)
-	{
-		m_isSelected = state;
-		if (m_isSelected)
-		{
-			setPen(QPen(NodeHighlightBorderColor, 3));
-			setBrush(NodeHighlightBorderColor);
-		}
-		else
-		{
-			setPen(QPen(NodeBorderColor, 3));
-			setBrush(NodeBorderColor);
-		}
-
-		update();
-	}
-
-	bool NodeNameBase::isSelected() const
-	{
-		return m_isSelected;
-	}
-
-	void NodeNameBase::setHovered(bool state)
-	{
-		m_isHovered = state;
-		if (m_isHovered)
-		{
-			setBrush(NodeHighlightBorderColor);
-			setPen(QPen(NodeHighlightBorderColor, 3));
-		}
-		else
-		{
-			setBrush(NodeBorderColor);
-			setPen(QPen(NodeBorderColor, 3));
-		}
-
-		update();
-	}
-
-	bool NodeNameBase::isHovered() const
-	{
-		return m_isHovered;
-	}
-
-	/*-------------------------------------------*/
-	/*-----------MARK: NodeItem------------------*/
-	/*-------------------------------------------*/
-
 	/*-------------------------------------------*/
     /*-----------MARK: NodePlug------------------*/
     /*-------------------------------------------*/
@@ -326,7 +214,7 @@ namespace st::ui
 	/*-------------------------------------------*/
     /*-----------MARK: NodeItem------------------*/
     /*-------------------------------------------*/
-	NodeItem::NodeItem(std::weak_ptr<core::Node> node,
+	NodeItem::NodeItem(std::shared_ptr<core::Node> node,
 					   QGraphicsItem* parent) :
 		QAbstractGraphicsShapeItem(parent),
 		m_node(node),
@@ -338,36 +226,33 @@ namespace st::ui
 		setBrush(NodeColor);
 		setPen(QPen(NodeBorderColor, 4));
 
-		if (auto nodePtr = m_node.lock())
+
+		std::println("Node: {}", m_node->getName());
+		//m_nodeName = new NodeNameBase(QString::fromStdString(nodePtr->getName()), this);
+		//m_nodeName->setZValue(1);
+
+
+		uint32_t inputYOffset = 55;
+		auto attributes = m_node->getAttributes();
+		auto isOutput = [](std::shared_ptr<core::Attribute> attribute) { return attribute->isReadable(); };
+		auto isInput = [](std::shared_ptr<core::Attribute> attribute) { return attribute->isWritable(); };
+
+		// for (auto outputAttribute : attributes | std::views::filter(isOutput))
+		//{
+		//	NodeAttribute* attribute = new NodeAttribute(outputAttribute, this);
+		//	attribute->setZValue(1);
+		//	attribute->setPos(-10, inputYOffset);
+		//	m_attributes.push_back(attribute);
+		//	inputYOffset += 29;
+		// }
+		// TODO output should be added first
+		for (auto inputAttribute : attributes)
 		{
-			std::println("Node: {}", nodePtr->getName());
-			NodeNameBase* NodeName = new NodeNameBase(QString::fromStdString(nodePtr->getName()), this);
-			NodeName->setZValue(1);
-
-			uint32_t inputYOffset = 55;
-			auto attributes = nodePtr->getAttributes();
-			auto isOutput = [](std::shared_ptr<core::Attribute> attribute) { return attribute->isReadable(); };
-			auto isInput = [](std::shared_ptr<core::Attribute> attribute) { return attribute->isWritable(); };
-
-			// for (auto outputAttribute : attributes | std::views::filter(isOutput))
-			//{
-			//	NodeAttribute* attribute = new NodeAttribute(outputAttribute, this);
-			//	attribute->setZValue(1);
-			//	attribute->setPos(-10, inputYOffset);
-			//	m_attributes.push_back(attribute);
-			//	inputYOffset += 29;
-			// }
-
-			// TODO output should be added first
-
-			for (auto inputAttribute : attributes)
-			{
-				NodeAttribute* attribute = new NodeAttribute(inputAttribute, this);
-				attribute->setZValue(1);
-				attribute->setPos(-10, inputYOffset);
-				m_attributes.push_back(attribute);
-				inputYOffset += 29;
-			}
+			NodeAttribute* attribute = new NodeAttribute(inputAttribute, this);
+			attribute->setZValue(1);
+			attribute->setPos(-10, inputYOffset);
+			m_attributes.push_back(attribute);
+			inputYOffset += 29;
 		}
 	}
 
@@ -378,90 +263,90 @@ namespace st::ui
 
     void NodeItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
     {
-        Q_UNUSED(option);
-        Q_UNUSED(widget);
+		Q_UNUSED(option);
+		Q_UNUSED(widget);
+	
+		QColor borderColor = m_isSelected || m_isHovered ? NodeHighlightBorderColor : NodeBorderColor;
+		QPen borderPen(borderColor, 4);
+		
+		// 1. Draw the main body background (excluding header area)
+		painter->setPen(Qt::NoPen);
+		painter->setBrush(NodeColor);
+		QPainterPath bodyPath;
+		bodyPath.addRoundedRect(QRectF(0, HeaderHeight - 20, NodeWidth, NodeHeight - HeaderHeight + 20), 20, 20);
+		painter->drawPath(bodyPath);
+		
+		// 2. Draw the header background
+		painter->setBrush(borderColor);
+		painter->drawRoundedRect(QRectF(0, 0, NodeWidth, HeaderHeight), 20, 20);
+		painter->drawRect(QRectF(0, 20, NodeWidth, 25)); // Bottom part of header
+		
+		// 3. Draw the outline for the entire node
+		painter->setPen(borderPen);
+		painter->setBrush(Qt::NoBrush);
+		QPainterPath outlinePath;
+		outlinePath.addRoundedRect(QRectF(0, 0, NodeWidth, NodeHeight), 20, 20);
+		painter->drawPath(outlinePath);
+		
+		// 4. Draw the node name last so it's always on top
 
-        painter->setBrush(brush());
-        painter->setPen(pen());
+		painter->setPen(Qt::white);
+		painter->setFont(QFont("Inter", 24));
+		QRectF textRect(20, 10, 280, 35);
+		painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, 
+							QString::fromStdString(m_node->getName()));
 
-        painter->drawRoundedRect(0, 0, NodeWidth, NodeHeight, 20, 20);
+			
+		//Draw brown circle if node is dirty
+		if (m_node->isDirty())
+		{
+			painter->setBrush(Qt::darkRed);
+			painter->drawEllipse(QPointF(280, 10), 5, 5);
+		}
+
     }
 
     void NodeItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
     {
+        QAbstractGraphicsShapeItem::hoverEnterEvent(event);
+
         if(m_isSelected)
 		{
 			return;
 		}
 
-		setPen(QPen(NodeHighlightBorderColor, 4));
-
-		for(QGraphicsItem* child : childItems())
-		{
-			if (NodeNameBase* nodeName = dynamic_cast<NodeNameBase*>(child))
-			{
-				nodeName->setHovered(true);
-			}
-		}
-
+		m_isHovered = true;
 		update();
-        QAbstractGraphicsShapeItem::hoverEnterEvent(event);
     }
 
     void NodeItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
     {
+        QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
+
        	if (m_isSelected)
 		{
 			return;
 		}
 
-		setPen(QPen(NodeBorderColor, 4));
-
-		for(QGraphicsItem* child : childItems())
-		{
-			if (NodeNameBase* nodeName = dynamic_cast<NodeNameBase*>(child))
-			{
-				nodeName->setHovered(false);
-			}
-		}
-
+		m_isHovered = false;
 		update();
-        QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
     }
+	
+	void NodeItem::setSelected(bool state)
+	{
+		m_isSelected = state;
+		update();
+	}
 
     std::vector<NodeAttribute*> NodeItem::getAttributes() const
     {
         return m_attributes;
     }
 
-    std::weak_ptr<core::Node> NodeItem::getNode() const
+    std::shared_ptr<core::Node> NodeItem::getNode() const
     {
         return m_node;
     }
-
-	void NodeItem::setSelected(bool state)
-	{
-		m_isSelected = state;
-		if (m_isSelected)
-		{
-			setPen(QPen(NodeHighlightBorderColor, 4));
-		}
-		else
-		{
-			setPen(QPen(NodeBorderColor, 4));
-		}
-
-		for(QGraphicsItem* child : childItems())
-		{
-			if (NodeNameBase* nodeName = dynamic_cast<NodeNameBase*>(child))
-			{
-				nodeName->setSelected(state);
-			}
-		}
-
-		update();
-	}
-
 
 	/*-------------------------------------------*/
 	/*-----------MARK: NodeConnection------------*/
@@ -487,7 +372,7 @@ namespace st::ui
 			if (auto nodeItem = dynamic_cast<NodeItem*>(item))
 			{
 				// Find Output node
-				if (auto node = nodeItem->getNode().lock())
+				if (auto node = nodeItem->getNode())
 				{
 					// Find Source node
 					if (node == m_connection.lock()->sourceNode) //
@@ -620,7 +505,7 @@ namespace st::ui
         }
     }
 
-    void NodeScene::addNode(std::weak_ptr<core::Node> node)
+    void NodeScene::addNode(std::shared_ptr<core::Node> node)
     {
 		// Check if the node is already in the scene
 		if (m_nodes.find(node) != m_nodes.end())
@@ -641,7 +526,7 @@ namespace st::ui
 		nodeXPosition += 500;
 	}
 
-    void removeNode(std::weak_ptr<core::Node> node)
+    void removeNode(std::shared_ptr<core::Node> node)
     {
 
     }
@@ -700,15 +585,6 @@ namespace st::ui
 			spdlog::warn("Clicked node: {}", clickedNode ? "Found" : "Not found");
 			if (clickedNode) {
 				selectNode(clickedNode);
-
-				for(QGraphicsItem* child : clickedNode->childItems())
-				{
-					if (NodeNameBase* nodeName = dynamic_cast<NodeNameBase*>(child))
-					{
-						nodeName->setPen(QPen(NodeHighlightBorderColor, 4));
-						nodeName->setBrush(NodeHighlightBorderColor);
-					}
-				}
 			} else {
 				// We clicked on the background, deselect current node
 				deselectCurrentNode();
@@ -778,7 +654,7 @@ namespace st::ui
 		m_pSelectedNode = nodeItem;
 		if (nodeItem)
 		{
-			spdlog::warn("NodeItem: {} is selected", nodeItem->getNode().lock()->getName());
+			spdlog::warn("NodeItem: {} is selected", nodeItem->getNode()->getName());
 			nodeItem->setSelected(true);
 		}
 

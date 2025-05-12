@@ -40,9 +40,17 @@ namespace st::core
         eAttributeChanged
     };
 
-    class Attriabute;
-
     using AttributeChangedCallback = std::function<void(AttributeMessage, Path)>;
+
+
+    enum class NodeMessage
+    {
+        eNodeGraphChanged
+    };
+
+    using NodeChangedCallback = std::function<void(NodeMessage, Path)>;
+
+
 
 
     class EventRegistry
@@ -105,6 +113,9 @@ namespace st::core
             m_eventCallbacks[eventId].push_back(callback);
         }
 
+        /*----------------------*/
+        /*-------Attribute-----*/
+        /*----------------------*/
         static void addAttributeChangedCallback(Path attributePath, const AttributeChangedCallback& callback)
         {
             EventRegistry::instance().addAttributeChangedCallbackPrivate(attributePath, callback);
@@ -132,10 +143,44 @@ namespace st::core
             }
         }
 
+
+        /*----------------------*/
+        /*-------NodeGraph-----*/
+        /*----------------------*/
+
+        static void addNodeChangedCallback(Path nodePath, const NodeChangedCallback& callback)
+        {
+            EventRegistry::instance().addNodeChangedCallbackPrivate(nodePath, callback);
+        }
+
+        void addNodeChangedCallbackPrivate(Path nodePath, const NodeChangedCallback& callback)
+        {
+            m_nodeGraphCallbacks[nodePath].push_back(callback);
+        }
+
+        static void sendNodeGraphChangedEvent(Path nodePath, NodeMessage msg)
+        {
+            EventRegistry::instance().sendNodeGraphChangedEventPrivate(nodePath, msg);
+        }
+
+        void sendNodeGraphChangedEventPrivate(Path nodePath, NodeMessage msg)
+        {
+            auto it = m_nodeGraphCallbacks.find(nodePath);
+            if (it != m_nodeGraphCallbacks.end())
+            {
+                for (const auto& callback : it->second)
+                {
+                    callback(msg, nodePath);
+                }
+            }
+        }
+
+
       private:
         std::unordered_map<EventId, std::string> m_eventMap;
         std::unordered_map<EventId, std::vector<EventCallback>> m_eventCallbacks;
         std::unordered_map<Path, std::vector<AttributeChangedCallback>> m_attributeCallbacks;
+        std::unordered_map<Path, std::vector<NodeChangedCallback>> m_nodeGraphCallbacks;
     };
 
     class CoreEvents

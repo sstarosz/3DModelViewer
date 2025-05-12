@@ -59,32 +59,6 @@ namespace st::ui
 	// #87E5CF
 	constexpr QColor NodeHighlightBorderColor = QColor(135, 229, 207);
 
-	class NodeNameBase : public QAbstractGraphicsShapeItem
-	{
-	  public:
-		NodeNameBase(const QString& name, QGraphicsItem* parent = nullptr);
-
-		QRectF boundingRect() const override;
-
-		void paint(QPainter* painter,
-				   const QStyleOptionGraphicsItem* option,
-				   QWidget* widget) override;
-
-		void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
-		void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
-
-		void setSelected(bool state);
-		bool isSelected() const;
-
-		void setHovered(bool state);
-		bool isHovered() const;
-
-	  private:
-		QString m_name;
-		bool m_isHovered{false};
-		bool m_isSelected{false};
-	};
-
 	/**
 	 * @brief Represent node plug in the scene
 	 *
@@ -192,8 +166,12 @@ namespace st::ui
 		static constexpr int32_t NodeWidth = 300;
 		static constexpr int32_t NodeHeight = 400;
 
+		static constexpr int32_t HeaderHeight = 45;
+		static constexpr int32_t HeaderWidth = 300;
+		static constexpr int32_t HeaderRadius = 20;
+
 	public:
-		NodeItem(std::weak_ptr<core::Node> node, QGraphicsItem* parent = nullptr);
+		NodeItem(std::shared_ptr<core::Node> node, QGraphicsItem* parent = nullptr);
 
 		virtual QRectF boundingRect() const override;
 
@@ -205,14 +183,15 @@ namespace st::ui
 		void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
 
 		std::vector<NodeAttribute*> getAttributes() const;
-		std::weak_ptr<core::Node> getNode() const;
+		std::shared_ptr<core::Node> getNode() const;
 
 		void setSelected(bool state);
 
 	private:
-		std::weak_ptr<core::Node> m_node;
+		std::shared_ptr<core::Node> m_node;
 		std::vector<NodeAttribute*> m_attributes;
 		bool m_isSelected = false;
+		bool m_isHovered = false;
 	};
 
 	class PlugConnection : public QAbstractGraphicsShapeItem
@@ -377,8 +356,8 @@ namespace st::ui
 		void setNodeGraph(core::NodeGraph* nodeGraph);
 		void updateScene();
 
-		void addNode(std::weak_ptr<core::Node> node);
-		void removeNode(std::weak_ptr<core::Node> node);
+		void addNode(std::shared_ptr<core::Node> node);
+		void removeNode(std::shared_ptr<core::Node> node);
 
 		void addConnection(std::weak_ptr<core::Connection> connection);
 		void removeConnection(std::weak_ptr<core::Connection> connection);

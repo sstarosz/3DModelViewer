@@ -80,20 +80,7 @@ namespace st::core
 
 	void Node::markDirty()
     {
-		if(m_state != NodeState::eDirty)
-		{
-			m_state = NodeState::eDirty;
-
-			for (auto& childNode : m_childNodes)
-			{
-				childNode->markDirty();
-			}
-
-			if(m_nodeGraph)
-			{
-				m_nodeGraph->evaluate2();
-			}
-		}
+		m_state = NodeState::eDirty;
     }
 
 } // namespace st::core
