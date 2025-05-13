@@ -198,6 +198,7 @@ namespace st::renderer
 
 		void initSurface(vk::SurfaceKHR surface)
 		{
+			spdlog::warn("Renderer::initSurface()");
 			//Create graphics objects
 			m_vulkanContext.m_surface = surface;
 
@@ -900,6 +901,12 @@ namespace st::renderer
 											vk::SharingMode::eExclusive};
 
 			m_pipeline.resources.vertexBuffer = m_vulkanContext.m_device.createBuffer(bufferInfo);
+			if(!m_pipeline.resources.vertexBuffer)
+			{
+				spdlog::error("Renderer::updateVertexBuffer() - Failed to create vertex buffer");
+				throw std::runtime_error("Failed to create vertex buffer!");
+				return;
+			}
 
 			vk::MemoryRequirements memRequirements = m_vulkanContext.m_device.getBufferMemoryRequirements(m_pipeline.resources.vertexBuffer);
 
@@ -943,6 +950,7 @@ namespace st::renderer
 
 		void updateScene(core::TypedInputHandler<Renderable> input, core::TypedInputHandler<core::Camera> camera)
 		{
+			spdlog::warn("Renderer::updateScene() - Initialize Scene");
 			m_input = input;
 			m_camera = camera;
 
@@ -961,10 +969,27 @@ namespace st::renderer
 			spdlog::info("Mesh Vertex Count: {}", m_input.getData()->m_meshData.getVertexPointList().size());
 			spdlog::info("Mesh Indices Count: {}", m_input.getData()->m_meshData.getIndicesPointList().size());
 
-			m_pipeline = PipelineBuilder(m_vulkanContext)
-							 .setVertexShader(m_input.getData()->m_vertexShader)
-							 .setFragmentShader(m_input.getData()->m_fragmentShader)
-							 .build();
+			if(!m_pipeline.pipeline)
+			{
+				spdlog::info("Renderer::updateScene() - Initialize Pipeline");
+				spdlog::info("Pipeline Vertex Shader: {}", m_input.getData()->m_vertexShader);
+				spdlog::info("Pipeline Fragment Shader: {}", m_input.getData()->m_fragmentShader);
+
+				m_pipeline = PipelineBuilder(m_vulkanContext)
+								.setVertexShader(m_input.getData()->m_vertexShader)
+								.setFragmentShader(m_input.getData()->m_fragmentShader)
+								.build();
+
+				if(!m_pipeline.pipeline)
+				{
+					spdlog::error("Renderer::updateScene() - Failed to create pipeline");
+					throw std::runtime_error("Failed to create pipeline!");
+					return;
+				}
+
+				updateVertexBuffer();
+				updateIndexBuffer();
+			}
 		}
 
 	  public:

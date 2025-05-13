@@ -100,7 +100,7 @@ namespace st::core
             .build();
         addAttribute(m_input.scale);
         
-        m_output.translation = core::TypedAttribute<Eigen::Vector3f>::Builder("Translation")
+        m_output.translation = core::TypedAttribute<Eigen::Vector3f>::Builder("TranslationOut")
             .setReadable(true)
             .setWritable(false)
             .setDefaultValue(Eigen::Vector3f(0.0f, 0.0f, 0.0f))
@@ -108,7 +108,7 @@ namespace st::core
 
         addAttribute(m_output.translation);
 
-        m_output.rotation = core::TypedAttribute<Eigen::Vector3f>::Builder("Rotation")
+        m_output.rotation = core::TypedAttribute<Eigen::Vector3f>::Builder("RotationOut")
             .setReadable(true)
             .setWritable(false)
             .setDefaultValue(Eigen::Vector3f(0.0f, 0.0f, 0.0f))
@@ -116,7 +116,7 @@ namespace st::core
 
         addAttribute(m_output.rotation);
 
-        m_output.scale = core::TypedAttribute<Eigen::Vector3f>::Builder("Scale")
+        m_output.scale = core::TypedAttribute<Eigen::Vector3f>::Builder("ScaleOut")
             .setReadable(true)
             .setWritable(false)
             .setDefaultValue(Eigen::Vector3f(1.0f, 1.0f, 1.0f))

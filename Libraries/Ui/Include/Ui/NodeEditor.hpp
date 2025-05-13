@@ -403,12 +403,12 @@ namespace st::ui
 	 * MARK: NodeEditor
 	 */
 
-	class NodeEditor : public QGraphicsView
+	class NodeGraphView : public QGraphicsView
 	{
 		Q_OBJECT
 
 	  public:
-		explicit NodeEditor(core::ContentManagerHandler contentManager, QWidget* parent = nullptr);
+		explicit NodeGraphView(core::ContentManagerHandler contentManager, QWidget* parent = nullptr);
 		
 	  protected:
 		/*--------------------------------*/
@@ -434,6 +434,24 @@ namespace st::ui
 		bool m_panning;
 		QPointF m_lastPanPoint;
 	};
+
+	class NodeEditor : public QWidget
+	{
+		Q_OBJECT
+
+	  public:
+		explicit NodeEditor(core::ContentManagerHandler contentManager, QWidget* parent = nullptr);
+
+		
+	  private:
+		NodeGraphView* m_nodeEditor;
+		core::ContentManagerHandler m_contentManager;
+
+	private slots:
+		void onEvaluateGraphStateChanged(int state);
+	};
+
+
 } // namespace st::ui
 
 #endif // ST_UI_NODEEDITOR_HPP

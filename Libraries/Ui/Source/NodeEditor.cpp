@@ -7,6 +7,8 @@
 #include <QMouseEvent>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QVBoxLayout>
+#include <QCheckBox>
 #include <print>
 
 #include <spdlog/spdlog.h>
@@ -678,11 +680,7 @@ namespace st::ui
 	/*------------------------------------*/
 	/*---------MARK:NodeEditor------------*/
 	/*------------------------------------*/
-
-	/*------------------------------------*/
-	/*---------MARK:NodeEditor------------*/
-	/*------------------------------------*/
-	NodeEditor::NodeEditor(core::ContentManagerHandler contentManager, QWidget* parent) :
+	NodeGraphView::NodeGraphView(core::ContentManagerHandler contentManager, QWidget* parent) :
 		QGraphicsView(parent),
 		m_scene(new NodeScene(contentManager, this)),
 		m_contentManager(contentManager),
@@ -700,7 +698,7 @@ namespace st::ui
 	/*--------------------------------*/
 	/*---------Event Handlers---------*/
 	/*--------------------------------*/
-	void NodeEditor::mousePressEvent(QMouseEvent* event)
+	void NodeGraphView::mousePressEvent(QMouseEvent* event)
 	{
 		if (event->button() == Qt::MiddleButton)
 		{
@@ -712,7 +710,7 @@ namespace st::ui
 		QGraphicsView::mousePressEvent(event);
 	}
 
-	void NodeEditor::mouseMoveEvent(QMouseEvent* event)
+	void NodeGraphView::mouseMoveEvent(QMouseEvent* event)
 	{
 		if (m_panning)
 		{
@@ -726,7 +724,7 @@ namespace st::ui
 		QGraphicsView::mouseMoveEvent(event);
 	}
 
-	void NodeEditor::mouseReleaseEvent(QMouseEvent* event)
+	void NodeGraphView::mouseReleaseEvent(QMouseEvent* event)
 	{
 		if (event->button() == Qt::MiddleButton)
 		{
@@ -737,7 +735,7 @@ namespace st::ui
 		QGraphicsView::mouseReleaseEvent(event);
 	}
 
-	void NodeEditor::wheelEvent(QWheelEvent* event)
+	void NodeGraphView::wheelEvent(QWheelEvent* event)
 	{
 		double angleDeltaY = event->angleDelta().y();
 
@@ -748,16 +746,71 @@ namespace st::ui
 		QGraphicsView::wheelEvent(event);
 	}
 
-	void NodeEditor::resizeEvent(QResizeEvent* event)
+	void NodeGraphView::resizeEvent(QResizeEvent* event)
 	{
 		QGraphicsView::resizeEvent(event);
 	}
 
-	void NodeEditor::showEvent(QShowEvent* event)
+	void NodeGraphView::showEvent(QShowEvent* event)
 	{
 		m_scene->setNodeGraph(&m_contentManager->getMainNodeGraph());
 		m_scene->updateScene();
 		QGraphicsView::showEvent(event);
 	}
+
+	/*------------------------------------*/
+	/*---------MARK:NodeEditorWidget------*/
+	/*------------------------------------*/
+	NodeEditor::NodeEditor(core::ContentManagerHandler contentManager, QWidget* parent) :
+		QWidget(parent),
+		m_nodeEditor(nullptr),
+		m_contentManager(contentManager)
+	{
+		QVBoxLayout* layout = new QVBoxLayout(this);
+		QHBoxLayout* toolboxLayout = new QHBoxLayout(this);
+
+		QCheckBox* evaluateGraph = new QCheckBox("Enable Graph Evaluation", this);
+		evaluateGraph->setChecked(true);
+		connect(evaluateGraph, &QCheckBox::checkStateChanged, this, &NodeEditor::onEvaluateGraphStateChanged);
+		
+		QCheckBox* showGrid = new QCheckBox("Show Grid", this);
+		showGrid->setChecked(true);
+
+		
+		toolboxLayout->addWidget(evaluateGraph);
+		toolboxLayout->addWidget(showGrid);
+		toolboxLayout->setContentsMargins(0, 0, 0, 0);
+		toolboxLayout->setSpacing(0);
+		toolboxLayout->setAlignment(Qt::AlignLeft);
+
+
+
+		QHBoxLayout* nodeEditorLayout = new QHBoxLayout(this);
+		m_nodeEditor = new NodeGraphView(contentManager, this);
+		nodeEditorLayout->addWidget(m_nodeEditor);
+
+		layout->addLayout(toolboxLayout);
+		layout->addLayout(nodeEditorLayout);
+		layout->setContentsMargins(0, 0, 0, 0);
+		layout->setSpacing(0);
+		setLayout(layout);
+	}
+
+	void NodeEditor::onEvaluateGraphStateChanged(int state)
+	{
+		auto& nodeGraph = m_contentManager->getMainNodeGraph();
+
+		if (state == Qt::Checked)
+		{
+			spdlog::info("NodeGraph evaluation enabled");
+			nodeGraph.enableEvaluation();
+		}
+		else
+		{
+			spdlog::info("NodeGraph evaluation disabled");
+			nodeGraph.disableEvaluation();
+		}
+	}
+
 
 } // namespace st::ui

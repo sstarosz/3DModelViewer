@@ -149,9 +149,20 @@ namespace st::core
 		 void propagateDirty(std::shared_ptr<Node> node);
 	 	 void propagateDirtyRecursive(std::shared_ptr<Node> node, std::unordered_set<std::shared_ptr<Node>>& visitedNodes);
 	
+		void disableEvaluation()
+		{
+			m_isEvaluationDisabled = true;
+		}
+
+		void enableEvaluation()
+		{
+			m_isEvaluationDisabled = false;
+		}
+
 	private:
 		bool m_isEvaluating{false};
 		bool m_isDirtyPropagating{false};
+		bool m_isEvaluationDisabled{false};
 		std::vector<std::shared_ptr<Node>> m_nodes;
 		std::vector<std::shared_ptr<Connection>> m_connections;
 		std::vector<std::shared_ptr<Attribute>> m_attributes;
