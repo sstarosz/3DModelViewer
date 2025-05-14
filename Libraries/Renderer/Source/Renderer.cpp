@@ -948,6 +948,20 @@ namespace st::renderer
 			m_vulkanContext.m_device.unmapMemory(m_pipeline.resources.indexBufferMemory);
 		}
 
+
+		bool isPipelineNeedRebuild()
+		{
+			if(m_lastVertexShader != m_input.getData()->m_vertexShader || 
+			   m_lastFragmentShader != m_input.getData()->m_fragmentShader)
+			{
+				m_lastVertexShader = m_input.getData()->m_vertexShader;
+				m_lastFragmentShader = m_input.getData()->m_fragmentShader;
+				return true;
+			}
+			return false;
+		}
+
+
 		void updateScene(core::TypedInputHandler<Renderable> input, core::TypedInputHandler<core::Camera> camera)
 		{
 			spdlog::warn("Renderer::updateScene() - Initialize Scene");
@@ -969,11 +983,33 @@ namespace st::renderer
 			spdlog::info("Mesh Vertex Count: {}", m_input.getData()->m_meshData.getVertexPointList().size());
 			spdlog::info("Mesh Indices Count: {}", m_input.getData()->m_meshData.getIndicesPointList().size());
 
-			if(!m_pipeline.pipeline)
+			if(!m_pipeline.pipeline || isPipelineNeedRebuild())
 			{
 				spdlog::info("Renderer::updateScene() - Initialize Pipeline");
 				spdlog::info("Pipeline Vertex Shader: {}", m_input.getData()->m_vertexShader);
 				spdlog::info("Pipeline Fragment Shader: {}", m_input.getData()->m_fragmentShader);
+
+				m_vulkanContext.m_device.waitIdle();
+				m_vulkanContext.m_device.destroyPipeline(m_pipeline.pipeline);
+				m_vulkanContext.m_device.destroyPipelineLayout(m_pipeline.pipelineLayout);
+				m_vulkanContext.m_device.destroyDescriptorPool(m_pipeline.resources.descriptorPool);
+				m_vulkanContext.m_device.destroyBuffer(m_pipeline.resources.vertexBuffer);
+				m_vulkanContext.m_device.freeMemory(m_pipeline.resources.vertexBufferMemory);
+				m_vulkanContext.m_device.destroyBuffer(m_pipeline.resources.indexBuffer);
+				m_vulkanContext.m_device.freeMemory(m_pipeline.resources.indexBufferMemory);
+				m_pipeline.resources.vertexBuffer = nullptr;
+				m_pipeline.resources.indexBuffer = nullptr;
+				m_pipeline.resources.vertexBufferMemory = nullptr;
+				m_pipeline.resources.indexBufferMemory = nullptr;
+				m_pipeline.resources.descriptorPool = nullptr;
+				m_pipeline.resources.descriptorSets.clear();
+				m_pipeline.resources.uniformBuffers.clear();
+				m_pipeline.resources.uniformBuffersMemory.clear();
+				m_pipeline.resources.descriptorSets.clear();
+
+
+
+
 
 				m_pipeline = PipelineBuilder(m_vulkanContext)
 								.setVertexShader(m_input.getData()->m_vertexShader)
@@ -1008,6 +1044,9 @@ namespace st::renderer
 		std::unique_ptr<MaterialManager> m_materialManager;
 		core::TypedInputHandler<Renderable> m_input;
 		core::TypedInputHandler<core::Camera> m_camera;
+
+		std::string m_lastVertexShader;
+		std::string m_lastFragmentShader;
 	};
 
 	/*---------------------*/
