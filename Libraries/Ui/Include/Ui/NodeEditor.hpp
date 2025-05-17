@@ -422,9 +422,7 @@ namespace st::ui
 		void resizeEvent(QResizeEvent* event) override;
 		void showEvent(QShowEvent* event) override;
 
-	  private:
-		void setupScene();
-
+		private:
 		NodeScene* m_scene;
 		core::ContentManagerHandler m_contentManager;
 
@@ -442,7 +440,8 @@ namespace st::ui
 	  public:
 		explicit NodeEditor(core::ContentManagerHandler contentManager, QWidget* parent = nullptr);
 
-		
+		void refreshNodeGraph();
+
 	  private:
 		NodeGraphView* m_nodeEditor;
 		core::ContentManagerHandler m_contentManager;

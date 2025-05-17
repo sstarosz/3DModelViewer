@@ -477,7 +477,7 @@ namespace st::ui
 		}
 
 		// Draw axis
-		painter->setPen(QPen(Qt::black, 2));
+		painter->setPen(QPen(Qt::black, 4));
 		painter->drawLine(-sceneWidth, 0, sceneWidth, 0);
 		painter->drawLine(0, -sceneHeight, 0, sceneHeight);
 	}
@@ -493,9 +493,12 @@ namespace st::ui
 
         if (m_nodeGraph)
         {
+			spdlog::info("NodeScene::updateScene() - Updating scene with node graph size: {}",
+				m_nodeGraph->getNodes().size());
             // Add nodes
             for (const auto& node : m_nodeGraph->getNodes())
             {
+				spdlog::info("NodeScene::updateScene() - Adding node: {}", node->getName());
                 addNode(node);
             }
 
@@ -505,6 +508,7 @@ namespace st::ui
                 addConnection(connection);
             }
         }
+		
     }
 
     void NodeScene::addNode(std::shared_ptr<core::Node> node)
@@ -753,9 +757,13 @@ namespace st::ui
 
 	void NodeGraphView::showEvent(QShowEvent* event)
 	{
+		QGraphicsView::showEvent(event);
+
 		m_scene->setNodeGraph(&m_contentManager->getMainNodeGraph());
 		m_scene->updateScene();
-		QGraphicsView::showEvent(event);
+		centerOn(0, 0);
+
+		viewport()->update();
 	}
 
 	/*------------------------------------*/
@@ -794,6 +802,27 @@ namespace st::ui
 		layout->setContentsMargins(0, 0, 0, 0);
 		layout->setSpacing(0);
 		setLayout(layout);
+	}
+
+	void NodeEditor::refreshNodeGraph()
+	{
+		if (m_nodeEditor)
+		{
+			NodeScene* scene = dynamic_cast<NodeScene*>(m_nodeEditor->scene());
+			if (scene)
+			{
+				spdlog::info("Refreshing NodeGraphView");
+				scene->setNodeGraph(&m_contentManager->getMainNodeGraph());
+				scene->updateScene();
+				m_nodeEditor->centerOn(500, -500);
+			}
+			else
+			{
+				spdlog::error("NodeGraphView does not have a valid NodeScene");
+				throw std::runtime_error("NodeGraphView does not have a valid NodeScene");
+			}
+
+		}
 	}
 
 	void NodeEditor::onEvaluateGraphStateChanged(int state)

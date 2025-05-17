@@ -4,6 +4,7 @@
 
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include <QSplitter>
 #include <QVBoxLayout>
 
 #include "Core/ContentManager.hpp"
@@ -22,6 +23,7 @@ namespace st::ui
       private:
         core::ContentManagerHandler m_contentManager;
         QTreeWidget* m_treeWidget;
+        QSplitter* m_splitter;
         QVBoxLayout* m_layout;
 
         void populateTree(const std::shared_ptr<core::Node>& node, QTreeWidgetItem* parentItem = nullptr);

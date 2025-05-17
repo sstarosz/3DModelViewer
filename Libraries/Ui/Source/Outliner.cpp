@@ -3,6 +3,7 @@
 #include "Core/EventRegistry.hpp"
 
 #include <QLabel>
+#include <QSplitter>
 
 namespace st::ui
 {
@@ -10,6 +11,7 @@ namespace st::ui
     : QWidget(parent),
       m_contentManager(contentManager),
       m_treeWidget(new QTreeWidget(this)),
+      m_splitter(new QSplitter(this)),
       m_layout(new QVBoxLayout(this))
     {
         setWindowTitle("Outliner");
@@ -18,7 +20,12 @@ namespace st::ui
         m_treeWidget->setColumnCount(1);
         m_treeWidget->setColumnWidth(0, 200);
 
-        m_layout->addWidget(m_treeWidget);
+        m_splitter->setOrientation(Qt::Vertical);
+        m_splitter->addWidget(m_treeWidget);
+        m_splitter->setStyleSheet("QSplitter::handle { background:rgb(146, 237, 253); }");
+
+
+        m_layout->addWidget(m_splitter);
 
         setLayout(m_layout);
 
@@ -43,7 +50,8 @@ namespace st::ui
             }
         }
 
-        m_layout->addWidget(new QLabel(QString::fromStdString(displayPaths), this));
+
+        m_splitter->addWidget(new QLabel(QString::fromStdString(displayPaths)));
 	}
 
 	void Outliner::populateTree(const std::shared_ptr<core::Node>& node, QTreeWidgetItem* parentItem)

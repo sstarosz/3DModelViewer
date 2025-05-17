@@ -10,6 +10,7 @@ namespace st::ui
 	class NodeEditor;
 	class AttributeEditor;
 	class Outliner;
+	class MaterialBrowser;
 
 	class MainWindow : public QMainWindow
 	{
@@ -26,6 +27,7 @@ namespace st::ui
 		NodeEditor* m_nodeEditor;
 		AttributeEditor* m_attributeEditor;
 		Outliner* m_outliner;
+		MaterialBrowser* m_materialBrowser;
 	};
 
 } // namespace st::ui
