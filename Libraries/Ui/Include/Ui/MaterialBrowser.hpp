@@ -18,6 +18,8 @@ namespace st::ui
       public:
         explicit MaterialBrowser(core::ContentManagerHandler contentManager, QWidget* parent = nullptr);
 
+        void showEvent(QShowEvent* event) override;
+
       private:
         core::ContentManagerHandler m_contentManager;
         QVBoxLayout* m_layout;

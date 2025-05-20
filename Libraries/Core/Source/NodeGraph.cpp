@@ -81,7 +81,18 @@ namespace st::core
             currentNode = currentNode->getParentNode().lock();
         }
 
+
+
         std::string path = "/World";
+        //Check if the node is a material
+        if(auto material = node.lock())
+        {
+            if(material->getType() == Node::NodeType::eMaterial)
+            {
+                path = "/Materials";
+            }
+        }
+
         for(const auto& part : std::views::reverse(segments))
         {
             path += "/" + part;

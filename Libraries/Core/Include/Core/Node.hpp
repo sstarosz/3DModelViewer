@@ -40,6 +40,12 @@ namespace st::core
 			eClean
 		}; 
 
+		enum class NodeType
+		{
+			eNode,
+			eMaterial,
+		};
+
 		Node();
 		Node(const std::string& name);
 
@@ -144,10 +150,21 @@ namespace st::core
 			m_nodeGraph = nodeGraph;
 		}
 
+		void setType(NodeType type)
+		{
+			m_type = type;
+		}
+
+		NodeType getType() const
+		{
+			return m_type;
+		}
+
 	  private:
 		std::string m_name;
 		std::vector<std::shared_ptr<Attribute>> m_attributes;
 		NodeState m_state;
+		NodeType m_type{NodeType::eNode};
 		std::weak_ptr<Node> m_parentNode;
 		std::vector<std::shared_ptr<Node>> m_childNodes;
 		NodeGraph* m_nodeGraph{nullptr};

@@ -9,6 +9,7 @@
 #include <QScrollBar>
 #include <QVBoxLayout>
 #include <QCheckBox>
+#include <QTimer>
 #include <print>
 
 #include <spdlog/spdlog.h>
@@ -489,7 +490,7 @@ namespace st::ui
 
     void NodeScene::updateScene()
     {
-        clear();
+        //clear();
 
         if (m_nodeGraph)
         {
@@ -696,7 +697,12 @@ namespace st::ui
 		setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
 		setScene(m_scene);
-		centerOn(0, 0);
+
+
+		QTimer::singleShot(0, this, [this]() {
+			centerOn(0, 0);
+		});
+
 	}
 
 	/*--------------------------------*/
@@ -814,7 +820,7 @@ namespace st::ui
 				spdlog::info("Refreshing NodeGraphView");
 				scene->setNodeGraph(&m_contentManager->getMainNodeGraph());
 				scene->updateScene();
-				m_nodeEditor->centerOn(500, -500);
+				m_nodeEditor->centerOn(0,0);
 			}
 			else
 			{
