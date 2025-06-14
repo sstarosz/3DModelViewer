@@ -14,6 +14,7 @@ set(Tests_Sources
     "CameraTest.cpp"
     #"GraphNodeTest.cpp"
     #"ContentManagerTest.cpp"
+    "EventTests.cpp"
 )
 
 

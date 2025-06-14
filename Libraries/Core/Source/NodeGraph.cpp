@@ -29,7 +29,6 @@ struct fmt::formatter<std::shared_ptr<st::core::Node>>{
     }
 };
 
-
 // Add this formatter for vectors of shared_ptr<Node>
 template<>
 struct fmt::formatter<std::vector<std::shared_ptr<st::core::Node>>> {
@@ -58,7 +57,6 @@ struct fmt::formatter<std::vector<std::shared_ptr<st::core::Node>>> {
 
 namespace st::core
 {
-
 
 	NodeGraph::NodeGraph()
 	{
@@ -231,14 +229,6 @@ namespace st::core
         m_connections.emplace_back(std::make_shared<Connection>(sourceNode, sourceAttrName, targetNode, targetAttrName));
         spdlog::info("NodeGraph::addConnection() - Connection added from {} to {}", sourceNode->getName(), targetNode->getName());
         targetAttrName->setData(sourceAttrName);
-    }
-
-    void NodeGraph::initialize()
-    {
-        for(auto& node : m_nodes)
-        {
-            node->initialize();
-        }
     }
 
     void NodeGraph::evaluate()

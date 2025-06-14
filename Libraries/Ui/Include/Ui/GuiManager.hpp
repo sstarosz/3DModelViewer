@@ -2,7 +2,6 @@
 #define ST_UI_GUIMANAGER_HPP
 
 #include "Core/ContentManager.hpp"
-
 #include "Ui/MainWindow.hpp"
 
 namespace st::ui

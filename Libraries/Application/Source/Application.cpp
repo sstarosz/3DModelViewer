@@ -33,7 +33,6 @@ namespace st::application
         m_state = ApplicationState::eRunning;
 
         spdlog::info("Application::run() - Done");
-        spdlog::info("----------------------");
         return m_app.exec();
     }
 
@@ -42,12 +41,11 @@ namespace st::application
         return m_creator;
     }
 
-    Modifier Application::modify(std::weak_ptr<core::Node> node)
+    Modifier Application::modify(std::shared_ptr<core::Node> node)
     {
         ModifyContext context;
         context.m_contentManager = &m_contentManager;
         context.selectedNode = node;
-
 
         Modifier modifier{context, core::CommandManagerHandler(&m_commandManager)};
         return modifier;

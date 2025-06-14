@@ -38,7 +38,7 @@ namespace st::application
 		int start();
 
 		Creator& create();
-		Modifier modify(std::weak_ptr<core::Node> node);
+		Modifier modify(std::shared_ptr<core::Node> node);
 		
 	private:
 		SceneBuilder m_sceneBuilder{nullptr};

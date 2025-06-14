@@ -38,7 +38,6 @@ namespace st::core
 		std::shared_ptr<Attribute> targetAttrName;
 	};
 
-
   	class NodeGraph
 	{
 	  public:
@@ -51,7 +50,6 @@ namespace st::core
 						   std::shared_ptr<Node> targetNode,
 						   std::shared_ptr<Attribute> targetAttrName);
 
-		void initialize();
 		void evaluate();
 		void evaluate2();
 

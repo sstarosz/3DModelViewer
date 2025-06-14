@@ -29,8 +29,6 @@ class UniformBufferObject
 	Eigen::Matrix4f proj;
 };
 
-
-
 PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT;
 PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
 
@@ -164,7 +162,7 @@ namespace st::renderer
 
 			std::vector<const char*> extensions = {
 				VK_KHR_SURFACE_EXTENSION_NAME,
-				VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+				VK_KHR_WIN32_SURFACE_EXTENSION_NAME, //TODO Support only Windows for now
 				VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 				};
 
@@ -418,8 +416,6 @@ namespace st::renderer
 			commandBuffer.endRenderPass();
 			commandBuffer.end();
 		}
-
-
 
 		void updateUniformBuffer(uint32_t currentImage)
 		{
@@ -701,7 +697,6 @@ namespace st::renderer
 			throw std::runtime_error("failed to find supported format!");
 		}
 
-
 		void createBuffer(vk::DeviceSize size,
 						  vk::BufferUsageFlags usage,
 						  vk::MemoryPropertyFlags properties,
@@ -948,7 +943,6 @@ namespace st::renderer
 			m_vulkanContext.m_device.unmapMemory(m_pipeline.resources.indexBufferMemory);
 		}
 
-
 		bool isPipelineNeedRebuild()
 		{
 			if(m_lastVertexShader != m_input.getData()->m_vertexShader || 
@@ -961,7 +955,6 @@ namespace st::renderer
 			return false;
 		}
 
-
 		void updateScene(core::TypedInputHandler<Renderable> input, core::TypedInputHandler<core::Camera> camera)
 		{
 			spdlog::warn("Renderer::updateScene() - Initialize Scene");
@@ -969,19 +962,19 @@ namespace st::renderer
 			m_camera = camera;
 
 			//Camera
-			spdlog::warn("Renderer::updateScene() - Camera");
-			spdlog::warn("Camera Projection Matrix: {}", m_camera.getData()->getProjectionMatrix());
-			spdlog::warn("Camera View Matrix: {}", m_camera.getData()->getViewMatrix());
+			//spdlog::warn("Renderer::updateScene() - Camera");
+			//spdlog::warn("Camera Projection Matrix: {}", m_camera.getData()->getProjectionMatrix());
+			//spdlog::warn("Camera View Matrix: {}", m_camera.getData()->getViewMatrix());
 
 
 			// Initialize Shader
-			spdlog::info("Renderer::updateScene() - Initialize Shader");
-			spdlog::info("Vertex Shader: {}", m_input.getData()->m_vertexShader);
-			spdlog::info("Fragment Shader: {}", m_input.getData()->m_fragmentShader);
-			spdlog::info("Mesh Vertexes: {}", m_input.getData()->m_meshData.getVertexPointList());
-			spdlog::info("Mesh Indices: {}", m_input.getData()->m_meshData.getIndicesPointList());
-			spdlog::info("Mesh Vertex Count: {}", m_input.getData()->m_meshData.getVertexPointList().size());
-			spdlog::info("Mesh Indices Count: {}", m_input.getData()->m_meshData.getIndicesPointList().size());
+			//spdlog::info("Renderer::updateScene() - Initialize Shader");
+			//spdlog::info("Vertex Shader: {}", m_input.getData()->m_vertexShader);
+			//spdlog::info("Fragment Shader: {}", m_input.getData()->m_fragmentShader);
+			//spdlog::info("Mesh Vertexes: {}", m_input.getData()->m_meshData.getVertexPointList());
+			//spdlog::info("Mesh Indices: {}", m_input.getData()->m_meshData.getIndicesPointList());
+			//spdlog::info("Mesh Vertex Count: {}", m_input.getData()->m_meshData.getVertexPointList().size());
+			//spdlog::info("Mesh Indices Count: {}", m_input.getData()->m_meshData.getIndicesPointList().size());
 
 			if(!m_pipeline.pipeline || isPipelineNeedRebuild())
 			{

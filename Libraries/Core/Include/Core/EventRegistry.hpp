@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <compare>
 #include <functional>
-
+#include <typeindex>
 
 namespace st::core
 {
@@ -31,25 +31,123 @@ struct std::hash<st::core::EventId>
 };
 
 
-
-
 namespace st::core
 {
+    struct Event
+    {
+    public:
+        Event() = default;
+        Event(const Event&) = default;
+        Event(Event&&) = default;
+
+        Event& operator=(const Event&) = default;
+        Event& operator=(Event&&) = default;
+
+        ~Event() = default;
+    };
+
+
+    /*----------------------*/
+    /*-------Attribute-----*/
+    /*----------------------*/
     enum class AttributeMessage
     {
         eAttributeChanged
     };
 
+    class AttributeChangedEvent : public Event
+    {
+    public:
+        AttributeChangedEvent(AttributeMessage msg, Path path) : m_message(msg), m_path(path) {}
+
+        AttributeMessage getMessage() const
+        {
+            return m_message;
+        }
+        
+        Path getPath() const
+        {
+            return m_path;
+        }
+
+    private:
+        AttributeMessage m_message;
+        Path m_path; 
+    };
+
     using AttributeChangedCallback = std::function<void(AttributeMessage, Path)>;
 
 
+    /*----------------------*/
+    /*-------NodeGraph-----*/
+    /*----------------------*/
     enum class NodeMessage
     {
         eNodeGraphChanged
     };
+ 
+    struct NodeGraphChangedEvent : public Event
+    {
+        NodeMessage message;
+        Path path;
+    };
 
     using NodeChangedCallback = std::function<void(NodeMessage, Path)>;
 
+
+
+    class EventBus
+    {
+    public:
+        template <typename EventType>
+        static void subscribe(std::function<void(const EventType&)> callback)
+        {
+            instance().subscribeInternal<EventType>(callback);
+        }
+
+        template <typename EventType>
+        static void publish(const EventType& event)
+        {
+            instance().publishInternal(event);
+        }
+
+    private:
+        // Private implementation details
+        EventBus() = default;
+        
+        static EventBus& instance()
+        {
+            static EventBus instance;
+            return instance;
+        }
+
+        // Internal implementation methods
+        template <typename EventType>
+        void subscribeInternal(std::function<void(const EventType&)> callback)
+        {
+            auto& callbacks = m_callbacks[typeid(EventType)];
+            callbacks.push_back([callback](const Event& event) {
+                callback(static_cast<const EventType&>(event));
+            });
+        }
+
+        template <typename EventType>
+        void publishInternal(const EventType& event)
+        {
+            auto it = m_callbacks.find(typeid(EventType));
+            if (it != m_callbacks.end())
+            {
+                for (const auto& callback : it->second)
+                {
+                    callback(event);
+                }
+            }
+        }
+
+        // Type-erased storage for callbacks
+        using TypeErasedCallback = std::function<void(const Event&)>;
+        std::unordered_map<std::type_index, std::vector<TypeErasedCallback>> m_callbacks;
+    };
 
 
 

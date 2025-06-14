@@ -15,16 +15,16 @@ namespace st::application
 		Creator(core::ContentManagerHandler contentManager,
 				core::CommandManagerHandler commandManager);
 
-		std::weak_ptr<core::Node> camera(const float angleOfView = 45.0f,
+		std::shared_ptr<core::Node> camera(const float angleOfView = 45.0f,
 										 const float focalLength = 35.0f,
 										 const float nearClippingPlane = 0.1f,
 										 const float farClippingPlane = 10000.0f);
 
-		std::weak_ptr<core::Node> plane(const float width = 1.0f, const float height = 1.0f);
+		std::shared_ptr<core::Node> plane(const float width = 1.0f, const float height = 1.0f);
 
-		std::weak_ptr<renderer::StandardMaterial> standardMaterial();
+		std::shared_ptr<renderer::StandardMaterial> standardMaterial();
 
-		std::weak_ptr<renderer::Renderer> renderer(std::weak_ptr<core::Node> camera);
+		std::shared_ptr<renderer::Renderer> renderer(std::shared_ptr<core::Node> camera);
 
 	  private:
 		core::ContentManagerHandler m_contentManager;

@@ -179,6 +179,8 @@ namespace st::core
 		m_isConnected = false;
 
 		EventRegistry::sendAttributeChangedEvent(m_path, AttributeMessage::eAttributeChanged);
+		EventBus::publish<AttributeChangedEvent>(
+			AttributeChangedEvent{AttributeMessage::eAttributeChanged, m_path});
 	}
 
 	template <>

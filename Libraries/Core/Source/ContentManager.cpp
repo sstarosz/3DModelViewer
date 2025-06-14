@@ -6,9 +6,6 @@ namespace st::core
 	ContentManager::ContentManager() :
 		m_nodeGraph()
 	{
-		spdlog::info("ContentManager::ContentManager()");
-
-		spdlog::info("ContentManager::ContentManager() - Done");
 	}
 
 	bool ContentManager::onStart()
@@ -16,8 +13,6 @@ namespace st::core
 		spdlog::info("ContentManager::onStart()");
 
 		m_nodeGraph.evaluate();
-
-		spdlog::info("ContentManager::onStart() - Done");
 
 		return true;
 	}
@@ -27,7 +22,7 @@ namespace st::core
 		return m_nodeGraph;
 	}
 
-	const NodeGraph&  ContentManager::getMainNodeGraph() const
+	const NodeGraph& ContentManager::getMainNodeGraph() const
 	{
 		return m_nodeGraph;
 	}
@@ -36,24 +31,18 @@ namespace st::core
 	{
 		spdlog::info("ContentManager::updateSelection()");
 
-		if (node.expired())
+		if (auto nodePtr = node.lock())
 		{
-			spdlog::warn("ContentManager::updateSelection() - Node is expired");
-			return;
+			m_selection.m_paths.clear();
+			m_selection.m_paths.push_back(nodePtr->getPath());
+
+			EventRegistry::sendEvent(core::CoreEvents::SelectionChanged);
 		}
-
-		m_selectedNode = node;
-		m_selection.m_paths.clear();
-		m_selection.m_paths.push_back(m_nodeGraph.getPathFromNode(node));
-
-
-		EventRegistry::sendEvent(core::CoreEvents::SelectionChanged);
-		spdlog::info("ContentManager::updateSelection() - Done");
 	}
 
-	std::weak_ptr<Node> ContentManager::getSelectedNode() const
+	Selection ContentManager::getSelection() const
 	{
-		return m_selectedNode;
+		return m_selection;
 	}
 
 } // namespace st::core

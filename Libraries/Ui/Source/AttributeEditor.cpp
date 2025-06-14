@@ -210,15 +210,12 @@ QWidget* AttributeEditor::createControlAttributeWidget(const std::shared_ptr<cor
             vector3F->setData(Eigen::Vector3f(vector3F->getData()->x(), vector3F->getData()->y(), static_cast<float>(value)));
         });
 
-        core::EventRegistry::addAttributeChangedCallback(attribute->getPath(), [this, xSpinBox, ySpinBox, zSpinBox](core::AttributeMessage msg, core::Path path) {
-
-            if (msg == core::AttributeMessage::eAttributeChanged)
-            {
-                auto attribute = m_contentManager->getMainNodeGraph().getAttributeByPath(path);
-
-                if (auto attributePtr = attribute.lock())
+        core::EventBus::subscribe<core::AttributeChangedEvent>(
+            [this, attribute, xSpinBox, ySpinBox, zSpinBox](const core::AttributeChangedEvent& event) {
+                if(attribute->getPath() == event.getPath())
                 {
-                    auto vector3F = std::dynamic_pointer_cast<core::TypedAttribute<Eigen::Vector3f>>(attributePtr);
+                    // If the attribute path matches, update the spin boxes
+                    auto vector3F = std::dynamic_pointer_cast<core::TypedAttribute<Eigen::Vector3f>>(attribute);
                     if (vector3F)
                     {
                         xSpinBox->setValue(vector3F->getData()->x());
@@ -226,8 +223,7 @@ QWidget* AttributeEditor::createControlAttributeWidget(const std::shared_ptr<cor
                         zSpinBox->setValue(vector3F->getData()->z());
                     }
                 }
-            }
-        });
+            });
 
         
         layout->addWidget(xSpinBox);
