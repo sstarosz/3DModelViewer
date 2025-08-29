@@ -7,11 +7,6 @@ namespace st::core
         spdlog::info("CommandManager::CommandManager()");
     }
 
-    void CommandManager::initialize()
-    {
-        spdlog::info("CommandManager::initialize()");
-    }
-
     void CommandManager::undo()
     {
         if (!commands.empty()) {

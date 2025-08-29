@@ -38,12 +38,16 @@ namespace st::core
     private:
 		struct Inputs
 		{
-			//TODO: Add input attributes
+			core::TypedInputHandler<Eigen::Vector3f> translation;
+			core::TypedInputHandler<Eigen::Vector3f> rotation; //TODO: Add rotation attributes
+			core::TypedInputHandler<Eigen::Vector3f> scale; //TODO: Add scale attributes
 		} m_input;
 		
 		struct Outputs
 		{
-			//TODO: Add output attributes
+			core::TypedOutputHandler<Eigen::Vector3f> translation;
+			core::TypedOutputHandler<Eigen::Vector3f> rotation; //TODO: Add rotation attributes
+			core::TypedOutputHandler<Eigen::Vector3f> scale; //TODO: Add scale attributes
 		} m_output;
 
 		Transformation m_transformation;

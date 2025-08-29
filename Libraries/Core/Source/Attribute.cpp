@@ -1,5 +1,6 @@
 #include "Attribute.hpp"
 
+#include "Node.hpp"
 namespace st::core
 {
 
@@ -35,5 +36,14 @@ namespace st::core
     {
         m_writable = value;
     }
+
+	void Attribute::markParentDirty()
+	{
+        if (auto parentNode = m_parentNode.lock())
+        {
+            parentNode->markDirty();
+        }
+    }
+
 
 } // namespace st::core

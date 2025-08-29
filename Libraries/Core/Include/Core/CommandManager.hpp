@@ -29,17 +29,16 @@ namespace st::core
 		std::unique_ptr<Command<ResultT>> cmd;
 	};
 
-    
 	class CommandManager
 	{
 		public:
 		CommandManager();
 
-		void initialize();
-
 		template <typename CommandType>
 		auto execute(std::unique_ptr<CommandType> command)
 		{
+			
+
 			using ResultType = typename CommandType::ResultType;
 
 			if constexpr (std::is_same_v<ResultType, void>)

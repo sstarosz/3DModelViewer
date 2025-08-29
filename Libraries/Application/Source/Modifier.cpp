@@ -16,12 +16,9 @@ namespace st::application
 	{
 	}
 
-	void MaterialModifier::assign(std::weak_ptr<renderer::StandardMaterial> material)
+	void MaterialModifier::assign(std::shared_ptr<renderer::StandardMaterial> material)
 	{
-		// TODO refactor
-		std::shared_ptr<renderer::StandardMaterial> materialPtr = material.lock();
-		std::shared_ptr<core::Node> nodePtr = m_context.selectedNode.lock();
-		std::unique_ptr<renderer::CommandAssignMaterial> command = std::make_unique<renderer::CommandAssignMaterial>(m_context.m_contentManager, materialPtr, nodePtr);
+		std::unique_ptr<renderer::CommandAssignMaterial> command = std::make_unique<renderer::CommandAssignMaterial>(m_context.m_contentManager, material, m_context.selectedNode);
 		m_commandManager->execute(std::move(command));
 	}
 
@@ -44,14 +41,11 @@ namespace st::application
 	MaterialModifier Modifier::material()
 	{
 		// TODO refactor
-		//  Throw exception if node can't have material
-		if (auto node = m_context.selectedNode.lock())
+		// TODO Throw exception if node can't have material
+		// TODO Throw if node is not of type plane
+		if (!std::dynamic_pointer_cast<geometry::Plane>(m_context.selectedNode))
 		{
-			// Throw if node is not of type plane
-			if (!std::dynamic_pointer_cast<geometry::Plane>(node))
-			{
-				throw std::runtime_error("Node is not of type Plane");
-			}
+			throw std::runtime_error("Node is not of type Plane");
 		}
 
 		MaterialModifier materialManager{m_context, m_commandManager};

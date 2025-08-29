@@ -5,9 +5,28 @@
 #include <cassert>
 #include <memory>
 #include <string>
+#include "Core.hpp"
+#include "Path.hpp"
+#include "EventRegistry.hpp"
 
 namespace st::core
 {
+	class Node;
+
+	enum class DataType
+	{
+		eUnknown,
+		eBool,
+		eInt32,
+		eUInt32,
+		eInt64,
+		eUInt64,
+		eFloat,
+		eDouble,
+		eString,
+	};
+
+
 
 	// TODO Attribute need redesign
 	class Attribute
@@ -100,6 +119,10 @@ namespace st::core
 		std::string getName() const;
 		bool isReadable() const;
 		bool isWritable() const;
+		AttributeHandle getHandle() const
+		{
+			return m_handle;
+		}
 
 		/*----------------------*/
 		/*-------Setters--------*/
@@ -111,6 +134,28 @@ namespace st::core
 		void setReadable(bool state);
 		void setWritable(bool state);
 
+		void setPath(const Path& path)
+		{
+			m_path = path;
+		}
+
+		Path getPath() const
+		{
+			return m_path;
+		}
+
+		void setParentHandle(std::weak_ptr<Node> handle)
+		{
+			m_parentNode = handle;
+		}
+
+		std::weak_ptr<Node> getParentHandle() const
+		{
+			return m_parentNode;
+		}
+
+		void markParentDirty();
+
 	  private:
 		std::any m_data;
 		std::shared_ptr<Attribute> m_connectedAttribute;
@@ -119,6 +164,11 @@ namespace st::core
 		bool m_writable;
 		bool m_array;
 		bool m_isConnected;
+
+		AttributeHandle m_handle{InvalidAttributeHandle};
+		std::weak_ptr<Node> m_parentNode;
+	
+		Path m_path;
 	};
 
 	// TODO Attribute need redesign
@@ -127,6 +177,10 @@ namespace st::core
 	{
 		m_data = data;
 		m_isConnected = false;
+
+		EventRegistry::sendAttributeChangedEvent(m_path, AttributeMessage::eAttributeChanged);
+		EventBus::publish<AttributeChangedEvent>(
+			AttributeChangedEvent{AttributeMessage::eAttributeChanged, m_path});
 	}
 
 	template <>
@@ -136,6 +190,7 @@ namespace st::core
 		m_isConnected = true;
 	}
 
+	
 	/*----------------------*/
 	/*-------Handlers-------*/
 	/*----------------------*/

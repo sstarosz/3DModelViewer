@@ -29,8 +29,6 @@ class UniformBufferObject
 	Eigen::Matrix4f proj;
 };
 
-
-
 PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT;
 PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
 
@@ -164,7 +162,7 @@ namespace st::renderer
 
 			std::vector<const char*> extensions = {
 				VK_KHR_SURFACE_EXTENSION_NAME,
-				VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+				VK_KHR_WIN32_SURFACE_EXTENSION_NAME, //TODO Support only Windows for now
 				VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 				};
 
@@ -198,6 +196,7 @@ namespace st::renderer
 
 		void initSurface(vk::SurfaceKHR surface)
 		{
+			spdlog::warn("Renderer::initSurface()");
 			//Create graphics objects
 			m_vulkanContext.m_surface = surface;
 
@@ -418,19 +417,9 @@ namespace st::renderer
 			commandBuffer.end();
 		}
 
-
-
 		void updateUniformBuffer(uint32_t currentImage)
 		{
-			spdlog::info("Renderer::updateUniformBuffer()");
-			spdlog::warn("View matrix: {}", m_camera.getData()->getViewMatrix());
-			spdlog::warn("Projection matrix: {}", m_camera.getData()->getProjectionMatrix());
-
-			//Eigen::Matrix4f transporeView = m_camera.getData()->getViewMatrix().transpose();
-			//Eigen::Matrix4f transporeProjection = m_camera.getData()->getProjectionMatrix().transpose();
-//
-			//spdlog::info("View matrix transposed: {}", transporeView);
-			//spdlog::info("Projection matrix transposed: {}", transporeProjection);
+			//spdlog::info("Renderer::updateUniformBuffer()"); TODO
 
 
 			// TODO - Update uniform buffer
@@ -440,7 +429,6 @@ namespace st::renderer
 			ubo.view = m_camera.getData()->getViewMatrix();
 
 			ubo.proj = m_camera.getData()->getProjectionMatrix();
-
 
 			void* data = m_vulkanContext.m_device.mapMemory(m_pipeline.resources.uniformBuffersMemory[currentImage], 0, sizeof(ubo));
 			memcpy(data, &ubo, sizeof(ubo));
@@ -709,7 +697,6 @@ namespace st::renderer
 			throw std::runtime_error("failed to find supported format!");
 		}
 
-
 		void createBuffer(vk::DeviceSize size,
 						  vk::BufferUsageFlags usage,
 						  vk::MemoryPropertyFlags properties,
@@ -909,6 +896,12 @@ namespace st::renderer
 											vk::SharingMode::eExclusive};
 
 			m_pipeline.resources.vertexBuffer = m_vulkanContext.m_device.createBuffer(bufferInfo);
+			if(!m_pipeline.resources.vertexBuffer)
+			{
+				spdlog::error("Renderer::updateVertexBuffer() - Failed to create vertex buffer");
+				throw std::runtime_error("Failed to create vertex buffer!");
+				return;
+			}
 
 			vk::MemoryRequirements memRequirements = m_vulkanContext.m_device.getBufferMemoryRequirements(m_pipeline.resources.vertexBuffer);
 
@@ -950,30 +943,82 @@ namespace st::renderer
 			m_vulkanContext.m_device.unmapMemory(m_pipeline.resources.indexBufferMemory);
 		}
 
+		bool isPipelineNeedRebuild()
+		{
+			if(m_lastVertexShader != m_input.getData()->m_vertexShader || 
+			   m_lastFragmentShader != m_input.getData()->m_fragmentShader)
+			{
+				m_lastVertexShader = m_input.getData()->m_vertexShader;
+				m_lastFragmentShader = m_input.getData()->m_fragmentShader;
+				return true;
+			}
+			return false;
+		}
+
 		void updateScene(core::TypedInputHandler<Renderable> input, core::TypedInputHandler<core::Camera> camera)
 		{
+			spdlog::warn("Renderer::updateScene() - Initialize Scene");
 			m_input = input;
 			m_camera = camera;
 
 			//Camera
-			spdlog::warn("Renderer::updateScene() - Camera");
-			spdlog::warn("Camera Projection Matrix: {}", m_camera.getData()->getProjectionMatrix());
-			spdlog::warn("Camera View Matrix: {}", m_camera.getData()->getViewMatrix());
+			//spdlog::warn("Renderer::updateScene() - Camera");
+			//spdlog::warn("Camera Projection Matrix: {}", m_camera.getData()->getProjectionMatrix());
+			//spdlog::warn("Camera View Matrix: {}", m_camera.getData()->getViewMatrix());
 
 
 			// Initialize Shader
-			spdlog::info("Renderer::updateScene() - Initialize Shader");
-			spdlog::info("Vertex Shader: {}", m_input.getData()->m_vertexShader);
-			spdlog::info("Fragment Shader: {}", m_input.getData()->m_fragmentShader);
-			spdlog::info("Mesh Vertexes: {}", m_input.getData()->m_meshData.getVertexPointList());
-			spdlog::info("Mesh Indices: {}", m_input.getData()->m_meshData.getIndicesPointList());
-			spdlog::info("Mesh Vertex Count: {}", m_input.getData()->m_meshData.getVertexPointList().size());
-			spdlog::info("Mesh Indices Count: {}", m_input.getData()->m_meshData.getIndicesPointList().size());
+			//spdlog::info("Renderer::updateScene() - Initialize Shader");
+			//spdlog::info("Vertex Shader: {}", m_input.getData()->m_vertexShader);
+			//spdlog::info("Fragment Shader: {}", m_input.getData()->m_fragmentShader);
+			//spdlog::info("Mesh Vertexes: {}", m_input.getData()->m_meshData.getVertexPointList());
+			//spdlog::info("Mesh Indices: {}", m_input.getData()->m_meshData.getIndicesPointList());
+			//spdlog::info("Mesh Vertex Count: {}", m_input.getData()->m_meshData.getVertexPointList().size());
+			//spdlog::info("Mesh Indices Count: {}", m_input.getData()->m_meshData.getIndicesPointList().size());
 
-			m_pipeline = PipelineBuilder(m_vulkanContext)
-							 .setVertexShader(m_input.getData()->m_vertexShader)
-							 .setFragmentShader(m_input.getData()->m_fragmentShader)
-							 .build();
+			if(!m_pipeline.pipeline || isPipelineNeedRebuild())
+			{
+				spdlog::info("Renderer::updateScene() - Initialize Pipeline");
+				spdlog::info("Pipeline Vertex Shader: {}", m_input.getData()->m_vertexShader);
+				spdlog::info("Pipeline Fragment Shader: {}", m_input.getData()->m_fragmentShader);
+
+				m_vulkanContext.m_device.waitIdle();
+				m_vulkanContext.m_device.destroyPipeline(m_pipeline.pipeline);
+				m_vulkanContext.m_device.destroyPipelineLayout(m_pipeline.pipelineLayout);
+				m_vulkanContext.m_device.destroyDescriptorPool(m_pipeline.resources.descriptorPool);
+				m_vulkanContext.m_device.destroyBuffer(m_pipeline.resources.vertexBuffer);
+				m_vulkanContext.m_device.freeMemory(m_pipeline.resources.vertexBufferMemory);
+				m_vulkanContext.m_device.destroyBuffer(m_pipeline.resources.indexBuffer);
+				m_vulkanContext.m_device.freeMemory(m_pipeline.resources.indexBufferMemory);
+				m_pipeline.resources.vertexBuffer = nullptr;
+				m_pipeline.resources.indexBuffer = nullptr;
+				m_pipeline.resources.vertexBufferMemory = nullptr;
+				m_pipeline.resources.indexBufferMemory = nullptr;
+				m_pipeline.resources.descriptorPool = nullptr;
+				m_pipeline.resources.descriptorSets.clear();
+				m_pipeline.resources.uniformBuffers.clear();
+				m_pipeline.resources.uniformBuffersMemory.clear();
+				m_pipeline.resources.descriptorSets.clear();
+
+
+
+
+
+				m_pipeline = PipelineBuilder(m_vulkanContext)
+								.setVertexShader(m_input.getData()->m_vertexShader)
+								.setFragmentShader(m_input.getData()->m_fragmentShader)
+								.build();
+
+				if(!m_pipeline.pipeline)
+				{
+					spdlog::error("Renderer::updateScene() - Failed to create pipeline");
+					throw std::runtime_error("Failed to create pipeline!");
+					return;
+				}
+
+				updateVertexBuffer();
+				updateIndexBuffer();
+			}
 		}
 
 	  public:
@@ -992,6 +1037,9 @@ namespace st::renderer
 		std::unique_ptr<MaterialManager> m_materialManager;
 		core::TypedInputHandler<Renderable> m_input;
 		core::TypedInputHandler<core::Camera> m_camera;
+
+		std::string m_lastVertexShader;
+		std::string m_lastFragmentShader;
 	};
 
 	/*---------------------*/

@@ -7,50 +7,53 @@ int main(int argc, char* argv[])
 {
 	Application app(argc, argv);
 
-	// Add Camera
-	auto camera = app.create()
-					  .camera(60.0f,
-							  35.0f,
-							  0.1f,
-							  10000.0f);
+	app.defineScene([&app]() {
 
-	// Modify Camera
-	//app.modify(camera)
-	//	.transform()
-	//	.translate(Eigen::Vector3f{0.0f, 0.0f, 6.0f})
+		// Add Camera
+		auto camera = app.create()
+						.camera(60.0f,
+								35.0f,
+								0.1f,
+								10000.0f);
 
-	// TODO revert -app.modify(camera).transform();
-	//.translate(Eigen::Vector3f{0.0f, 0.0f, 6.0f})
-	//.scale(Eigen::Vector3f{1.0f, 1.0f, 1.0f})
-	//.translate(Eigen::Vector3f{0.0f, 0.0f, -6.0f})
-	//.translate(Eigen::Vector3f{0.0f, 0.0f, 6.0f});
+		// Modify Camera
+		//app.modify(camera)
+		//	.transform()
+		//	.translate(Eigen::Vector3f{0.0f, 0.0f, 6.0f})
 
-	/*-----------------------------------------------------------------------------------------------*/
-	/*--------------------------------------Add Scene Content----------------------------------------*/
-	/*-----------------------------------------------------------------------------------------------*/
-	// Add Plane to Scene
-	auto plane = app.create().plane();
+		// TODO revert -app.modify(camera).transform();
+		//.translate(Eigen::Vector3f{0.0f, 0.0f, 6.0f})
+		//.scale(Eigen::Vector3f{1.0f, 1.0f, 1.0f})
+		//.translate(Eigen::Vector3f{0.0f, 0.0f, -6.0f})
+		//.translate(Eigen::Vector3f{0.0f, 0.0f, 6.0f});
 
-	/*-----------------------------------------------------------------------------------------------*/
-	/*--------------------------------------Add
-	---------------------------------------------*/
-	/*-----------------------------------------------------------------------------------------------*/
-	auto standardMaterial = app.create().standardMaterial();
+		/*-----------------------------------------------------------------------------------------------*/
+		/*--------------------------------------Add Scene Content----------------------------------------*/
+		/*-----------------------------------------------------------------------------------------------*/
+		// Add Plane to Scene
+		auto plane = app.create().plane();
 
-	// Assign Material to Plane
-	// app.modify().material().assignMaterialToMesh(standardMaterial, plane);
-	// app.modify().material(standardMaterial).assignTo(plane);
-	// app.modify(plane).material(standardMaterial).assign();
-	app.modify(plane).material().assign(standardMaterial);
+		/*-----------------------------------------------------------------------------------------------*/
+		/*--------------------------------------Add
+		---------------------------------------------*/
+		/*-----------------------------------------------------------------------------------------------*/
+		auto standardMaterial = app.create().standardMaterial();
 
-	/*-----------------------------------------------------------------------------------------------*/
-	/*-------------------------------------Setup renderer--------------------------------------------*/
-	/*-----------------------------------------------------------------------------------------------*/
-	auto renderer = app.create().renderer(camera);
+		// Assign Material to Plane
+		// app.modify().material().assignMaterialToMesh(standardMaterial, plane);
+		// app.modify().material(standardMaterial).assignTo(plane);
+		// app.modify(plane).material(standardMaterial).assign();
+		app.modify(plane).material().assign(standardMaterial);
 
-	/*-----------------------------------------------------------------------------------------------*/
-	/*-------------------------------------Setup Gui-------------------------------------------------*/
-	/*-----------------------------------------------------------------------------------------------*/
+		/*-----------------------------------------------------------------------------------------------*/
+		/*-------------------------------------Setup renderer--------------------------------------------*/
+		/*-----------------------------------------------------------------------------------------------*/
+		auto renderer = app.create().renderer(camera);
 
-	return app.run();
+		/*-----------------------------------------------------------------------------------------------*/
+		/*-------------------------------------Setup Gui-------------------------------------------------*/
+		/*-----------------------------------------------------------------------------------------------*/
+	});
+
+	return app.start();
 }

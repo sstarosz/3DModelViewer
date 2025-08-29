@@ -31,7 +31,7 @@ namespace st::core
     /*----------------------*/
     bool CameraNode::initialize() 
     {
-        m_input.angleOfView = NumericAttribute<float>::Builder("Angle of View", 45.0F).setReadable(true).build();
+        m_input.angleOfView = NumericAttribute<float>::Builder("Angle of View", 45.0F).setReadable(true).setWritable(true).build();
         addAttribute(m_input.angleOfView);
 
         m_output.camera = TypedAttribute<Camera>::Builder("Camera").setReadable(true).build();
@@ -44,13 +44,7 @@ namespace st::core
 
     bool CameraNode::compute()
     {
-        spdlog::warn("CameraNode::compute()");
-        //m_camera.
-
-
         m_camera.m_cameraTransform = getInclusiveMatrix();
-        spdlog::warn("CameraNode::compute() - Camera transform: {}", m_camera.m_cameraTransform);
-
         m_output.camera = m_camera;
         return true;
     }

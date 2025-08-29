@@ -20,15 +20,17 @@ namespace st::core
 	{
 		m_camera = std::make_shared<CameraNode>(m_angleOfView, m_focalLength, m_nearClippingPlane, m_farClippingPlane);
 		m_camera->initialize();
+		m_camera->markDirty();
 
 		m_transfrom = std::make_shared<TransformNode>();
 		m_transfrom->initialize();
 		m_transfrom->addChildNode(m_camera);
 
 		m_transfrom->translateBy(Eigen::Vector4f(0.0f, 0.0f, 3.0f, 0.0f));
-		m_transfrom->compute();
+		m_transfrom->markDirty();
 
 		core::NodeGraph& nodeGraph = m_contentManager->getMainNodeGraph();
+		nodeGraph.addNode(m_transfrom);
 		nodeGraph.addNode(m_camera);
 
 		return m_camera;

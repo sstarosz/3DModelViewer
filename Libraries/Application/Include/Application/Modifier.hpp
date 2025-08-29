@@ -13,14 +13,14 @@ namespace st::application
 	{
 	  public:
 		core::ContentManager* m_contentManager;
-		std::weak_ptr<core::Node> selectedNode;
+		std::shared_ptr<core::Node> selectedNode;
 	};
 
 	class MaterialModifier
 	{
 	  public:
 		MaterialModifier(ModifyContext context, core::CommandManagerHandler commandManager);
-		void assign(std::weak_ptr<renderer::StandardMaterial> material);
+		void assign(std::shared_ptr<renderer::StandardMaterial> material);
 
 	  private:
 		ModifyContext m_context;

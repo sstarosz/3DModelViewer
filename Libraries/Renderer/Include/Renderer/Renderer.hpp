@@ -49,7 +49,7 @@ namespace st::renderer
 
         bool compute() override
 		{
-			spdlog::info("Renderer::compute()");
+			spdlog::warn("Renderer::compute()");
 
 			updateScene();
 			

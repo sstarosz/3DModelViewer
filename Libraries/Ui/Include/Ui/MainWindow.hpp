@@ -8,6 +8,9 @@ namespace st::ui
 {
 	class Viewport;
 	class NodeEditor;
+	class AttributeEditor;
+	class Outliner;
+	class MaterialBrowser;
 
 	class MainWindow : public QMainWindow
 	{
@@ -18,12 +21,13 @@ namespace st::ui
 							QWidget* parent = nullptr,
 							Qt::WindowFlags flags = {});
 
-		void initialize();
-
 	  private:
 		core::ContentManagerHandler m_contentManager;
 		Viewport* m_viewport;
 		NodeEditor* m_nodeEditor;
+		AttributeEditor* m_attributeEditor;
+		Outliner* m_outliner;
+		MaterialBrowser* m_materialBrowser;
 	};
 
 } // namespace st::ui

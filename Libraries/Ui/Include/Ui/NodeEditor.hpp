@@ -56,21 +56,8 @@ namespace st::ui
 	constexpr QColor NodeColor = QColor(55, 59, 62);
 	// #5A676B
 	constexpr QColor NodeBorderColor = QColor(90, 103, 107);
-
-	class NodeNameBase : public QAbstractGraphicsShapeItem
-	{
-	  public:
-		NodeNameBase(const QString& name, QGraphicsItem* parent = nullptr);
-
-		QRectF boundingRect() const override;
-
-		void paint(QPainter* painter,
-				   const QStyleOptionGraphicsItem* option,
-				   QWidget* widget) override;
-
-	  private:
-		QString m_name;
-	};
+	// #87E5CF
+	constexpr QColor NodeHighlightBorderColor = QColor(135, 229, 207);
 
 	/**
 	 * @brief Represent node plug in the scene
@@ -179,8 +166,12 @@ namespace st::ui
 		static constexpr int32_t NodeWidth = 300;
 		static constexpr int32_t NodeHeight = 400;
 
-	  public:
-		NodeItem(std::weak_ptr<core::Node> node, QGraphicsItem* parent = nullptr);
+		static constexpr int32_t HeaderHeight = 45;
+		static constexpr int32_t HeaderWidth = 300;
+		static constexpr int32_t HeaderRadius = 20;
+
+	public:
+		NodeItem(std::shared_ptr<core::Node> node, QGraphicsItem* parent = nullptr);
 
 		virtual QRectF boundingRect() const override;
 
@@ -192,11 +183,15 @@ namespace st::ui
 		void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
 
 		std::vector<NodeAttribute*> getAttributes() const;
-		std::weak_ptr<core::Node> getNode() const;
+		std::shared_ptr<core::Node> getNode() const;
 
-	  private:
-		std::weak_ptr<core::Node> m_node;
+		void setSelected(bool state);
+
+	private:
+		std::shared_ptr<core::Node> m_node;
 		std::vector<NodeAttribute*> m_attributes;
+		bool m_isSelected = false;
+		bool m_isHovered = false;
 	};
 
 	class PlugConnection : public QAbstractGraphicsShapeItem
@@ -356,13 +351,13 @@ namespace st::ui
 		};
 
 	  public:
-		explicit NodeScene(QObject* parent = nullptr);
+		explicit NodeScene(core::ContentManagerHandler contentManager, QObject* parent = nullptr);
 
 		void setNodeGraph(core::NodeGraph* nodeGraph);
 		void updateScene();
 
-		void addNode(std::weak_ptr<core::Node> node);
-		void removeNode(std::weak_ptr<core::Node> node);
+		void addNode(std::shared_ptr<core::Node> node);
+		void removeNode(std::shared_ptr<core::Node> node);
 
 		void addConnection(std::weak_ptr<core::Connection> connection);
 		void removeConnection(std::weak_ptr<core::Connection> connection);
@@ -383,7 +378,12 @@ namespace st::ui
 		void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
 		void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
 
+		void selectNode(NodeItem* nodeItem);
+		void deselectCurrentNode();
+		NodeItem* getSelectedNode() const;
+
 	  private:
+	  	core::ContentManagerHandler m_contentManager;
 		core::NodeGraph* m_nodeGraph;
 		std::unordered_map<std::weak_ptr<core::Node>, NodeItem*, WeakPtrHash, WeakPtrEqual> m_nodes;
 
@@ -393,6 +393,8 @@ namespace st::ui
 		QPointF currentLineStart;
 		QPointF currentLineEnd;
 		State m_state;
+
+		NodeItem* m_pSelectedNode = nullptr;
 	};
 
 	/**
@@ -401,15 +403,13 @@ namespace st::ui
 	 * MARK: NodeEditor
 	 */
 
-	class NodeEditor : public QGraphicsView
+	class NodeGraphView : public QGraphicsView
 	{
 		Q_OBJECT
 
 	  public:
-		explicit NodeEditor(core::ContentManagerHandler contentManager, QWidget* parent = nullptr);
-
-		void initialize();
-
+		explicit NodeGraphView(core::ContentManagerHandler contentManager, QWidget* parent = nullptr);
+		
 	  protected:
 		/*--------------------------------*/
 		/*---------Event Handlers---------*/
@@ -422,9 +422,7 @@ namespace st::ui
 		void resizeEvent(QResizeEvent* event) override;
 		void showEvent(QShowEvent* event) override;
 
-	  private:
-		void setupScene();
-
+		private:
 		NodeScene* m_scene;
 		core::ContentManagerHandler m_contentManager;
 
@@ -434,6 +432,25 @@ namespace st::ui
 		bool m_panning;
 		QPointF m_lastPanPoint;
 	};
+
+	class NodeEditor : public QWidget
+	{
+		Q_OBJECT
+
+	  public:
+		explicit NodeEditor(core::ContentManagerHandler contentManager, QWidget* parent = nullptr);
+
+		void refreshNodeGraph();
+
+	  private:
+		NodeGraphView* m_nodeEditor;
+		core::ContentManagerHandler m_contentManager;
+
+	private slots:
+		void onEvaluateGraphStateChanged(int state);
+	};
+
+
 } // namespace st::ui
 
 #endif // ST_UI_NODEEDITOR_HPP

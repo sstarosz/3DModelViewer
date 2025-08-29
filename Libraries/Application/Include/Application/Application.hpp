@@ -8,6 +8,7 @@
 #include <QApplication>
 
 #include "Ui/GuiManager.hpp"
+#include <functional>
 
 namespace st::application
 {
@@ -15,28 +16,45 @@ namespace st::application
 	class Application
 	{
 	  public:
+		using SceneBuilder = std::function<void()>;
+
+	  enum class ApplicationState
+	  {
+		  eUninitialized,
+		  eInitialized,
+		  eRunning,
+		  eStopped
+	  };
+
+	  public:
 		Application(int argc, char* argv[]);
 
-		int initialize();
-		int run();
+
+		void defineScene(SceneBuilder sceneBuilder)
+		{
+			m_sceneBuilder = sceneBuilder;
+		}
+
+		int start();
 
 		Creator& create();
-		Modifier modify(std::weak_ptr<core::Node> node);
+		Modifier modify(std::shared_ptr<core::Node> node);
+		
+	private:
+		SceneBuilder m_sceneBuilder{nullptr};
 
-	  private:
+		ApplicationState m_state{ApplicationState::eUninitialized};
 		QApplication m_app;
 
 		// Communication withing the application
 		core::CommandManager m_commandManager;
 		core::ContentManager m_contentManager;
 
-		// Content
+		// Creator and Modifier
 		Creator m_creator;
 
 		// Gui
 		ui::GuiManager m_guiManager;
-
-		// GuiCreator m_guiCreator; To investigate future use
 	};
 
 } // namespace st::application

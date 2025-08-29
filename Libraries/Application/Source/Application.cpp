@@ -6,40 +6,33 @@
 namespace st::application
 {
     Application::Application(int argc, char* argv[]) :
+        m_state(ApplicationState::eUninitialized),
         m_app(argc, argv),
         m_commandManager(),
         m_contentManager(),
         m_guiManager(core::ContentManagerHandler(&m_contentManager)),
         m_creator(core::ContentManagerHandler(&m_contentManager), core::CommandManagerHandler(&m_commandManager))
     {
-        spdlog::set_level(spdlog::level::warn);
-        spdlog::info("Application::Application()");
-        spdlog::info("Application::Application() - Done");
-        spdlog::info("----------------------");
     }
-
-    int Application::initialize()
+    
+    int Application::start()
     {
-        spdlog::info("Application::initialize()");
-        m_contentManager.initialize();
-        m_commandManager.initialize();
-        m_guiManager.initialize();
+        spdlog::info("Application::start()");
 
-        spdlog::info("Application::initialize() - Done");
-        spdlog::info("----------------------");
-        return 0;
-    }
+        m_state = ApplicationState::eInitialized;
 
-    int Application::run()
-    {
-        spdlog::info("Application::run()");
+        if(m_sceneBuilder)
+        {
+            spdlog::info("Building scene...");
+            m_sceneBuilder();
+        }
 
-        initialize();
         m_contentManager.onStart();
+
         m_guiManager.show();
+        m_state = ApplicationState::eRunning;
 
         spdlog::info("Application::run() - Done");
-        spdlog::info("----------------------");
         return m_app.exec();
     }
 
@@ -48,12 +41,11 @@ namespace st::application
         return m_creator;
     }
 
-    Modifier Application::modify(std::weak_ptr<core::Node> node)
+    Modifier Application::modify(std::shared_ptr<core::Node> node)
     {
         ModifyContext context;
         context.m_contentManager = &m_contentManager;
         context.selectedNode = node;
-
 
         Modifier modifier{context, core::CommandManagerHandler(&m_commandManager)};
         return modifier;

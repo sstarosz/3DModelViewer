@@ -3,10 +3,19 @@
 
 #include "Handlers.hpp"
 #include "NodeGraph.hpp"
+#include "EventRegistry.hpp"
 
 namespace st::core
 {
-
+	class Selection
+	{
+		public:
+		std::vector<Path> m_paths;
+	};
+	
+	/*-----------------------------*/
+	/*-------ContentManager--------*/
+	/*-----------------------------*/
 	class ContentManager
 	{
 	  public:
@@ -15,7 +24,6 @@ namespace st::core
 		/*----------------------*/
 		/*-------Methods--------*/
 		/*----------------------*/
-		bool initialize();
 		bool onStart();
 
 		/*----------------------*/
@@ -24,9 +32,12 @@ namespace st::core
 		NodeGraph& getMainNodeGraph();
 		const NodeGraph& getMainNodeGraph() const;
 
+		void updateSelection(std::weak_ptr<Node> node);
+		Selection getSelection() const;
 
 	  private:
 		NodeGraph m_nodeGraph;
+		Selection m_selection;
 	};
 
 	using ContentManagerHandler = Handler<ContentManager>;

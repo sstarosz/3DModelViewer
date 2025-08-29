@@ -17,6 +17,9 @@ set(Sources
     "Source/Viewport.cpp"
     "Source/NodeEditor.cpp"
     "Source/GuiManager.cpp"
+    "Source/AttributeEditor.cpp"
+    "Source/Outliner.cpp"
+    "Source/MaterialBrowser.cpp"
     )
 
 set(Public_Headers
@@ -24,6 +27,9 @@ set(Public_Headers
     "Include/Ui/Viewport.hpp"
     "Include/Ui/NodeEditor.hpp"
     "Include/Ui/GuiManager.hpp"
+    "Include/Ui/AttributeEditor.hpp"
+    "Include/Ui/Outliner.hpp"
+    "Include/Ui/MaterialBrowser.hpp"
     )
 
 set(Private_Headers)

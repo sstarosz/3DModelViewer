@@ -6,13 +6,6 @@ namespace st::ui
         m_contentManager(contentManager),
         m_mainWindow(contentManager)
     {
-        spdlog::info("GuiManager::GuiManager()");
-    }
-
-    void GuiManager::initialize()
-    {
-        spdlog::info("GuiManager::initialize()");
-        m_mainWindow.initialize();
     }
 
     void GuiManager::show()

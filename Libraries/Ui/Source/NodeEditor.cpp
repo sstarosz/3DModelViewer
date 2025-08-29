@@ -2,48 +2,20 @@
 #include "Core/ContentManager.hpp"
 #include "Core/Node.hpp"
 #include "Core/NodeGraph.hpp"
+#include "Core/EventRegistry.hpp"
 #include <QGraphicsScene>
 #include <QMouseEvent>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QVBoxLayout>
+#include <QCheckBox>
+#include <QTimer>
 #include <print>
 
 #include <spdlog/spdlog.h>
 
 namespace st::ui
 {
-    /*-------------------------------------------*/
-    /*-----------MARK: NodeNameBase--------------*/
-    /*-------------------------------------------*/
-	NodeNameBase::NodeNameBase(const QString& name, QGraphicsItem* parent) :
-		QAbstractGraphicsShapeItem(parent),
-		m_name(name)
-	{
-	}
-
-	QRectF NodeNameBase::boundingRect() const
-	{
-		return QRectF(0, 0, 320, 45);
-	}
-
-	void NodeNameBase::paint(QPainter* painter,
-							 const QStyleOptionGraphicsItem* option,
-							 QWidget* widget)
-	{
-		// Draw black
-		painter->setPen(QPen(NodeBorderColor, 3));
-		painter->setBrush(NodeBorderColor);
-		painter->drawRoundedRect(0, 0, 300, 45, 20, 20);
-		painter->drawRect(0, 20, 300, 25);
-
-		// Draw text
-		painter->setPen(Qt::white);
-		painter->setFont(QFont("Inter", 24));
-
-		QRectF textRect(20, 10, 280, 35);
-		painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, m_name);
-	}
-
 	/*-------------------------------------------*/
     /*-----------MARK: NodePlug------------------*/
     /*-------------------------------------------*/
@@ -245,46 +217,45 @@ namespace st::ui
 	/*-------------------------------------------*/
     /*-----------MARK: NodeItem------------------*/
     /*-------------------------------------------*/
-	NodeItem::NodeItem(std::weak_ptr<core::Node> node,
+	NodeItem::NodeItem(std::shared_ptr<core::Node> node,
 					   QGraphicsItem* parent) :
 		QAbstractGraphicsShapeItem(parent),
 		m_node(node),
-		m_attributes()
+		m_attributes(),
+		m_isSelected(false)
 	{
 		setAcceptHoverEvents(true);
+		setFlags(flags() | QGraphicsItem::ItemIsSelectable);
 		setBrush(NodeColor);
 		setPen(QPen(NodeBorderColor, 4));
 
-		if (auto nodePtr = m_node.lock())
+
+		std::println("Node: {}", m_node->getName());
+		//m_nodeName = new NodeNameBase(QString::fromStdString(nodePtr->getName()), this);
+		//m_nodeName->setZValue(1);
+
+
+		uint32_t inputYOffset = 55;
+		auto attributes = m_node->getAttributes();
+		auto isOutput = [](std::shared_ptr<core::Attribute> attribute) { return attribute->isReadable(); };
+		auto isInput = [](std::shared_ptr<core::Attribute> attribute) { return attribute->isWritable(); };
+
+		// for (auto outputAttribute : attributes | std::views::filter(isOutput))
+		//{
+		//	NodeAttribute* attribute = new NodeAttribute(outputAttribute, this);
+		//	attribute->setZValue(1);
+		//	attribute->setPos(-10, inputYOffset);
+		//	m_attributes.push_back(attribute);
+		//	inputYOffset += 29;
+		// }
+		// TODO output should be added first
+		for (auto inputAttribute : attributes)
 		{
-			std::println("Node: {}", nodePtr->getName());
-			NodeNameBase* NodeName = new NodeNameBase(QString::fromStdString(nodePtr->getName()), this);
-			NodeName->setZValue(1);
-
-			uint32_t inputYOffset = 55;
-			auto attributes = nodePtr->getAttributes();
-			auto isOutput = [](std::shared_ptr<core::Attribute> attribute) { return attribute->isReadable(); };
-			auto isInput = [](std::shared_ptr<core::Attribute> attribute) { return attribute->isWritable(); };
-
-			// for (auto outputAttribute : attributes | std::views::filter(isOutput))
-			//{
-			//	NodeAttribute* attribute = new NodeAttribute(outputAttribute, this);
-			//	attribute->setZValue(1);
-			//	attribute->setPos(-10, inputYOffset);
-			//	m_attributes.push_back(attribute);
-			//	inputYOffset += 29;
-			// }
-
-			// TODO output should be added first
-
-			for (auto inputAttribute : attributes)
-			{
-				NodeAttribute* attribute = new NodeAttribute(inputAttribute, this);
-				attribute->setZValue(1);
-				attribute->setPos(-10, inputYOffset);
-				m_attributes.push_back(attribute);
-				inputYOffset += 29;
-			}
+			NodeAttribute* attribute = new NodeAttribute(inputAttribute, this);
+			attribute->setZValue(1);
+			attribute->setPos(-10, inputYOffset);
+			m_attributes.push_back(attribute);
+			inputYOffset += 29;
 		}
 	}
 
@@ -295,36 +266,90 @@ namespace st::ui
 
     void NodeItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
     {
-        Q_UNUSED(option);
-        Q_UNUSED(widget);
+		Q_UNUSED(option);
+		Q_UNUSED(widget);
+	
+		QColor borderColor = m_isSelected || m_isHovered ? NodeHighlightBorderColor : NodeBorderColor;
+		QPen borderPen(borderColor, 4);
+		
+		// 1. Draw the main body background (excluding header area)
+		painter->setPen(Qt::NoPen);
+		painter->setBrush(NodeColor);
+		QPainterPath bodyPath;
+		bodyPath.addRoundedRect(QRectF(0, HeaderHeight - 20, NodeWidth, NodeHeight - HeaderHeight + 20), 20, 20);
+		painter->drawPath(bodyPath);
+		
+		// 2. Draw the header background
+		painter->setBrush(borderColor);
+		painter->drawRoundedRect(QRectF(0, 0, NodeWidth, HeaderHeight), 20, 20);
+		painter->drawRect(QRectF(0, 20, NodeWidth, 25)); // Bottom part of header
+		
+		// 3. Draw the outline for the entire node
+		painter->setPen(borderPen);
+		painter->setBrush(Qt::NoBrush);
+		QPainterPath outlinePath;
+		outlinePath.addRoundedRect(QRectF(0, 0, NodeWidth, NodeHeight), 20, 20);
+		painter->drawPath(outlinePath);
+		
+		// 4. Draw the node name last so it's always on top
 
-        painter->setBrush(brush());
-        painter->setPen(pen());
-        painter->drawRoundedRect(0, 0, NodeWidth, NodeHeight, 20, 20);
+		painter->setPen(Qt::white);
+		painter->setFont(QFont("Inter", 24));
+		QRectF textRect(20, 10, 280, 35);
+		painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, 
+							QString::fromStdString(m_node->getName()));
+
+			
+		//Draw brown circle if node is dirty
+		if (m_node->isDirty())
+		{
+			painter->setBrush(Qt::darkRed);
+			painter->drawEllipse(QPointF(280, 10), 5, 5);
+		}
+
     }
 
     void NodeItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
     {
-        //TODO implement
         QAbstractGraphicsShapeItem::hoverEnterEvent(event);
+
+        if(m_isSelected)
+		{
+			return;
+		}
+
+		m_isHovered = true;
+		update();
     }
 
     void NodeItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
     {
-        //TODO implement
         QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
+
+       	if (m_isSelected)
+		{
+			return;
+		}
+
+		m_isHovered = false;
+		update();
     }
+	
+	void NodeItem::setSelected(bool state)
+	{
+		m_isSelected = state;
+		update();
+	}
 
     std::vector<NodeAttribute*> NodeItem::getAttributes() const
     {
         return m_attributes;
     }
 
-    std::weak_ptr<core::Node> NodeItem::getNode() const
+    std::shared_ptr<core::Node> NodeItem::getNode() const
     {
         return m_node;
     }
-
 
 	/*-------------------------------------------*/
 	/*-----------MARK: NodeConnection------------*/
@@ -350,7 +375,7 @@ namespace st::ui
 			if (auto nodeItem = dynamic_cast<NodeItem*>(item))
 			{
 				// Find Output node
-				if (auto node = nodeItem->getNode().lock())
+				if (auto node = nodeItem->getNode())
 				{
 					// Find Source node
 					if (node == m_connection.lock()->sourceNode) //
@@ -426,8 +451,9 @@ namespace st::ui
 	/*-------------------------------------------*/
 	/*-----------MARK: NodeScene-----------------*/
 	/*-------------------------------------------*/
-	NodeScene::NodeScene(QObject* parent) :
+	NodeScene::NodeScene(core::ContentManagerHandler contentManager, QObject* parent) :
 		QGraphicsScene(parent),
+		m_contentManager(contentManager),
 		currentLineStart(),
 		currentLineEnd(),
 		m_state(State::eIdle)
@@ -452,7 +478,7 @@ namespace st::ui
 		}
 
 		// Draw axis
-		painter->setPen(QPen(Qt::black, 2));
+		painter->setPen(QPen(Qt::black, 4));
 		painter->drawLine(-sceneWidth, 0, sceneWidth, 0);
 		painter->drawLine(0, -sceneHeight, 0, sceneHeight);
 	}
@@ -464,13 +490,16 @@ namespace st::ui
 
     void NodeScene::updateScene()
     {
-        clear();
+        //clear();
 
         if (m_nodeGraph)
         {
+			spdlog::info("NodeScene::updateScene() - Updating scene with node graph size: {}",
+				m_nodeGraph->getNodes().size());
             // Add nodes
             for (const auto& node : m_nodeGraph->getNodes())
             {
+				spdlog::info("NodeScene::updateScene() - Adding node: {}", node->getName());
                 addNode(node);
             }
 
@@ -480,9 +509,10 @@ namespace st::ui
                 addConnection(connection);
             }
         }
+		
     }
 
-    void NodeScene::addNode(std::weak_ptr<core::Node> node)
+    void NodeScene::addNode(std::shared_ptr<core::Node> node)
     {
 		// Check if the node is already in the scene
 		if (m_nodes.find(node) != m_nodes.end())
@@ -503,7 +533,7 @@ namespace st::ui
 		nodeXPosition += 500;
 	}
 
-    void removeNode(std::weak_ptr<core::Node> node)
+    void removeNode(std::shared_ptr<core::Node> node)
     {
 
     }
@@ -533,6 +563,39 @@ namespace st::ui
 			}
 
 			update();
+		}
+
+		if (event->button() == Qt::LeftButton) {
+			spdlog::warn("NodeScene::Left button pressed");
+			QGraphicsItem* clickedItem = itemAt(event->scenePos(), QTransform());
+			spdlog::warn("Clicked item: {}", clickedItem ? "Found" : "Not found");
+			
+			// Check if we clicked on a node or part of a node
+			NodeItem* clickedNode = nullptr;
+			
+			if (clickedItem) {
+				// Check if we clicked directly on a NodeItem
+				clickedNode = dynamic_cast<NodeItem*>(clickedItem);
+				
+				// If not, check if we clicked on a child of a NodeItem
+				if (!clickedNode) {
+					QGraphicsItem* parent = clickedItem->parentItem();
+					while (parent && !clickedNode) {
+						clickedNode = dynamic_cast<NodeItem*>(parent);
+						if (!clickedNode) {
+							parent = parent->parentItem();
+						}
+					}
+				}
+			}
+
+			spdlog::warn("Clicked node: {}", clickedNode ? "Found" : "Not found");
+			if (clickedNode) {
+				selectNode(clickedNode);
+			} else {
+				// We clicked on the background, deselect current node
+				deselectCurrentNode();
+			}
 		}
 
 		QGraphicsScene::mousePressEvent(event);
@@ -565,10 +628,10 @@ namespace st::ui
 			{
 				m_pTempConnection->finalizeConnection(nodePlug);
 
-				NodePlug* sourcePlug = m_pTempConnection->getSourcePlug();
-				NodePlug* targetPlug = m_pTempConnection->getTargetPlug();
-				NodeItem* sourceNode = sourcePlug->getParentAttribute()->getParentNode();
-				NodeItem* targetNode = targetPlug->getParentAttribute()->getParentNode();
+				[[maybe_unused]] NodePlug* sourcePlug = m_pTempConnection->getSourcePlug();
+				[[maybe_unused]] NodePlug* targetPlug = m_pTempConnection->getTargetPlug();
+				[[maybe_unused]] NodeItem* sourceNode = sourcePlug->getParentAttribute()->getParentNode();
+				[[maybe_unused]] NodeItem* targetNode = targetPlug->getParentAttribute()->getParentNode();
 
 				//TODO add connection to node graph
 				update();
@@ -588,12 +651,43 @@ namespace st::ui
 		QGraphicsScene::mouseReleaseEvent(event);
 	}
 
+	void NodeScene::selectNode(NodeItem* nodeItem)
+	{
+		if(m_pSelectedNode && m_pSelectedNode != nodeItem)
+		{
+			deselectCurrentNode();
+		}
+
+		m_pSelectedNode = nodeItem;
+		if (nodeItem)
+		{
+			spdlog::warn("NodeItem: {} is selected", nodeItem->getNode()->getName());
+			nodeItem->setSelected(true);
+		}
+
+		m_contentManager->updateSelection(nodeItem->getNode());
+	}
+
+	void NodeScene::deselectCurrentNode()
+	{
+		if (m_pSelectedNode)
+		{
+			m_pSelectedNode->setSelected(false);
+			m_pSelectedNode = nullptr;
+		}
+	}
+
+	NodeItem* NodeScene::getSelectedNode() const
+	{
+		return m_pSelectedNode;
+	}
+
 	/*------------------------------------*/
 	/*---------MARK:NodeEditor------------*/
 	/*------------------------------------*/
-	NodeEditor::NodeEditor(core::ContentManagerHandler contentManager, QWidget* parent) :
+	NodeGraphView::NodeGraphView(core::ContentManagerHandler contentManager, QWidget* parent) :
 		QGraphicsView(parent),
-		m_scene(new NodeScene(this)),
+		m_scene(new NodeScene(contentManager, this)),
 		m_contentManager(contentManager),
 		m_panning(false),
 		m_lastPanPoint(QPoint(0, 0))
@@ -603,18 +697,18 @@ namespace st::ui
 		setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
 		setScene(m_scene);
-		centerOn(0, 0);
-	}
 
-	void NodeEditor::initialize()
-	{
-        m_scene->setNodeGraph(&m_contentManager->getMainNodeGraph());
+
+		QTimer::singleShot(0, this, [this]() {
+			centerOn(0, 0);
+		});
+
 	}
 
 	/*--------------------------------*/
 	/*---------Event Handlers---------*/
 	/*--------------------------------*/
-	void NodeEditor::mousePressEvent(QMouseEvent* event)
+	void NodeGraphView::mousePressEvent(QMouseEvent* event)
 	{
 		if (event->button() == Qt::MiddleButton)
 		{
@@ -626,7 +720,7 @@ namespace st::ui
 		QGraphicsView::mousePressEvent(event);
 	}
 
-	void NodeEditor::mouseMoveEvent(QMouseEvent* event)
+	void NodeGraphView::mouseMoveEvent(QMouseEvent* event)
 	{
 		if (m_panning)
 		{
@@ -640,7 +734,7 @@ namespace st::ui
 		QGraphicsView::mouseMoveEvent(event);
 	}
 
-	void NodeEditor::mouseReleaseEvent(QMouseEvent* event)
+	void NodeGraphView::mouseReleaseEvent(QMouseEvent* event)
 	{
 		if (event->button() == Qt::MiddleButton)
 		{
@@ -651,7 +745,7 @@ namespace st::ui
 		QGraphicsView::mouseReleaseEvent(event);
 	}
 
-	void NodeEditor::wheelEvent(QWheelEvent* event)
+	void NodeGraphView::wheelEvent(QWheelEvent* event)
 	{
 		double angleDeltaY = event->angleDelta().y();
 
@@ -662,15 +756,96 @@ namespace st::ui
 		QGraphicsView::wheelEvent(event);
 	}
 
-	void NodeEditor::resizeEvent(QResizeEvent* event)
+	void NodeGraphView::resizeEvent(QResizeEvent* event)
 	{
 		QGraphicsView::resizeEvent(event);
 	}
 
-	void NodeEditor::showEvent(QShowEvent* event)
+	void NodeGraphView::showEvent(QShowEvent* event)
 	{
-		m_scene->updateScene();
 		QGraphicsView::showEvent(event);
+
+		m_scene->setNodeGraph(&m_contentManager->getMainNodeGraph());
+		m_scene->updateScene();
+		centerOn(0, 0);
+
+		viewport()->update();
 	}
+
+	/*------------------------------------*/
+	/*---------MARK:NodeEditorWidget------*/
+	/*------------------------------------*/
+	NodeEditor::NodeEditor(core::ContentManagerHandler contentManager, QWidget* parent) :
+		QWidget(parent),
+		m_nodeEditor(nullptr),
+		m_contentManager(contentManager)
+	{
+		QVBoxLayout* layout = new QVBoxLayout(this);
+		QHBoxLayout* toolboxLayout = new QHBoxLayout(this);
+
+		QCheckBox* evaluateGraph = new QCheckBox("Enable Graph Evaluation", this);
+		evaluateGraph->setChecked(true);
+		connect(evaluateGraph, &QCheckBox::checkStateChanged, this, &NodeEditor::onEvaluateGraphStateChanged);
+		
+		QCheckBox* showGrid = new QCheckBox("Show Grid", this);
+		showGrid->setChecked(true);
+
+		
+		toolboxLayout->addWidget(evaluateGraph);
+		toolboxLayout->addWidget(showGrid);
+		toolboxLayout->setContentsMargins(0, 0, 0, 0);
+		toolboxLayout->setSpacing(0);
+		toolboxLayout->setAlignment(Qt::AlignLeft);
+
+
+
+		QHBoxLayout* nodeEditorLayout = new QHBoxLayout(this);
+		m_nodeEditor = new NodeGraphView(contentManager, this);
+		nodeEditorLayout->addWidget(m_nodeEditor);
+
+		layout->addLayout(toolboxLayout);
+		layout->addLayout(nodeEditorLayout);
+		layout->setContentsMargins(0, 0, 0, 0);
+		layout->setSpacing(0);
+		setLayout(layout);
+	}
+
+	void NodeEditor::refreshNodeGraph()
+	{
+		if (m_nodeEditor)
+		{
+			NodeScene* scene = dynamic_cast<NodeScene*>(m_nodeEditor->scene());
+			if (scene)
+			{
+				spdlog::info("Refreshing NodeGraphView");
+				scene->setNodeGraph(&m_contentManager->getMainNodeGraph());
+				scene->updateScene();
+				m_nodeEditor->centerOn(0,0);
+			}
+			else
+			{
+				spdlog::error("NodeGraphView does not have a valid NodeScene");
+				throw std::runtime_error("NodeGraphView does not have a valid NodeScene");
+			}
+
+		}
+	}
+
+	void NodeEditor::onEvaluateGraphStateChanged(int state)
+	{
+		auto& nodeGraph = m_contentManager->getMainNodeGraph();
+
+		if (state == Qt::Checked)
+		{
+			spdlog::info("NodeGraph evaluation enabled");
+			nodeGraph.enableEvaluation();
+		}
+		else
+		{
+			spdlog::info("NodeGraph evaluation disabled");
+			nodeGraph.disableEvaluation();
+		}
+	}
+
 
 } // namespace st::ui

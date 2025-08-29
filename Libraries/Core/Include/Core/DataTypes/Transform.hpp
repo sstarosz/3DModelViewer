@@ -33,6 +33,7 @@ namespace st::core
 	{
         Eigen::Vector4f translation = Eigen::Vector4f::Zero();
         EulerRotation rotation = {0.0f, 0.0f, 0.0f, EulerRotation::RotationOrder::XYZ};
+        Eigen::Vector4f scale = Eigen::Vector4f::Ones();
         Eigen::Matrix4f matrix = Eigen::Matrix4f::Identity();
 	};
 
